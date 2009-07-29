@@ -65,6 +65,7 @@ function filehash_file_update($file) {
  * Calculate and save the file hashes.
  */
 function filehash_save($file) {
+  $file->filehash = array_fill_keys(array('md5', 'sha1', 'sha256'), '');
   foreach (filehash_algos() as $algo) {
     $file->filehash[$algo] = hash_file($algo, $file->filepath);
   }
