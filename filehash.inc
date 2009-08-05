@@ -62,6 +62,32 @@ function filehash_file_update($file) {
 }
 
 /**
+ * Implementation of hook_node_view().
+ *
+ * Add a media:hash element to RSS items.
+ */
+function filehash_node_view($node, $build_mode) {
+  if ($build_mode == 'rss' && isset($node->files) && user_access('view uploaded files')) {
+    foreach ($node->files as $file) {
+      if ($file->list) {
+        $algos = array('md5' => 'md5', 'sha1' => 'sha-1');
+        foreach ($algos as $hash => $algo) {
+          if (!empty($file->filehash[$hash])) {
+            $node->rss_elements[] = array(
+              'key' => 'media:hash',
+              'attributes' => array('algo' => $algo),
+              'value' => $file->filehash[$hash],
+            );
+          }
+        }
+        $node->rss_namespaces['xmlns:media'] = 'http://search.yahoo.com/mrss/';
+        break;
+      }
+    }
+  }
+}
+
+/**
  * Calculate and save the file hashes.
  */
 function filehash_save($file) {
