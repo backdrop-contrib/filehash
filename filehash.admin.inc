@@ -7,20 +7,6 @@
  */
 
 /**
- * Implementation of hook_menu().
- */
-function filehash_menu() {
-  $items['admin/settings/filehash'] = array(
-    'title' => 'File hash',
-    'description' => 'Configure file hash settings.',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('filehash_settings'),
-    'access arguments' => array('administer site configuration'),
-  );
-  return $items;
-}
-
-/**
  * Return file hash settings form.
  */
 function filehash_settings() {
