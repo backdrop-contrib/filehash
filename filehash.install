@@ -2,13 +2,6 @@
 // $Id$
 
 /**
- * Implementation of hook_install().
- */
-function filehash_install() {
-  drupal_install_schema('filehash');
-}
-
-/**
  * Implementation of hook_requirements().
  */
 function filehash_requirements($phase) {
@@ -76,5 +69,5 @@ function filehash_schema() {
  * Implementation of hook_uninstall().
  */
 function filehash_uninstall() {
-  drupal_uninstall_schema('filehash');
+  variable_del('filehash_algos');
 }
