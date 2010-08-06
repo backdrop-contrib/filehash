@@ -7,7 +7,7 @@
  */
 
 /**
- * Implementation of hook_menu().
+ * Implements hook_menu().
  */
 function filehash_menu() {
   $items['admin/config/media/filehash'] = array(
@@ -22,14 +22,14 @@ function filehash_menu() {
 }
 
 /**
- * Return array of enabled hash algorithms.
+ * Returns array of enabled hash algorithms.
  */
 function filehash_algos() {
   return array_diff(variable_get('filehash_algos', array('sha256')), array(0));
 }
 
 /**
- * Implementation of hook_file_delete().
+ * Implements hook_file_delete().
  */
 function filehash_file_delete($file) {
   db_delete('filehash')
@@ -38,14 +38,14 @@ function filehash_file_delete($file) {
 }
 
 /**
- * Implementation of hook_file_insert().
+ * Implements hook_file_insert().
  */
 function filehash_file_insert($file) {
   filehash_save($file);
 }
 
 /**
- * Implementation of hook_file_load().
+ * Implements hook_file_load().
  */
 function filehash_file_load($files) {
   $algos = filehash_algos();
@@ -70,40 +70,45 @@ function filehash_file_load($files) {
 }
 
 /**
- * Implementation of hook_file_update().
+ * Implements hook_file_update().
  */
 function filehash_file_update($file) {  
   filehash_save($file);
 }
 
 /**
- * Implementation of hook_node_view().
+ * Implements hook_node_view().
  *
- * Add a media:hash element to RSS items.
+ * Adds a <media:hash> element for each enabled hash algorithm to each RSS item.
  */
-function filehash_node_view($node, $build_mode) {
-  if ($build_mode == 'rss' && isset($node->files) && user_access('view uploaded files')) {
-    foreach ($node->files as $file) {
-      if ($file->list) {
-        $algos = array('md5' => 'md5', 'sha1' => 'sha-1');
-        foreach ($algos as $hash => $algo) {
-          if (!empty($file->filehash[$hash])) {
-            $node->rss_elements[] = array(
-              'key' => 'media:hash',
-              'attributes' => array('algo' => $algo),
-              'value' => $file->filehash[$hash],
-            );
+function filehash_node_view($node, $view_mode) {
+  if ($view_mode == 'rss') {
+    foreach ($node->content as $field) {
+      if ($field['#field_type'] == 'file') {
+        foreach ($field['#items'] as $file) {
+          if ($file['display']) {
+            $algos = array('md5' => 'md5', 'sha1' => 'sha-1');
+            foreach ($algos as $hash => $algo) {
+              if (!empty($file['filehash'][$hash])) {
+                $node->rss_elements[] = array(
+                  'key' => 'media:hash',
+                  'attributes' => array('algo' => $algo),
+                  'value' => $file['filehash'][$hash],
+                );
+              }
+            }
+            $node->rss_namespaces['xmlns:media'] = 'http://search.yahoo.com/mrss/';
+            // Add <media:hash> elements for at most one file per RSS item.
+            break 2;
           }
         }
-        $node->rss_namespaces['xmlns:media'] = 'http://search.yahoo.com/mrss/';
-        break;
       }
     }
   }
 }
 
 /**
- * Calculate and save the file hashes.
+ * Calculates and saves the file hashes.
  */
 function filehash_save($file) {
   $file->filehash = array_fill_keys(array('md5', 'sha1', 'sha256'), '');
