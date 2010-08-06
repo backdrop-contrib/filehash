@@ -78,33 +78,50 @@ function filehash_file_update($file) {
 
 /**
  * Implements hook_node_view().
- *
- * Adds a <media:hash> element for each enabled hash algorithm to each RSS item.
  */
 function filehash_node_view($node, $view_mode) {
+  // Add <media:hash> elements for at most one file per RSS item.
   if ($view_mode == 'rss') {
+    // The following field types are currently supported.
+    $field_types = array('file' => 1, 'image' => 1, 'media' => 1);
     foreach ($node->content as $field) {
-      if ($field['#field_type'] == 'file') {
+      if (isset($field_types[$field['#field_type']]) && !empty($field['#access'])) {
         foreach ($field['#items'] as $file) {
-          if ($file['display']) {
-            $algos = array('md5' => 'md5', 'sha1' => 'sha-1');
-            foreach ($algos as $hash => $algo) {
-              if (!empty($file['filehash'][$hash])) {
-                $node->rss_elements[] = array(
-                  'key' => 'media:hash',
-                  'attributes' => array('algo' => $algo),
-                  'value' => $file['filehash'][$hash],
-                );
+          if ($field['#field_type'] == 'media') {
+            foreach ($file->file as $language) {
+              foreach ($language as $delta) {
+                if ($delta['display']) {
+                  filehash_rss_elements($delta, $node);  
+                  break 4;
+                }
               }
             }
-            $node->rss_namespaces['xmlns:media'] = 'http://search.yahoo.com/mrss/';
-            // Add <media:hash> elements for at most one file per RSS item.
+          }
+          elseif ($file['display']) {
+            filehash_rss_elements($file, $node);  
             break 2;
           }
         }
       }
     }
   }
+}
+
+/**
+ * Adds <media:hash> RSS elements to $node object.
+ */
+function filehash_rss_elements(array $file, $node) {
+  $algos = array('md5' => 'md5', 'sha1' => 'sha-1');
+  foreach ($algos as $hash => $algo) {
+    if (!empty($file['filehash'][$hash])) {
+      $node->rss_elements[] = array(
+        'key' => 'media:hash',
+        'attributes' => array('algo' => $algo),
+        'value' => $file['filehash'][$hash],
+      );
+    }
+  }
+  $node->rss_namespaces['xmlns:media'] = 'http://search.yahoo.com/mrss/';
 }
 
 /**
