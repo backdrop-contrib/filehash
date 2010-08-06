@@ -27,7 +27,7 @@ function filehash_schema() {
     'description' => 'Store hashes for each file.',
     'fields' => array(
       'fid' => array(
-        'description' => 'Primary Key: The {files}.fid.',
+        'description' => 'Primary Key: The {file_managed}.fid.',
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,

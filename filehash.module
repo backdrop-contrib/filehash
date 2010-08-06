@@ -137,3 +137,12 @@ function filehash_save($file) {
     ->fields($file->filehash)
     ->execute();
 }
+
+/**
+ * Implements hook_views_api().
+ */
+function filehash_views_api() {
+  return array(
+    'api' => 3,
+  );
+}
