@@ -25,7 +25,7 @@ function filehash_menu() {
  * Returns array of enabled hash algorithms.
  */
 function filehash_algos() {
-  return array_diff(variable_get('filehash_algos', array('sha256')), array(0));
+  return array_diff(variable_get('filehash_algos', array()), array(0));
 }
 
 /**
@@ -49,21 +49,23 @@ function filehash_file_insert($file) {
  */
 function filehash_file_load($files) {
   $algos = filehash_algos();
-  $result = db_select('filehash')
-    ->fields('filehash')
-    ->condition('fid', array_keys($files), 'IN')
-    ->execute();
-  foreach ($result as $record) {
-    foreach ($algos as $algo) {
-      $files[$record->fid]->filehash[$algo] = $record->$algo;
+  if ($algos) {
+    $result = db_select('filehash')
+      ->fields('filehash')
+      ->condition('fid', array_keys($files), 'IN')
+      ->execute();
+    foreach ($result as $record) {
+      foreach ($algos as $algo) {
+        $files[$record->fid]->filehash[$algo] = $record->$algo;
+      }
     }
-  }
-  // Generate hash if it does not already exist for the file.
-  foreach ($files as $fid => $file) {
-    foreach ($algos as $algo) {
-      if (empty($file->filehash[$algo])) {
-        filehash_save($files[$fid]);
-        break;
+    // Generate hash if it does not already exist for the file.
+    foreach ($files as $fid => $file) {
+      foreach ($algos as $algo) {
+        if (empty($file->filehash[$algo])) {
+          filehash_save($files[$fid]);
+          break;
+        }
       }
     }
   }
@@ -82,24 +84,28 @@ function filehash_file_update($file) {
 function filehash_node_view($node, $view_mode) {
   // Add <media:hash> elements for at most one file per RSS item.
   if ($view_mode == 'rss') {
-    // The following field types are currently supported.
-    $field_types = array('file' => 1, 'image' => 1, 'media' => 1);
-    foreach ($node->content as $field) {
-      if (isset($field_types[$field['#field_type']]) && !empty($field['#access'])) {
-        foreach ($field['#items'] as $file) {
-          if ($field['#field_type'] == 'media') {
-            foreach ($file->file as $language) {
-              foreach ($language as $delta) {
-                if ($delta['display']) {
-                  filehash_rss_elements($delta, $node);  
-                  break 4;
+    // The <media:hash> element only supports MD5 and SHA-1.
+    $algos = filehash_algos();
+    if (isset($algos['md5']) || isset($algos['sha1'])) {
+      // The following field types are currently supported.
+      $field_types = array('file' => 1, 'image' => 1, 'media' => 1);
+      foreach ($node->content as $field) {
+        if (isset($field_types[$field['#field_type']]) && !empty($field['#access'])) {
+          foreach ($field['#items'] as $file) {
+            if ($field['#field_type'] == 'media') {
+              foreach ($file->file as $language) {
+                foreach ($language as $delta) {
+                  if ($delta['display']) {
+                    filehash_rss_elements($delta, $node);  
+                    break 4;
+                  }
                 }
               }
             }
-          }
-          elseif ($file['display']) {
-            filehash_rss_elements($file, $node);  
-            break 2;
+            elseif ($file['display']) {
+              filehash_rss_elements($file, $node);  
+              break 2;
+            }
           }
         }
       }
