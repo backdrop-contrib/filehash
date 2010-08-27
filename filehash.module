@@ -3,7 +3,7 @@
 
 /**
  * @file
- * Generate hashes for each file.
+ * Generate hashes for each uploaded file.
  */
 
 /**
