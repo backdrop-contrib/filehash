@@ -57,6 +57,12 @@ function filehash_schema() {
       'sha1_idx' => array('sha1'),
       'sha256_idx' => array('sha256'),
     ),
+    'foreign keys' => array(
+      'fid' => array(
+        'table' => 'file_managed',
+        'columns' => array('fid' => 'fid'),
+      ),
+    ),
   );
   return $schema;
 }
