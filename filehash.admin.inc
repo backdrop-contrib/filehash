@@ -7,7 +7,7 @@
  */
 
 /**
- * Return file hash settings form.
+ * Builds the file hash settings form.
  */
 function filehash_settings() {
   $form['filehash_algos'] = array(

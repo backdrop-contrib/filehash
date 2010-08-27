@@ -2,7 +2,7 @@
 // $Id$
 
 /**
- * Implementation of hook_requirements().
+ * Implements hook_requirements().
  */
 function filehash_requirements($phase) {
   $requirements = array();
@@ -20,33 +20,33 @@ function filehash_requirements($phase) {
 }
 
 /**
- * Implementation of hook_schema().
+ * Implements hook_schema().
  */
 function filehash_schema() {
   $schema['filehash'] = array(
     'description' => 'Store hashes for each file.',
     'fields' => array(
       'fid' => array(
-        'description' => 'Primary Key: The {file_managed}.fid.',
+        'description' => 'Primary key: {file_managed}.fid.',
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
       ),
       'md5' => array(
         'description' => 'MD5 hash for this file.',
-        'type' => 'varchar',
+        'type' => 'char',
         'length' => 32,
         'not null' => FALSE,
       ),
       'sha1' => array(
         'description' => 'SHA-1 hash for this file.',
-        'type' => 'varchar',
+        'type' => 'char',
         'length' => 40,
         'not null' => FALSE,
       ),
       'sha256' => array(
         'description' => 'SHA-256 hash for this file.',
-        'type' => 'varchar',
+        'type' => 'char',
         'length' => 64,
         'not null' => FALSE,
       ),
@@ -62,7 +62,7 @@ function filehash_schema() {
 }
 
 /**
- * Implementation of hook_uninstall().
+ * Implements hook_uninstall().
  */
 function filehash_uninstall() {
   variable_del('filehash_algos');
