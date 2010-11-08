@@ -17,12 +17,12 @@ function filehash_views_data() {
       'field' => 'fid',
      ),
   );
-  $title = array('md5' => t('MD5 hash'), 'sha1' => t('SHA-1 hash'), 'sha256' => t('SHA-256 hash'));
-  $help = array('md5' => t('The MD5 hash of the file.'), 'sha1' => t('The SHA-1 hash of the file.'), 'sha256' => t('The SHA-256 hash of the file.'));
+  // Use a nice human-readable name for each hash algorithm.
+  $algos = array('md5' => 'MD5', 'sha1' => 'SHA-1', 'sha256' => 'SHA-256');
   foreach (filehash_algos() as $algo) {
     $data['filehash'][$algo] = array(
-      'title' => $title[$algo],
-      'help' => $help[$algo],
+      'title' => t('@algo hash', array('@algo' => $algos[$algo])),
+      'help' => t('The @algo hash of the file.', array('@algo' => $algos[$algo])),
       'field' => array(
         'click sortable' => TRUE,
       ),
