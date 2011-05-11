@@ -95,15 +95,10 @@ function filehash_node_view($node, $view_mode) {
         if (isset($fields[$instance['field_name']])) {
           foreach ($node->$instance['field_name'] as $language) {
             foreach ($language as $file) {
+              // Media fields incorporate a file object rather than a file array.
               if ($fields[$instance['field_name']]['type'] == 'media') {
-                foreach ($file->file as $langcode) {
-                  foreach ($langcode as $delta) {
-                    if ($delta['display']) {
-                      filehash_rss_elements($delta, $node);
-                      return;
-                    }
-                  }
-                }
+                filehash_rss_elements((array) $file, $node);
+                return;
               }
               elseif ($file['display']) {
                 filehash_rss_elements($file, $node);
