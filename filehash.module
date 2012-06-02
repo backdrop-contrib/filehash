@@ -78,6 +78,13 @@ function filehash_file_update($file) {
 }
 
 /**
+ * Returns array of human-readable hash algorithm names.
+ */
+function filehash_names() {
+  return array('md5' => 'MD5', 'sha1' => 'SHA-1', 'sha256' => 'SHA-256');
+}
+
+/**
  * Implements hook_node_view().
  */
 function filehash_node_view($node, $view_mode) {
@@ -100,6 +107,10 @@ function filehash_node_view($node, $view_mode) {
                 filehash_rss_elements((array) $file, $node);
                 return;
               }
+              elseif ($fields[$instance['field_name']]['type'] == 'image') {
+                filehash_rss_elements($file, $node);
+                return;
+              }
               elseif ($file['display']) {
                 filehash_rss_elements($file, $node);
                 return;
@@ -116,13 +127,13 @@ function filehash_node_view($node, $view_mode) {
  * Adds <media:hash> RSS elements to $node object.
  */
 function filehash_rss_elements(array $file, $node) {
-  $algos = array('md5' => 'md5', 'sha1' => 'sha-1');
-  foreach ($algos as $hash => $algo) {
-    if (!empty($file['filehash'][$hash])) {
+  $names = array('md5' => 'md5', 'sha1' => 'sha-1');
+  foreach ($names as $algo => $name) {
+    if (!empty($file['filehash'][$algo])) {
       $node->rss_elements[] = array(
         'key' => 'media:hash',
-        'attributes' => array('algo' => $algo),
-        'value' => $file['filehash'][$hash],
+        'attributes' => array('algo' => $name),
+        'value' => $file['filehash'][$algo],
       );
     }
   }
