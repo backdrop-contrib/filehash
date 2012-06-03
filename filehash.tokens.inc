@@ -33,7 +33,7 @@ function filehash_token_info() {
  */
 function filehash_tokens($type, $tokens, array $data = array(), array $options = array()) {
   $replacements = array();
-  if ($type == 'file') {
+  if ($type == 'file' && !empty($data['file'])) {
     foreach (filehash_algos() as $algo) {
       // Generate the file hash if it is needed but does not yet exist.
       if (empty($data['file']->filehash[$algo])) {
