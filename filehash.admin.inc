@@ -16,5 +16,11 @@ function filehash_settings() {
     '#title' => t('Enabled hash algorithms'),
     '#type' => 'checkboxes',
   );
+  $form['filehash_dedupe'] = array(
+    '#default_value' => variable_get('filehash_dedupe', 0),
+    '#description' => t('If checked, prevent duplicate uploaded files from being saved. Note, enabling this setting has privacy implications, as it allows users to determine if a particular file has been uploaded to the site.'),
+    '#title' => t('Disallow duplicate files'),
+    '#type' => 'checkbox',
+  );
   return system_settings_form($form);
 }
