@@ -120,7 +120,7 @@ function filehash_node_view($node, $view_mode) {
             foreach ($language as $file) {
               // Media fields incorporate a file object rather than a file array.
               if ($fields[$instance['field_name']]['type'] == 'media') {
-                filehash_rss_elements((array) $file, $node);
+                filehash_rss_elements((array) $file['file'], $node);
                 return;
               }
               elseif ($fields[$instance['field_name']]['type'] == 'image') {
