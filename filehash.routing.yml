@@ -1,0 +1,7 @@
+filehash.admin:
+  path: '/admin/config/media/filehash'
+  defaults:
+    _form: 'Drupal\filehash\Form\FilehashConfigForm'
+    _title: 'File hash settings'
+  requirements:
+    _permission: 'administer site configuration'

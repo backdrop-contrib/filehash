@@ -1,0 +1,5 @@
+configure: filehash.admin
+core: 8.x
+description: Generate hashes for each uploaded file.
+name: File hash
+type: module

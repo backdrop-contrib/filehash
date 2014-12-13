@@ -23,16 +23,17 @@ function filehash_views_data() {
       'title' => t('@algo hash', array('@algo' => $names[$algo])),
       'help' => t('The @algo hash of the file.', array('@algo' => $names[$algo])),
       'field' => array(
+        'id' => 'standard',
         'click sortable' => TRUE,
-      ),
+       ),
       'argument' => array(
-        'handler' => 'views_handler_argument_string',
+        'id' => 'string',
       ),
       'filter' => array(
-        'handler' => 'views_handler_filter_string',
+        'id' => 'string',
       ),
       'sort' => array(
-        'handler' => 'views_handler_sort',
+        'id' => 'standard',
       ),
     );
   }

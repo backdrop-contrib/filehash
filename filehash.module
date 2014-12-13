@@ -6,45 +6,40 @@
  */
 
 /**
- * Implements hook_menu().
- */
-function filehash_menu() {
-  $items['admin/config/media/filehash'] = array(
-    'title' => 'File hash',
-    'description' => 'Configure file hash settings.',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('filehash_settings'),
-    'access arguments' => array('administer site configuration'),
-    'file' => 'filehash.admin.inc',
-  );
-  return $items;
-}
-
-/**
  * Returns array of enabled hash algorithms.
  */
 function filehash_algos() {
-  return array_diff(variable_get('filehash_algos', array()), array(0));
+  return array_diff(\Drupal::config('filehash.settings')->get('algos'), array(0));
 }
 
 /**
- * Implements hook_file_delete().
+ * Implements hook_ENTITY_TYPE_create().
+ */
+function filehash_file_create(\Drupal\Core\Entity\EntityInterface $file) {
+  $file->filehash = array_fill_keys(array('md5', 'sha1', 'sha256'), NULL);
+  foreach (filehash_algos() as $algo) {
+    $file->filehash[$algo] = hash_file($algo, $file->getFileUri());
+  }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_delete().
  */
 function filehash_file_delete($file) {
   db_delete('filehash')
-    ->condition('fid', $file->fid)
+    ->condition('fid', $file->id())
     ->execute();
 }
 
 /**
- * Implements hook_file_insert().
+ * Implements hook_ENTITY_TYPE_insert().
  */
-function filehash_file_insert($file) {
+function filehash_file_insert(\Drupal\Core\Entity\EntityInterface $file) {
   filehash_save($file);
 }
 
 /**
- * Implements hook_file_load().
+ * Implements hook_ENTITY_TYPE_load().
  */
 function filehash_file_load($files) {
   $algos = filehash_algos();
@@ -71,7 +66,7 @@ function filehash_file_load($files) {
 }
 
 /**
- * Implements hook_file_update().
+ * Implements hook_ENTITY_TYPE_update().
  */
 function filehash_file_update($file) {
   filehash_save($file);
@@ -82,9 +77,9 @@ function filehash_file_update($file) {
  */
 function filehash_file_validate($file) {
   $errors = array();
-  if (variable_get('filehash_dedupe', 0)) {
+  if (\Drupal::config('filehash.settings')->get('dedupe')) {
     foreach (filehash_algos() as $algo) {
-      if (db_query("SELECT COUNT(*) FROM {filehash} WHERE $algo = :hash", array(':hash' => hash_file($algo, $file->uri)))->fetchField()) {
+      if (db_query("SELECT COUNT(*) FROM {filehash} WHERE $algo = :hash", array(':hash' => hash_file($algo, $file->getFileUri())))->fetchField()) {
         $errors[] = t('Sorry, duplicate files are not permitted.');
         break;
       }
@@ -101,9 +96,9 @@ function filehash_names() {
 }
 
 /**
- * Implements hook_node_view().
+ * Implements hook_ENTITY_TYPE_view().
  */
-function filehash_node_view($node, $view_mode) {
+function filehash_node_view(array &$build, \Drupal\Core\Entity\EntityInterface $node, \Drupal\Core\Entity\Display\EntityViewDisplayInterface $display, $view_mode, $langcode) {
   static $fields;
   // Add <media:hash> elements for at most one file per RSS item.
   if ($view_mode == 'rss') {
@@ -162,10 +157,10 @@ function filehash_rss_elements(array $file, $node) {
 function filehash_save($file) {
   $file->filehash = array_fill_keys(array('md5', 'sha1', 'sha256'), NULL);
   foreach (filehash_algos() as $algo) {
-    $file->filehash[$algo] = hash_file($algo, $file->uri);
+    $file->filehash[$algo] = hash_file($algo, $file->getFileUri());
   }
   db_merge('filehash')
-    ->key(array('fid' => $file->fid))
+    ->key(array('fid' => $file->id()))
     ->fields($file->filehash)
     ->execute();
 }

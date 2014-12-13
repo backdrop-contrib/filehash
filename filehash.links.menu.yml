@@ -1,0 +1,6 @@
+filehash.admin:
+  title: 'File hash'
+  parent: system.admin_config_media
+  description: 'Configure file hash settings.'
+  route_name: filehash.admin
+
