@@ -6,3 +6,4 @@ files[] = filehash.tokens.inc
 files[] = filehash.views.inc
 files[] = filehash.install
 files[] = filehash.module
+configure = admin/config/media/filehash
