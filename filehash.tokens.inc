@@ -39,7 +39,7 @@ function filehash_tokens($type, $tokens, array $data = array(), array $options =
       if (empty($data['file']->filehash[$algo])) {
         foreach ($tokens as $name => $original) {
           if (strpos($name, "filehash-$algo") === 0) {
-            $data['file']->filehash[$algo] = hash_file($algo, $data['file']->uri);
+            $data['file']->filehash[$algo] = hash_file($algo, $data['file']->getFileUri());
             break;
           }
         }
