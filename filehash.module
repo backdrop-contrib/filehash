@@ -146,9 +146,8 @@ function filehash_rss_elements($file, $node) {
  */
 function filehash_save(FileInterface $file) {
   foreach (filehash_algos() as $algo) {
-    if (empty($file->filehash[$algo])) {
-      $file->filehash[$algo] = hash_file($algo, $file->getFileUri());
-    }
+    // Regenerate the hash as the file may have been modified.
+    $file->filehash[$algo] = hash_file($algo, $file->getFileUri());
   }
   db_merge('filehash')
     ->key(array('fid' => $file->id()))
