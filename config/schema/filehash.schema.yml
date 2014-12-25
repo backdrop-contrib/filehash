@@ -1,0 +1,20 @@
+filehash.settings:
+  type: mapping
+  label: 'File hash settings'
+  mapping:
+    algos:
+      type: mapping
+      label: 'Enabled hash algorithms'
+      mapping:
+        md5:
+          type: string
+          label: 'MD5'
+        sha1:
+          type: string
+          label: 'SHA-1'
+        sha256:
+          type: string
+          label: 'SHA-256'
+    dedupe:
+      type: boolean
+      label: 'Disallow duplicate files'

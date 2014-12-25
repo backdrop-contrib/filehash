@@ -19,10 +19,7 @@ function filehash_algos() {
  * Implements hook_ENTITY_TYPE_create().
  */
 function filehash_file_create(EntityInterface $file) {
-  $file->filehash = array_fill_keys(array('md5', 'sha1', 'sha256'), NULL);
-  foreach (filehash_algos() as $algo) {
-    $file->filehash[$algo] = hash_file($algo, $file->getFileUri());
-  }
+  filehash_hash($file);
 }
 
 /**
@@ -46,26 +43,35 @@ function filehash_file_insert(EntityInterface $file) {
  */
 function filehash_file_load($files) {
   $algos = filehash_algos();
-  if ($algos) {
-    $result = db_select('filehash')
-      ->fields('filehash')
-      ->condition('fid', array_keys($files), 'IN')
-      ->execute();
-    foreach ($result as $record) {
-      foreach ($algos as $algo) {
-        $files[$record->fid]->filehash[$algo] = $record->$algo;
-      }
+  if (!$algos) {
+    return;
+  }
+  $result = db_select('filehash')
+    ->fields('filehash')
+    ->condition('fid', array_keys($files), 'IN')
+    ->execute();
+  foreach ($result as $record) {
+    foreach ($algos as $algo) {
+      $files[$record->fid]->filehash[$algo] = $record->$algo;
     }
-    // Generate hash if it does not already exist for the file.
-    foreach ($files as $fid => $file) {
-      foreach ($algos as $algo) {
-        if (empty($file->filehash[$algo])) {
-          filehash_save($files[$fid]);
-          break;
-        }
+  }
+  // Generate hash if it does not already exist for the file.
+  foreach ($files as $fid => $file) {
+    foreach ($algos as $algo) {
+      if (empty($file->filehash[$algo])) {
+        filehash_hash($files[$fid]);
+        filehash_save($files[$fid]);
+        break;
       }
     }
   }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_presave().
+ */
+function filehash_file_presave(EntityInterface $file) {
+  filehash_hash($file);
 }
 
 /**
@@ -82,13 +88,27 @@ function filehash_file_validate(FileInterface $file) {
   $errors = array();
   if (\Drupal::config('filehash.settings')->get('dedupe')) {
     foreach (filehash_algos() as $algo) {
-      if (db_query("SELECT COUNT(*) FROM {filehash} WHERE $algo = :hash", array(':hash' => $file->filehash[$algo]))->fetchField()) {
+      if (db_query("SELECT 1 FROM {filehash} WHERE $algo = :hash LIMIT 1", array(':hash' => $file->filehash[$algo]))->fetchField()) {
         $errors[] = t('Sorry, duplicate files are not permitted.');
         break;
       }
     }
   }
   return $errors;
+}
+
+/**
+ * Calculates the file hashes.
+ */
+function filehash_hash(FileInterface $file) {
+  $file->filehash = array_fill_keys(array('md5', 'sha1', 'sha256'), NULL);
+  // Unreadable files will have NULL hash values.
+  if (!is_readable($file->getFileUri())) {
+    return;
+  }
+  foreach (filehash_algos() as $algo) {
+    $file->filehash[$algo] = hash_file($algo, $file->getFileUri());
+  }
 }
 
 /**
@@ -101,24 +121,25 @@ function filehash_names() {
 /**
  * Implements hook_ENTITY_TYPE_build_defaults_alter().
  */
-function filehash_node_build_defaults_alter(array &$build, EntityInterface $node, $view_mode, $langcode) {
-  if ($view_mode == 'rss') {
-    // The <media:hash> element only supports MD5 and SHA-1.
-    $algos = filehash_algos();
-    if (!isset($algos['md5']) && !isset($algos['sha1'])) {
-      return;
-    }
-    // The following field types are currently supported.
-    $fields = entity_load_multiple_by_properties('field_config', array('entity_type' => 'node', 'bundle' => $node->getType(), 'field_type' => 'file'));
-    $fields += entity_load_multiple_by_properties('field_config', array('entity_type' => 'node', 'bundle' => $node->getType(), 'field_type' => 'image'));
-    foreach ($fields as $field) {
-      foreach ($node->{$field->getName()} as $item) {
-        if ($item->isDisplayed()) {
-          // Add <media:hash> elements for at most one file per RSS item.
-          $file = file_load($item->target_id);
-          filehash_rss_elements($file, $node);
-          return;
-        }
+function filehash_node_build_defaults_alter(array &$build, EntityInterface $node, $view_mode = 'full', $langcode = NULL) {
+  if ($view_mode != 'rss') {
+    return;
+  }
+  // The <media:hash> element only supports MD5 and SHA-1.
+  $algos = filehash_algos();
+  if (!isset($algos['md5']) && !isset($algos['sha1'])) {
+    return;
+  }
+  // The following field types are currently supported.
+  $fields = entity_load_multiple_by_properties('field_config', array('entity_type' => 'node', 'bundle' => $node->getType(), 'field_type' => 'file'));
+  $fields += entity_load_multiple_by_properties('field_config', array('entity_type' => 'node', 'bundle' => $node->getType(), 'field_type' => 'image'));
+  foreach ($fields as $field) {
+    foreach ($node->{$field->getName()} as $item) {
+      if ($item->isDisplayed()) {
+        // Add <media:hash> elements for at most one file per RSS item.
+        $file = file_load($item->target_id);
+        filehash_rss_elements($file, $node);
+        return;
       }
     }
   }
@@ -142,13 +163,9 @@ function filehash_rss_elements($file, $node) {
 }
 
 /**
- * Calculates and saves the file hashes.
+ * Saves the file hashes.
  */
 function filehash_save(FileInterface $file) {
-  foreach (filehash_algos() as $algo) {
-    // Regenerate the hash as the file may have been modified.
-    $file->filehash[$algo] = hash_file($algo, $file->getFileUri());
-  }
   db_merge('filehash')
     ->key(array('fid' => $file->id()))
     ->fields($file->filehash)
