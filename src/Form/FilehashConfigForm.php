@@ -24,6 +24,13 @@ class FilehashConfigForm extends ConfigFormBase {
   }
 
   /**
+   * {@inheritdoc}.
+   */
+  protected function getEditableConfigNames() {
+    return ['filehash.settings'];
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
