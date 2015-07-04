@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Definition of Drupal\filehash\Tests\FilehashTest.
+ * Definition of Drupal\filehash\Tests\FileHashTest.
  */
 
 namespace Drupal\filehash\Tests;
@@ -15,7 +15,7 @@ use Drupal\simpletest\WebTestBase;
  *
  * @group File hash
  */
-class FilehashTest extends WebTestBase {
+class FileHashTest extends WebTestBase {
   /**
    * Modules to enable.
    *
@@ -40,7 +40,7 @@ class FilehashTest extends WebTestBase {
   /**
    * Tests that a file hash is set on the file object.
    */
-  public function testFilehash() {
+  public function testFileHash() {
     $file = File::create(array(
       'uid' => 1,
       'filename' => 'druplicon.txt',

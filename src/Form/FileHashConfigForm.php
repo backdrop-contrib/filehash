@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains \Drupal\filehash\Form\FilehashConfigForm.
+ * Contains \Drupal\filehash\Form\FileHashConfigForm.
  */
 
 namespace Drupal\filehash\Form;
@@ -14,7 +14,7 @@ use Drupal\Component\Utility\UrlHelper;
 /**
  * Implements the file hash config form.
  */
-class FilehashConfigForm extends ConfigFormBase {
+class FileHashConfigForm extends ConfigFormBase {
 
   /**
    * {@inheritdoc}.
