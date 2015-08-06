@@ -54,10 +54,15 @@ class FileHashConfigForm extends ConfigFormBase {
    * {@inheritdoc}.
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
+    $original_algos = $this->config('filehash.settings')->get('algos');
     $this->config('filehash.settings')
       ->set('algos', $form_state->getValue('algos'))
       ->set('dedupe', $form_state->getValue('dedupe'))
       ->save();
+    // Invalidate the views cache if configured algorithms were modified.
+    if ($form_state->getValue('algos') != $original_algos) {
+      views_invalidate_cache();
+    }
     parent::submitForm($form, $form_state);
   }
 }
