@@ -60,7 +60,7 @@ class FileHashConfigForm extends ConfigFormBase {
       ->set('dedupe', $form_state->getValue('dedupe'))
       ->save();
     // Invalidate the views cache if configured algorithms were modified.
-    if ($form_state->getValue('algos') != $original_algos) {
+    if (\Drupal::moduleHandler()->moduleExists('views') && $form_state->getValue('algos') != $original_algos) {
       views_invalidate_cache();
     }
     parent::submitForm($form, $form_state);

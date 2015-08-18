@@ -1,5 +1,5 @@
 filehash.settings:
-  type: mapping
+  type: config_object
   label: 'File hash settings'
   mapping:
     algos:
