@@ -17,6 +17,20 @@ function filehash_menu() {
     'access arguments' => array('administer site configuration'),
     'file' => 'filehash.admin.inc',
   );
+  $items['admin/config/media/filehash/settings'] = array(
+    'title' => 'Settings',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10,
+  );
+  $items['admin/config/media/filehash/bulk'] = array(
+    'title' => 'Bulk generate',
+    'description' => 'Generates hashes for each uploaded file.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('filehash_bulk'),
+    'access arguments' => array('administer site configuration'),
+    'file' => 'filehash.admin.inc',
+    'type' => MENU_LOCAL_TASK,
+  );
   return $items;
 }
 
