@@ -178,3 +178,102 @@ function filehash_views_api() {
     'api' => 3,
   );
 }
+
+/**
+ * Implements hook_field_formatter_info().
+ */
+function filehash_field_formatter_info() {
+  $algos = filehash_algos();
+  return array(
+    'filehash_table' => array(
+      'label' => t('Table of files with file hashes'),
+      'field types' => array('file', 'image', 'media'),
+      'settings' => array('algo' => array_pop($algos)),
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_formatter_settings_form().
+ */
+function filehash_field_formatter_settings_form($field, $instance, $view_mode, $form, &$form_state) {
+  $names = filehash_names();
+  $options = array();
+  foreach (filehash_algos() as $algo) {
+    $options[$algo] = $names[$algo];
+  }
+  $element['algo'] = array(
+    '#title' => t('Hash algorithm'),
+    '#type' => 'select',
+    '#default_value' => $instance['display'][$view_mode]['settings']['algo'],
+    '#options' => $options,
+  );
+  return $element;
+}
+
+/**
+ * Implements hook_field_formatter_settings_summary().
+ */
+function filehash_field_formatter_settings_summary($field, $instance, $view_mode) {
+  $algos = filehash_names();
+  if (isset($algos[$instance['display'][$view_mode]['settings']['algo']])) {
+    return t('@algo hash', array('@algo' => $algos[$instance['display'][$view_mode]['settings']['algo']]));
+  }
+}
+
+/**
+ * Implements hook_field_formatter_view().
+ */
+function filehash_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+  $element = array();
+  if (!empty($items)) {
+    $element[0] = array(
+      '#theme' => 'filehash_table',
+      '#items' => $items,
+      '#settings' => $display['settings'],
+    );
+  }
+  return $element;
+}
+
+/**
+ * Returns HTML for a file attachments table with hashes.
+ *
+ * @param $variables
+ *   An associative array containing:
+ *   - items: An array of file attachments.
+ *   - settings: The field instance display settings.
+ *
+ * @ingroup themeable
+ */
+function theme_filehash_table($variables) {
+  $names = filehash_names();
+  $header = array(t('Attachment'), t('Size'), t('@algo hash', array('@algo' => $names[$variables['settings']['algo']])));
+  $rows = array();
+  foreach ($variables['items'] as $delta => $item) {
+    // Media field items contain a file object.
+    if (!isset($item['uri']) && isset($item['file'])) {
+      $file = $item['file'];
+    }
+    else {
+      $file = (object) $item;
+    }
+    $rows[] = array(
+      theme('file_link', array('file' => $file)),
+      format_size($file->filesize),
+      substr(chunk_split($file->filehash[$variables['settings']['algo']], 1, '<wbr />'), 0, -7),
+    );
+  }
+  return empty($rows) ? '' : theme('table', array('header' => $header, 'rows' => $rows));
+}
+
+/**
+ * Implements hook_theme().
+ */
+function filehash_theme() {
+  return array(
+    'filehash_table' => array(
+      'variables' => array('items' => array(), 'settings' => array()),
+    ),
+  );
+}
