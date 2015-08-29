@@ -18,7 +18,11 @@ Handlers are provided for Views module compatibility. In addition, a
 <media:hash> element is added for file attachments in node RSS feeds (file,
 image, and media field types are supported).
 
-Tokens are provided for the full hashes, as well as pairtree tokens useful for
-content addressable storage. For example, if the MD5 hash for a file is
-3998b02c5cd2723153c39701683a503b, you could store it in the files/39/98
-directory using these tokens: [filehash-md5-pair-1]/[filehash-md5-pair-2].
+Tokens are provided for the full hashes: [file:filehash-md5],
+[file:filehash-sha1], [file:filehash-sha256], as well as pairtree tokens useful
+for content addressable storage.
+
+For example, if the SHA-256 hash for a file is
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855, you could
+store it in the files/e3/b0 directory using these tokens:
+[file:filehash-sha256-pair-1]/[file:filehash-sha256-pair-2].

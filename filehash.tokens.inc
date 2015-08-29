@@ -5,6 +5,8 @@
  * Tokens for file hash module.
  */
 
+use Drupal\Core\Render\BubbleableMetadata;
+
 /**
  * Implements hook_token_info().
  */
@@ -31,7 +33,7 @@ function filehash_token_info() {
 /**
  * Implements hook_tokens().
  */
-function filehash_tokens($type, $tokens, array $data = array(), array $options = array()) {
+function filehash_tokens($type, $tokens, array $data, array $options, BubbleableMetadata $bubbleable_metadata) {
   $replacements = array();
   if ($type == 'file' && !empty($data['file'])) {
     foreach (filehash_algos() as $algo) {
