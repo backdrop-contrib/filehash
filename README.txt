@@ -21,4 +21,8 @@ image, and media field types are supported).
 Tokens are provided for the full hashes, as well as pairtree tokens useful for
 content addressable storage. For example, if the MD5 hash for a file is
 3998b02c5cd2723153c39701683a503b, you could store it in the files/39/98
-directory using these tokens: [filehash-md5-pair-1]/[filehash-md5-pair-2].
+directory using these tokens:
+[file:filehash-md5-pair-1]/[file:filehash-md5-pair-2]. Note, to use these tokens
+to configure the file upload directory, File Entity Paths module
+(https://www.drupal.org/project/fe_paths) or File (Field) Paths module
+(https://www.drupal.org/project/filefield_paths) is required.
