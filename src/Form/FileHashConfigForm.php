@@ -34,19 +34,19 @@ class FileHashConfigForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $form['algos'] = array(
+    $form['algos'] = [
       '#default_value' => $this->config('filehash.settings')->get('algos'),
       '#description' => t('The checked hash algorithm(s) will be calculated when a file is saved. For optimum performance, only enable the hash algorithm(s) you need.'),
       '#options' => filehash_names(),
       '#title' => t('Enabled hash algorithms'),
       '#type' => 'checkboxes',
-    );
-    $form['dedupe'] = array(
+    ];
+    $form['dedupe'] = [
       '#default_value' => $this->config('filehash.settings')->get('dedupe'),
       '#description' => t('If checked, prevent duplicate uploaded files from being saved. Note, enabling this setting has privacy implications, as it allows users to determine if a particular file has been uploaded to the site.'),
       '#title' => t('Disallow duplicate files'),
       '#type' => 'checkbox',
-    );
+    ];
     return parent::buildForm($form, $form_state);
   }
 

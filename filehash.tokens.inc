@@ -11,21 +11,21 @@ use Drupal\Core\Render\BubbleableMetadata;
  * Implements hook_token_info().
  */
 function filehash_token_info() {
-  $info = array();
+  $info = [];
   $names = filehash_names();
   foreach (filehash_algos() as $algo) {
-    $info['tokens']['file']["filehash-$algo"] = array(
-      'name' => t('@algo hash', array('@algo' => $names[$algo])),
-      'description' => t('The @algo hash of the file.', array('@algo' => $names[$algo])),
-    );
-    $info['tokens']['file']["filehash-$algo-pair-1"] = array(
-      'name' => t('@algo hash: Initial pair', array('@algo' => $names[$algo])),
-      'description' => t('The @algo hash of the file: first and second characters.', array('@algo' => $names[$algo])),
-    );
-    $info['tokens']['file']["filehash-$algo-pair-2"] = array(
-      'name' => t('@algo hash: Second pair', array('@algo' => $names[$algo])),
-      'description' => t('The @algo hash of the file: third and fourth characters.', array('@algo' => $names[$algo])),
-    );
+    $info['tokens']['file']["filehash-$algo"] = [
+      'name' => t('@algo hash', ['@algo' => $names[$algo]]),
+      'description' => t('The @algo hash of the file.', ['@algo' => $names[$algo]]),
+    ];
+    $info['tokens']['file']["filehash-$algo-pair-1"] = [
+      'name' => t('@algo hash: Initial pair', ['@algo' => $names[$algo]]),
+      'description' => t('The @algo hash of the file: first and second characters.', ['@algo' => $names[$algo]]),
+    ];
+    $info['tokens']['file']["filehash-$algo-pair-2"] = [
+      'name' => t('@algo hash: Second pair', ['@algo' => $names[$algo]]),
+      'description' => t('The @algo hash of the file: third and fourth characters.', ['@algo' => $names[$algo]]),
+    ];
   }
   return $info;
 }
@@ -34,7 +34,7 @@ function filehash_token_info() {
  * Implements hook_tokens().
  */
 function filehash_tokens($type, $tokens, array $data, array $options, BubbleableMetadata $bubbleable_metadata) {
-  $replacements = array();
+  $replacements = [];
   if ($type == 'file' && !empty($data['file'])) {
     foreach (filehash_algos() as $algo) {
       // Generate the file hash if it is needed but does not yet exist.

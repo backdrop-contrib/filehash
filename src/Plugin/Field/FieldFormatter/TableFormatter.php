@@ -29,37 +29,33 @@ class TableFormatter extends FileFormatterBase {
    * {@inheritdoc}
    */
   public function viewElements(FieldItemListInterface $items) {
-    $elements = array();
+    $elements = [];
 
     if ($files = $this->getEntitiesToView($items)) {
       $names = filehash_names();
-      $header = array(t('Attachment'), t('Size'), t('@algo hash', array('@algo' => $names[$this->getSetting('algo')])));
-      $rows = array();
+      $header = [t('Attachment'), t('Size'), t('@algo hash', ['@algo' => $names[$this->getSetting('algo')]])];
+      $rows = [];
       foreach ($files as $delta => $file) {
-        $rows[] = array(
-          array(
-            'data' => array(
-              '#theme' => 'file_link',
-              '#file' => $file,
-              '#cache' => array(
-                'tags' => $file->getCacheTags(),
-              ),
-            ),
-          ),
-          array('data' => format_size($file->getSize())),
-          array('data' => array(
-            '#markup' => substr(chunk_split($file->filehash[$this->getSetting('algo')], 1, '<wbr />'), 0, -7)),
-          ),
-        );
+        $rows[] = [
+          ['data' => [
+            '#theme' => 'file_link',
+            '#file' => $file,
+            '#cache' => ['tags' => $file->getCacheTags()],
+          ]],
+          ['data' => format_size($file->getSize())],
+          ['data' => [
+            '#markup' => substr(chunk_split($file->filehash[$this->getSetting('algo')], 1, '<wbr />'), 0, -7),
+          ]],
+        ];
       }
 
-      $elements[0] = array();
+      $elements[0] = [];
       if (!empty($rows)) {
-        $elements[0] = array(
+        $elements[0] = [
           '#theme' => 'table__filehash_formatter_table',
           '#header' => $header,
           '#rows' => $rows,
-        );
+        ];
       }
     }
 
@@ -71,9 +67,7 @@ class TableFormatter extends FileFormatterBase {
    */
   public static function defaultSettings() {
     $algos = filehash_algos();
-    return array(
-      'algo' => array_pop($algos),
-    );
+    return ['algo' => array_pop($algos)];
   }
 
   /**
@@ -81,16 +75,16 @@ class TableFormatter extends FileFormatterBase {
    */
   public function settingsForm(array $form, FormStateInterface $form_state) {
     $names = filehash_names();
-    $options = array();
+    $options = [];
     foreach (filehash_algos() as $algo) {
       $options[$algo] = $names[$algo];
     }
-    $element['algo'] = array(
+    $element['algo'] = [
       '#title' => t('Hash algorithm'),
       '#type' => 'select',
       '#default_value' => $this->getSetting('algo'),
       '#options' => $options,
-    );
+    ];
     return $element;
   }
 
@@ -99,9 +93,9 @@ class TableFormatter extends FileFormatterBase {
    */
   public function settingsSummary() {
     $algos = filehash_names();
-    $settings = array();
+    $settings = [];
     if (isset($algos[$this->getSetting('algo')])) {
-      $settings[] = t('@algo hash', array('@algo' => $algos[$this->getSetting('algo')]));
+      $settings[] = t('@algo hash', ['@algo' => $algos[$this->getSetting('algo')]]);
     }
     return $settings;
   }
