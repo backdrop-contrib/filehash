@@ -15,19 +15,19 @@ function filehash_schema() {
       ],
       'md5' => [
         'description' => 'MD5 hash for this file.',
-        'type' => 'char',
+        'type' => 'varchar_ascii',
         'length' => 32,
         'not null' => FALSE,
       ],
       'sha1' => [
         'description' => 'SHA-1 hash for this file.',
-        'type' => 'char',
+        'type' => 'varchar_ascii',
         'length' => 40,
         'not null' => FALSE,
       ],
       'sha256' => [
         'description' => 'SHA-256 hash for this file.',
-        'type' => 'char',
+        'type' => 'varchar_ascii',
         'length' => 64,
         'not null' => FALSE,
       ],
