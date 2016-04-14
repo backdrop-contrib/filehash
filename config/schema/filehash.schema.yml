@@ -18,3 +18,11 @@ filehash.settings:
     dedupe:
       type: boolean
       label: 'Disallow duplicate files'
+
+field.formatter.settings.filehash_table:
+  type: mapping
+  label: 'File hash table field display format settings'
+  mapping:
+    algo:
+      type: string
+      label: 'Hash algorithm'

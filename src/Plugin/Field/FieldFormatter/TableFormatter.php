@@ -28,7 +28,7 @@ class TableFormatter extends FileFormatterBase {
   /**
    * {@inheritdoc}
    */
-  public function viewElements(FieldItemListInterface $items) {
+  public function viewElements(FieldItemListInterface $items, $langcode) {
     $elements = [];
 
     if ($files = $this->getEntitiesToView($items)) {
