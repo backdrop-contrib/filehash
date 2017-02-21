@@ -88,7 +88,14 @@ function filehash_file_validate(FileInterface $file) {
   $errors = [];
   if (\Drupal::config('filehash.settings')->get('dedupe')) {
     foreach (filehash_algos() as $algo) {
-      if (db_query("SELECT 1 FROM {filehash} WHERE $algo = :hash LIMIT 1", [':hash' => $file->filehash[$algo]])->fetchField()) {
+      $query = \Drupal::database()->select('filehash');
+      $query->addExpression('1');
+      $query->condition($algo, $file->filehash[$algo]);
+      $query->range(0, 1);
+      if ($file->id()) {
+        $query->condition('fid', $file->id(), '<>');
+      }
+      if ($query->execute()->fetchField()) {
         $errors[] = t('Sorry, duplicate files are not permitted.');
         break;
       }
