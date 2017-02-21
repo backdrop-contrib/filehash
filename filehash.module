@@ -96,7 +96,8 @@ function filehash_file_update($file) {
  */
 function filehash_file_validate($file) {
   $errors = array();
-  if (variable_get('filehash_dedupe', 0)) {
+  // Zero size may indicate unreadable remote media source; bypass dedupe.
+  if ($file->filesize && variable_get('filehash_dedupe', 0)) {
     foreach (filehash_algos() as $algo) {
       if (db_query("SELECT COUNT(*) FROM {filehash} WHERE $algo = :hash", array(':hash' => hash_file($algo, $file->uri)))->fetchField()) {
         $errors[] = t('Sorry, duplicate files are not permitted.');
