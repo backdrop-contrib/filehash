@@ -99,8 +99,14 @@ function filehash_file_validate($file) {
   // Zero size may indicate unreadable remote media source; bypass dedupe.
   if ($file->filesize && variable_get('filehash_dedupe', 0)) {
     foreach (filehash_algos() as $algo) {
-      if (db_query("SELECT COUNT(*) FROM {filehash} WHERE $algo = :hash", array(':hash' => hash_file($algo, $file->uri)))->fetchField()) {
-        $errors[] = t('Sorry, duplicate files are not permitted.');
+      if ($fid = db_query("SELECT fid FROM {filehash} WHERE $algo = :hash LIMIT 1", array(':hash' => hash_file($algo, $file->uri)))->fetchField()) {
+        $duplicate = file_load($fid);
+        if (file_download_access($duplicate->uri)) {
+          $errors[] = t('This file has already been uploaded as %filename.', array('%filename' => $duplicate->filename));
+        }
+        else {
+          $errors[] = t('Sorry, duplicate files are not permitted.');
+        }
         break;
       }
     }
