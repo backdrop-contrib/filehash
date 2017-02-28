@@ -29,11 +29,9 @@ class FileHashTest extends FileFieldTestBase {
    */
   protected function setUp(){
     parent::setUp();
-    $this->web_user = $this->drupalCreateUser(['administer site configuration']);
-    $this->drupalLogin($this->web_user);
-    $this->drupalGet('admin/config/media/filehash');
+    $this->drupalLogin($this->adminUser);
     $fields = ['algos[sha1]' => TRUE];
-    $this->drupalPostForm(NULL, $fields, t('Save configuration'));
+    $this->drupalPostForm('admin/config/media/filehash', $fields, t('Save configuration'));
   }
 
   /**
@@ -58,7 +56,6 @@ class FileHashTest extends FileFieldTestBase {
    * Tests the table with file hashes field formatter.
    */
   public function testFileHashField() {
-    $this->drupalLogin($this->adminUser);
     $field_name = strtolower($this->randomMachineName());
     $type_name = 'article';
     $field_storage_settings = [
@@ -69,21 +66,17 @@ class FileHashTest extends FileFieldTestBase {
     $field_settings = ['description_field' => '1'];
     $widget_settings = [];
     $this->createFileField($field_name, 'node', $type_name, $field_storage_settings, $field_settings, $widget_settings);
-    $this->drupalGet("admin/structure/types/manage/$type_name/display");
     $fields = ["fields[$field_name][type]" => 'filehash_table'];
-    $this->drupalPostForm(NULL, $fields, t('Save'));
+    $this->drupalPostForm("admin/structure/types/manage/$type_name/display", $fields, t('Save'));
   }
 
   /**
    * Tests a file field with dedupe enabled.
    */
   public function testFileHashFieldDuplicate() {
-    $this->drupalLogin($this->web_user);
-    $this->drupalGet('admin/config/media/filehash');
     $fields = ['dedupe' => TRUE];
-    $this->drupalPostForm(NULL, $fields, t('Save configuration'));
+    $this->drupalPostForm('admin/config/media/filehash', $fields, t('Save configuration'));
 
-    $this->drupalLogin($this->adminUser);
     $field_name = strtolower($this->randomMachineName());
     $type_name = 'article';
     $storage = $this->createFileField($field_name, 'node', $type_name, [], ['required' => '1']);
@@ -96,5 +89,18 @@ class FileHashTest extends FileFieldTestBase {
     $this->assertUrl("node/$nid/edit");
     $this->assertRaw(t('The specified file %name could not be uploaded.', ['%name' => $test_file->getFilename()]));
     $this->assertText(t('Sorry, duplicate files are not permitted.'));
+
+    $fields = ['dedupe' => FALSE];
+    $this->drupalPostForm('admin/config/media/filehash', $fields, t('Save configuration'));
+
+    $nid = $this->uploadNodeFile($test_file, $field_name, $type_name);
+    $this->assertUrl("node/$nid");
+
+    $fields = ['dedupe' => TRUE];
+    $this->drupalPostForm('admin/config/media/filehash', $fields, t('Save configuration'));
+
+    // Test that a node with duplicate file already attached can be saved.
+    $this->drupalPostForm("node/$nid/edit", [], t('Save and keep published'));
+    $this->assertUrl("node/$nid");
   }
 }
