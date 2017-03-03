@@ -26,3 +26,8 @@ directory using these tokens:
 to configure the file upload directory, File Entity Paths module
 (https://www.drupal.org/project/fe_paths) or File (Field) Paths module
 (https://www.drupal.org/project/filefield_paths) is required.
+
+A checkbox in file hash settings allows duplicate uploaded files to be rejected.
+This feature should be considered a proof-of-concept - you likely want better UX
+for such a feature. Note, in Drupal 7, empty files are not considered duplicate
+files, as such "files" may represent remote media assets, etc.
