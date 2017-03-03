@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * Install and uninstall functions for the filehash module.
+ */
 
 /**
  * Implements hook_schema().
