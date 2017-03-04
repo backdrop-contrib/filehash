@@ -103,4 +103,23 @@ class FileHashTest extends FileFieldTestBase {
     $this->drupalPostForm("node/$nid/edit", [], t('Save and keep published'));
     $this->assertUrl("node/$nid");
   }
+
+  /**
+   * Tests file hash bulk generation.
+   */
+  public function testFileHashGenerate() {
+    $fields = ['algos[sha1]' => FALSE];
+    $this->drupalPostForm('admin/config/media/filehash', $fields, t('Save configuration'));
+
+    do {
+      $file = $this->getTestFile('text');
+      $file->save();
+    } while ($file->id() < 5);
+
+    $fields = ['algos[sha1]' => TRUE];
+    $this->drupalPostForm('admin/config/media/filehash', $fields, t('Save configuration'));
+
+    $this->drupalPostForm('admin/config/media/filehash/generate', [], t('Generate'));
+    $this->assertText('Processed 5 files.');
+  }
 }

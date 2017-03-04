@@ -1,0 +1,10 @@
+filehash.admin:
+  route_name: filehash.admin
+  title: Configure
+  base_route: filehash.admin
+
+filehash.generate:
+  route_name: filehash.generate
+  title: Generate
+  base_route: filehash.admin
+

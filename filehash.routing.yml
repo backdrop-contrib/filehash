@@ -5,3 +5,11 @@ filehash.admin:
     _title: 'File hash settings'
   requirements:
     _permission: 'administer site configuration'
+
+filehash.generate:
+  path: '/admin/config/media/filehash/generate'
+  defaults:
+    _form: 'Drupal\filehash\Form\FileHashGenerateForm'
+    _title: 'Generate'
+  requirements:
+    _permission: 'administer site configuration'
