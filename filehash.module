@@ -6,6 +6,9 @@
  */
 
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Link;
+use Drupal\Core\Url;
+use Drupal\file\Entity\File;
 use Drupal\file\FileInterface;
 
 /**
@@ -90,11 +93,18 @@ function filehash_file_validate(FileInterface $file) {
   if (!$file->id() && \Drupal::config('filehash.settings')->get('dedupe')) {
     foreach (filehash_algos() as $algo) {
       $query = \Drupal::database()->select('filehash');
-      $query->addExpression('1');
+      $query->addField('filehash', 'fid');
       $query->condition($algo, $file->filehash[$algo]);
       $query->range(0, 1);
-      if ($query->execute()->fetchField()) {
-        $errors[] = t('Sorry, duplicate files are not permitted.');
+      if ($fid = $query->execute()->fetchField()) {
+        if (\Drupal::currentUser()->hasPermission('access files overview')) {
+          $errors[] = t('This file has already been uploaded as %filename.', [
+            '%filename' => Link::fromTextAndUrl(File::load($fid)->label(), Url::fromRoute('view.files.page_2', ['arg_0' => $fid], ['attributes' => ['target' => '_blank']]))->toString(),
+          ]);
+        }
+        else {
+          $errors[] = t('Sorry, duplicate files are not permitted.');
+        }
         break;
       }
     }
