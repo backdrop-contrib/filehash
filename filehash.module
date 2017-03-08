@@ -97,14 +97,19 @@ function filehash_file_validate(FileInterface $file) {
       $query->condition($algo, $file->filehash[$algo]);
       $query->range(0, 1);
       if ($fid = $query->execute()->fetchField()) {
+        $error = t('Sorry, duplicate files are not permitted.');
         if (\Drupal::currentUser()->hasPermission('access files overview')) {
-          $errors[] = t('This file has already been uploaded as %filename.', [
-            '%filename' => Link::fromTextAndUrl(File::load($fid)->label(), Url::fromRoute('view.files.page_2', ['arg_0' => $fid], ['attributes' => ['target' => '_blank']]))->toString(),
-          ]);
+          try {
+            $url = Url::fromRoute('view.files.page_2', ['arg_0' => $fid], ['attributes' => ['target' => '_blank']]);
+            $error = t('This file has already been uploaded as %filename.', [
+              '%filename' => Link::fromTextAndUrl(File::load($fid)->label(), $url)->toString(),
+            ]);
+          }
+          catch (Exception $e) {
+            // Maybe the view was disabled?
+          }
         }
-        else {
-          $errors[] = t('Sorry, duplicate files are not permitted.');
-        }
+        $errors[] = $error;
         break;
       }
     }
