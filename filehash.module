@@ -29,7 +29,8 @@ function filehash_file_create(EntityInterface $file) {
  * Implements hook_ENTITY_TYPE_delete().
  */
 function filehash_file_delete(EntityInterface $file) {
-  db_delete('filehash')
+  \Drupal::database()
+    ->delete('filehash')
     ->condition('fid', $file->id())
     ->execute();
 }
@@ -49,7 +50,8 @@ function filehash_file_load($files) {
   if (!$algos) {
     return;
   }
-  $result = db_select('filehash')
+  $result = \Drupal::database()
+    ->select('filehash')
     ->fields('filehash')
     ->condition('fid', array_keys($files), 'IN')
     ->execute();
@@ -151,13 +153,25 @@ function filehash_node_build_defaults_alter(array &$build, EntityInterface $node
     return;
   }
   // The following field types are currently supported.
-  $fields = entity_load_multiple_by_properties('field_config', ['entity_type' => 'node', 'bundle' => $node->getType(), 'field_type' => 'file']);
-  $fields += entity_load_multiple_by_properties('field_config', ['entity_type' => 'node', 'bundle' => $node->getType(), 'field_type' => 'image']);
+  $fields = \Drupal::entityTypeManager()
+    ->getStorage('field_config')
+    ->loadByProperties([
+      'entity_type' => 'node',
+      'bundle' => $node->getType(),
+      'field_type' => 'file',
+    ]);
+  $fields += \Drupal::entityTypeManager()
+    ->getStorage('field_config')
+    ->loadByProperties([
+      'entity_type' => 'node',
+      'bundle' => $node->getType(),
+      'field_type' => 'image',
+    ]);
   foreach ($fields as $field) {
     foreach ($node->{$field->getName()} as $item) {
       if ($item->isDisplayed()) {
         // Add <media:hash> elements for at most one file per RSS item.
-        $file = file_load($item->target_id);
+        $file = File::load($item->target_id);
         filehash_rss_elements($file, $node);
         return;
       }
@@ -186,7 +200,8 @@ function filehash_rss_elements($file, $node) {
  * Saves the file hashes.
  */
 function filehash_save(FileInterface $file) {
-  db_merge('filehash')
+  \Drupal::database()
+    ->merge('filehash')
     ->key(['fid' => $file->id()])
     ->fields($file->filehash)
     ->execute();
