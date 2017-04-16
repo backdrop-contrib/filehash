@@ -269,7 +269,7 @@ function filehash_field_formatter_view($entity_type, $entity, $field, $instance,
  *
  * @ingroup themeable
  */
-function theme_filehash_table($variables) {
+function theme_filehash_table(array $variables) {
   $names = filehash_names();
   $header = array(
     t('Attachment'),
