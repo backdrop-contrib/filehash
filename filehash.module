@@ -133,13 +133,15 @@ function filehash_node_view($node, $view_mode) {
     if (isset($algos['md5']) || isset($algos['sha1'])) {
       if (!isset($fields)) {
         // The following field types are currently supported.
-        $fields = field_read_fields(array('type' => array('file', 'image', 'media')));
+        $fields = field_read_fields(array(
+          'type' => array('file', 'image', 'media'),
+        ));
       }
       foreach (field_info_instances('node', $node->type) as $instance) {
         if (isset($fields[$instance['field_name']])) {
           foreach ($node->{$instance['field_name']} as $language) {
             foreach ($language as $file) {
-              // Media fields incorporate a file object rather than a file array.
+              // Media fields have a file object rather than a file array.
               if ($fields[$instance['field_name']]['type'] == 'media') {
                 filehash_rss_elements((array) $file['file'], $node);
                 return;
@@ -260,7 +262,7 @@ function filehash_field_formatter_view($entity_type, $entity, $field, $instance,
 /**
  * Returns HTML for a file attachments table with hashes.
  *
- * @param $variables
+ * @param array $variables
  *   An associative array containing:
  *   - items: An array of file attachments.
  *   - settings: The field instance display settings.
@@ -269,7 +271,11 @@ function filehash_field_formatter_view($entity_type, $entity, $field, $instance,
  */
 function theme_filehash_table($variables) {
   $names = filehash_names();
-  $header = array(t('Attachment'), t('Size'), t('@algo hash', array('@algo' => $names[$variables['settings']['algo']])));
+  $header = array(
+    t('Attachment'),
+    t('Size'),
+    t('@algo hash', array('@algo' => $names[$variables['settings']['algo']])),
+  );
   $rows = array();
   foreach ($variables['items'] as $delta => $item) {
     // Media field items contain a file object.
