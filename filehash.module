@@ -137,7 +137,7 @@ function filehash_node_view($node, $view_mode) {
       }
       foreach (field_info_instances('node', $node->type) as $instance) {
         if (isset($fields[$instance['field_name']])) {
-          foreach ($node->$instance['field_name'] as $language) {
+          foreach ($node->{$instance['field_name']} as $language) {
             foreach ($language as $file) {
               // Media fields incorporate a file object rather than a file array.
               if ($fields[$instance['field_name']]['type'] == 'media') {
