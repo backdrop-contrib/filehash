@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Definition of Drupal\filehash\Tests\FileHashTest.
- */
-
 namespace Drupal\filehash\Tests;
 
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
@@ -22,12 +17,18 @@ class FileHashTest extends FileFieldTestBase {
    *
    * @var array
    */
-  public static $modules = ['filehash', 'node', 'file', 'file_module_test', 'field_ui'];
+  public static $modules = [
+    'filehash',
+    'node',
+    'file',
+    'file_module_test',
+    'field_ui',
+  ];
 
   /**
    * Overrides WebTestBase::setUp().
    */
-  protected function setUp(){
+  protected function setUp() {
     parent::setUp();
     $this->drupalLogin($this->adminUser);
     $fields = ['algos[sha1]' => TRUE];
@@ -122,4 +123,5 @@ class FileHashTest extends FileFieldTestBase {
     $this->drupalPostForm('admin/config/media/filehash/generate', [], t('Generate'));
     $this->assertText('Processed 5 files.');
   }
+
 }

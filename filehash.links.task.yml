@@ -7,4 +7,3 @@ filehash.generate:
   route_name: filehash.generate
   title: Generate
   base_route: filehash.admin
-

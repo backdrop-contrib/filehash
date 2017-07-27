@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\filehash\Plugin\Field\FieldFormatter\TableFormatter.
- */
-
 namespace Drupal\filehash\Plugin\Field\FieldFormatter;
 
 use Drupal\Core\Field\FieldItemListInterface;
@@ -33,19 +28,27 @@ class TableFormatter extends FileFormatterBase {
 
     if ($files = $this->getEntitiesToView($items)) {
       $names = filehash_names();
-      $header = [t('Attachment'), t('Size'), t('@algo hash', ['@algo' => $names[$this->getSetting('algo')]])];
+      $header = [
+        t('Attachment'),
+        t('Size'),
+        t('@algo hash', ['@algo' => $names[$this->getSetting('algo')]]),
+      ];
       $rows = [];
       foreach ($files as $delta => $file) {
         $rows[] = [
-          ['data' => [
-            '#theme' => 'file_link',
-            '#file' => $file,
-            '#cache' => ['tags' => $file->getCacheTags()],
-          ]],
+          [
+            'data' => [
+              '#theme' => 'file_link',
+              '#file' => $file,
+              '#cache' => ['tags' => $file->getCacheTags()],
+            ],
+          ],
           ['data' => format_size($file->getSize())],
-          ['data' => [
-            '#markup' => substr(chunk_split($file->filehash[$this->getSetting('algo')], 1, '<wbr />'), 0, -7),
-          ]],
+          [
+            'data' => [
+              '#markup' => substr(chunk_split($file->filehash[$this->getSetting('algo')], 1, '<wbr />'), 0, -7),
+            ],
+          ],
         ];
       }
 

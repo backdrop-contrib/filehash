@@ -1,12 +1,12 @@
 <?php
+
 /**
  * @file
- *
  * Provide views data and handlers for filehash table.
  */
 
 /**
- * Implements hook_views_data()
+ * Implements hook_views_data().
  */
 function filehash_views_data() {
   $data['filehash']['table']['group'] = t('File');
@@ -14,7 +14,7 @@ function filehash_views_data() {
     'file_managed' => [
       'left_field' => 'fid',
       'field' => 'fid',
-     ],
+    ],
   ];
   // Use a nice human-readable name for each hash algorithm.
   $names = filehash_names();

@@ -1,6 +1,11 @@
 <?php
 
 /**
+ * @file
+ * Schema function for file hash module.
+ */
+
+/**
  * Implements hook_schema().
  */
 function filehash_schema() {

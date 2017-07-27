@@ -1,15 +1,9 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\filehash\Form\FileHashConfigForm.
- */
-
 namespace Drupal\filehash\Form;
 
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Component\Utility\UrlHelper;
 
 /**
  * Implements the file hash config form.
@@ -17,14 +11,14 @@ use Drupal\Component\Utility\UrlHelper;
 class FileHashConfigForm extends ConfigFormBase {
 
   /**
-   * {@inheritdoc}.
+   * {@inheritdoc}
    */
-  public function getFormID() {
+  public function getFormId() {
     return 'filehash_config_form';
   }
 
   /**
-   * {@inheritdoc}.
+   * {@inheritdoc}
    */
   protected function getEditableConfigNames() {
     return ['filehash.settings'];
@@ -51,7 +45,7 @@ class FileHashConfigForm extends ConfigFormBase {
   }
 
   /**
-   * {@inheritdoc}.
+   * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $original_algos = $this->config('filehash.settings')->get('algos');
@@ -65,4 +59,5 @@ class FileHashConfigForm extends ConfigFormBase {
     }
     parent::submitForm($form, $form_state);
   }
+
 }

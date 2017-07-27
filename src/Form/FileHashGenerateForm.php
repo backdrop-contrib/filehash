@@ -4,7 +4,6 @@ namespace Drupal\filehash\Form;
 
 use Drupal\Core\Form\ConfirmFormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\StreamWrapper\StreamWrapperInterface;
 use Drupal\Core\Url;
 use Drupal\file\Entity\File;
 
@@ -16,7 +15,7 @@ class FileHashGenerateForm extends ConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormID() {
+  public function getFormId() {
     return 'filehash_generate_form';
   }
 
