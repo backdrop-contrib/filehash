@@ -101,7 +101,15 @@ class FileHashTest extends FileFieldTestBase {
     $this->drupalPostForm('admin/config/media/filehash', $fields, t('Save configuration'));
 
     // Test that a node with duplicate file already attached can be saved.
-    $this->drupalPostForm("node/$nid/edit", [], t('Save and keep published'));
+    $this->drupalGet("node/$nid/edit");
+    $form = $this->xpath("//form[@id='node-$type_name-edit-form']")[0];
+    $post = $edit = $upload = [];
+    foreach ([t('Save'), t('Save and keep published')] as $submit) {
+      if ($this->handleForm($post, $edit, $upload, $submit, $form)) {
+        break;
+      }
+    }
+    $this->drupalPostForm(NULL, $edit, $submit);
     $this->assertUrl("node/$nid");
   }
 
