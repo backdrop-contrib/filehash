@@ -104,10 +104,10 @@ class FileHashTest extends FileFieldTestBase {
     $this->drupalGet("node/$nid/edit");
     $form = $this->xpath("//form[@id='node-$type_name-edit-form']")[0];
     $post = $edit = $upload = [];
-    foreach ([t('Save'), t('Save and keep published')] as $submit) {
-      if ($this->handleForm($post, $edit, $upload, $submit, $form)) {
-        break;
-      }
+    $submit = t('Save');
+    // Compatibility with Drupal 8.3 save button.
+    if (!$this->handleForm($post, $edit, $upload, $submit, $form)) {
+      $submit = t('Save and keep published');
     }
     $this->drupalPostForm(NULL, $edit, $submit);
     $this->assertUrl("node/$nid");
