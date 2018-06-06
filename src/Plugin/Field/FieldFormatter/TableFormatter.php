@@ -4,7 +4,7 @@ namespace Drupal\filehash\Plugin\Field\FieldFormatter;
 
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\file\Plugin\Field\FieldFormatter\FileFormatterBase;
+use Drupal\file\Plugin\Field\FieldFormatter\DescriptionAwareFileFormatterBase;
 
 /**
  * Plugin implementation of the 'filehash_table' formatter.
@@ -18,7 +18,7 @@ use Drupal\file\Plugin\Field\FieldFormatter\FileFormatterBase;
  *   }
  * )
  */
-class TableFormatter extends FileFormatterBase {
+class TableFormatter extends DescriptionAwareFileFormatterBase {
 
   /**
    * {@inheritdoc}
@@ -26,20 +26,22 @@ class TableFormatter extends FileFormatterBase {
   public function viewElements(FieldItemListInterface $items, $langcode) {
     $elements = [];
 
-    if ($files = $this->getEntitiesToView($items)) {
+    if ($files = $this->getEntitiesToView($items, $langcode)) {
       $names = filehash_names();
       $header = [
-        t('Attachment'),
-        t('Size'),
-        t('@algo hash', ['@algo' => $names[$this->getSetting('algo')]]),
+        $this->t('Attachment'),
+        $this->t('Size'),
+        $this->t('@algo hash', ['@algo' => $names[$this->getSetting('algo')]]),
       ];
       $rows = [];
-      foreach ($files as $delta => $file) {
+      foreach ($files as $file) {
+        $item = $file->_referringItem;
         $rows[] = [
           [
             'data' => [
               '#theme' => 'file_link',
               '#file' => $file,
+              '#description' => $this->getSetting('use_description_as_link_text') ? $item->description : NULL,
               '#cache' => ['tags' => $file->getCacheTags()],
             ],
           ],
@@ -69,38 +71,41 @@ class TableFormatter extends FileFormatterBase {
    * {@inheritdoc}
    */
   public static function defaultSettings() {
+    $settings = parent::defaultSettings();
     $algos = filehash_algos();
-    return ['algo' => array_pop($algos)];
+    $settings['algo'] = array_pop($algos);
+    return $settings;
   }
 
   /**
    * {@inheritdoc}
    */
   public function settingsForm(array $form, FormStateInterface $form_state) {
+    $form = parent::settingsForm($form, $form_state);
     $names = filehash_names();
     $options = [];
     foreach (filehash_algos() as $algo) {
       $options[$algo] = $names[$algo];
     }
-    $element['algo'] = [
-      '#title' => t('Hash algorithm'),
+    $form['algo'] = [
+      '#title' => $this->t('Hash algorithm'),
       '#type' => 'select',
       '#default_value' => $this->getSetting('algo'),
       '#options' => $options,
     ];
-    return $element;
+    return $form;
   }
 
   /**
    * {@inheritdoc}
    */
   public function settingsSummary() {
+    $summary = parent::settingsSummary();
     $algos = filehash_names();
-    $settings = [];
     if (isset($algos[$this->getSetting('algo')])) {
-      $settings[] = t('@algo hash', ['@algo' => $algos[$this->getSetting('algo')]]);
+      $summary[] = $this->t('@algo hash', ['@algo' => $algos[$this->getSetting('algo')]]);
     }
-    return $settings;
+    return $summary;
   }
 
 }

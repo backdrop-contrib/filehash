@@ -2,8 +2,11 @@
 
 namespace Drupal\filehash\Form;
 
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Implements the file hash config form.
@@ -27,18 +30,36 @@ class FileHashConfigForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
+  public function __construct(ConfigFactoryInterface $config_factory, ModuleHandlerInterface $module_handler) {
+    parent::__construct($config_factory);
+    $this->moduleHandler = $module_handler;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('config.factory'),
+      $container->get('module_handler')
+    );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $form['algos'] = [
       '#default_value' => $this->config('filehash.settings')->get('algos'),
-      '#description' => t('The checked hash algorithm(s) will be calculated when a file is saved. For optimum performance, only enable the hash algorithm(s) you need.'),
+      '#description' => $this->t('The checked hash algorithm(s) will be calculated when a file is saved. For optimum performance, only enable the hash algorithm(s) you need.'),
       '#options' => filehash_names(),
-      '#title' => t('Enabled hash algorithms'),
+      '#title' => $this->t('Enabled hash algorithms'),
       '#type' => 'checkboxes',
     ];
     $form['dedupe'] = [
       '#default_value' => $this->config('filehash.settings')->get('dedupe'),
-      '#description' => t('If checked, prevent duplicate uploaded files from being saved. Note, enabling this setting has privacy implications, as it allows users to determine if a particular file has been uploaded to the site.'),
-      '#title' => t('Disallow duplicate files'),
+      '#description' => $this->t('If checked, prevent duplicate uploaded files from being saved. Note, enabling this setting has privacy implications, as it allows users to determine if a particular file has been uploaded to the site.'),
+      '#title' => $this->t('Disallow duplicate files'),
       '#type' => 'checkbox',
     ];
     return parent::buildForm($form, $form_state);
@@ -54,7 +75,7 @@ class FileHashConfigForm extends ConfigFormBase {
       ->set('dedupe', $form_state->getValue('dedupe'))
       ->save();
     // Invalidate the views cache if configured algorithms were modified.
-    if (\Drupal::moduleHandler()->moduleExists('views') && $form_state->getValue('algos') != $original_algos) {
+    if ($this->moduleHandler->moduleExists('views') && $form_state->getValue('algos') != $original_algos) {
       views_invalidate_cache();
     }
     parent::submitForm($form, $form_state);

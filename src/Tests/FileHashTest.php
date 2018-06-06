@@ -80,7 +80,7 @@ class FileHashTest extends FileFieldTestBase {
 
     $field_name = strtolower($this->randomMachineName());
     $type_name = 'article';
-    $storage = $this->createFileField($field_name, 'node', $type_name, [], ['required' => '1']);
+    $this->createFileField($field_name, 'node', $type_name, [], ['required' => '1']);
     $test_file = $this->getTestFile('text');
 
     $nid = $this->uploadNodeFile($test_file, $field_name, $type_name);
