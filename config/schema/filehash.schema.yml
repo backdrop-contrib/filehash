@@ -26,3 +26,6 @@ field.formatter.settings.filehash_table:
     algo:
       type: string
       label: 'Hash algorithm'
+    use_description_as_link_text:
+      type: boolean
+      label: 'Replace the file name by its description when available'
