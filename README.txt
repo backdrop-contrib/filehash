@@ -26,3 +26,21 @@ For example, if the SHA-256 hash for a file is
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855, you could
 store it in the files/e3/b0 directory using these tokens:
 [file:filehash-sha256-pair-1]/[file:filehash-sha256-pair-2].
+
+If the "disallow duplicate files" checkbox in file hash settings is checked, any
+duplicate uploaded files will be rejected site-wide. You may also leave this
+setting off, and apply the dedupe validator function manually to a particular
+file upload form in a custom module:
+
+```
+<?php
+function example_form_alter(&$form, &$form_state, $form_id) {
+  if ($form_id == 'node_article_edit_form') {
+    foreach ($form['field_image']['widget'] as $item) {
+      if (is_array($item) && isset($item['#delta'])) {
+        $form['field_image']['widget'][$item['#delta']]['#upload_validators']['filehash_validate_dedupe'] = [];
+      }
+    }
+  }
+}
+```
