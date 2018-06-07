@@ -90,9 +90,16 @@ function filehash_file_update(EntityInterface $file) {
  * Implements hook_file_validate().
  */
 function filehash_file_validate(FileInterface $file) {
+  return \Drupal::config('filehash.settings')->get('dedupe') ? filehash_validate_dedupe($file) : [];
+}
+
+/**
+ * Checks that file is not a duplicate.
+ */
+function filehash_validate_dedupe(FileInterface $file) {
   $errors = [];
   // We only run the dedupe check on initial file creation.
-  if (!$file->id() && \Drupal::config('filehash.settings')->get('dedupe')) {
+  if (!$file->id()) {
     foreach (filehash_algos() as $algo) {
       $query = \Drupal::database()->select('filehash');
       $query->addField('filehash', 'fid');
