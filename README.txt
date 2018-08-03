@@ -34,6 +34,10 @@ file upload form in a custom module:
 
 ```
 <?php
+
+/**
+ * Implements hook_form_alter().
+ */
 function example_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == 'node_article_edit_form') {
     foreach ($form['field_image']['widget'] as $item) {
@@ -43,4 +47,5 @@ function example_form_alter(&$form, &$form_state, $form_id) {
     }
   }
 }
+
 ```
