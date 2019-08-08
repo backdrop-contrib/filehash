@@ -2,3 +2,4 @@ name = File hash
 description = Generate hashes for each uploaded file.
 core = 7.x
 configure = admin/config/media/filehash
+files[] = filehash.test
