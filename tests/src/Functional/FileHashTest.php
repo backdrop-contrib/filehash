@@ -1,10 +1,11 @@
 <?php
 
-namespace Drupal\filehash\Tests;
+namespace Drupal\Tests\filehash\Functional;
 
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\file\Entity\File;
-use Drupal\file\Tests\FileFieldTestBase;
+use Drupal\Tests\file\Functional\FileFieldTestBase;
 
 /**
  * File hash tests.
@@ -12,6 +13,9 @@ use Drupal\file\Tests\FileFieldTestBase;
  * @group File hash
  */
 class FileHashTest extends FileFieldTestBase {
+
+  use StringTranslationTrait;
+
   /**
    * Modules to enable.
    *
@@ -32,7 +36,7 @@ class FileHashTest extends FileFieldTestBase {
     parent::setUp();
     $this->drupalLogin($this->adminUser);
     $fields = ['algos[sha1]' => TRUE];
-    $this->drupalPostForm('admin/config/media/filehash', $fields, t('Save configuration'));
+    $this->drupalPostForm('admin/config/media/filehash', $fields, $this->t('Save configuration'));
   }
 
   /**
@@ -68,7 +72,7 @@ class FileHashTest extends FileFieldTestBase {
     $widget_settings = [];
     $this->createFileField($field_name, 'node', $type_name, $field_storage_settings, $field_settings, $widget_settings);
     $fields = ["fields[$field_name][type]" => 'filehash_table'];
-    $this->drupalPostForm("admin/structure/types/manage/$type_name/display", $fields, t('Save'));
+    $this->drupalPostForm("admin/structure/types/manage/$type_name/display", $fields, $this->t('Save'));
   }
 
   /**
@@ -76,7 +80,7 @@ class FileHashTest extends FileFieldTestBase {
    */
   public function testFileHashFieldDuplicate() {
     $fields = ['dedupe' => TRUE];
-    $this->drupalPostForm('admin/config/media/filehash', $fields, t('Save configuration'));
+    $this->drupalPostForm('admin/config/media/filehash', $fields, $this->t('Save configuration'));
 
     $field_name = strtolower($this->randomMachineName());
     $type_name = 'article';
@@ -88,28 +92,21 @@ class FileHashTest extends FileFieldTestBase {
 
     $nid = $this->uploadNodeFile($test_file, $field_name, $type_name);
     $this->assertUrl("node/$nid/edit");
-    $this->assertRaw(t('The specified file %name could not be uploaded.', ['%name' => $test_file->getFilename()]));
-    $this->assertText(t('Sorry, duplicate files are not permitted.'));
+    $this->assertRaw($this->t('The specified file %name could not be uploaded.', ['%name' => $test_file->getFilename()]));
+    $this->assertText($this->t('Sorry, duplicate files are not permitted.'));
 
     $fields = ['dedupe' => FALSE];
-    $this->drupalPostForm('admin/config/media/filehash', $fields, t('Save configuration'));
+    $this->drupalPostForm('admin/config/media/filehash', $fields, $this->t('Save configuration'));
 
     $nid = $this->uploadNodeFile($test_file, $field_name, $type_name);
     $this->assertUrl("node/$nid");
 
     $fields = ['dedupe' => TRUE];
-    $this->drupalPostForm('admin/config/media/filehash', $fields, t('Save configuration'));
+    $this->drupalPostForm('admin/config/media/filehash', $fields, $this->t('Save configuration'));
 
     // Test that a node with duplicate file already attached can be saved.
     $this->drupalGet("node/$nid/edit");
-    $form = $this->xpath("//form[@id='node-$type_name-edit-form']")[0];
-    $post = $edit = $upload = [];
-    $submit = t('Save');
-    // Compatibility with Drupal 8.3 save button.
-    if (!$this->handleForm($post, $edit, $upload, $submit, $form)) {
-      $submit = t('Save and keep published');
-    }
-    $this->drupalPostForm(NULL, $edit, $submit);
+    $this->drupalPostForm(NULL, [], $this->t('Save'));
     $this->assertUrl("node/$nid");
   }
 
@@ -118,7 +115,7 @@ class FileHashTest extends FileFieldTestBase {
    */
   public function testFileHashGenerate() {
     $fields = ['algos[sha1]' => FALSE];
-    $this->drupalPostForm('admin/config/media/filehash', $fields, t('Save configuration'));
+    $this->drupalPostForm('admin/config/media/filehash', $fields, $this->t('Save configuration'));
 
     do {
       $file = $this->getTestFile('text');
@@ -126,9 +123,9 @@ class FileHashTest extends FileFieldTestBase {
     } while ($file->id() < 5);
 
     $fields = ['algos[sha1]' => TRUE];
-    $this->drupalPostForm('admin/config/media/filehash', $fields, t('Save configuration'));
+    $this->drupalPostForm('admin/config/media/filehash', $fields, $this->t('Save configuration'));
 
-    $this->drupalPostForm('admin/config/media/filehash/generate', [], t('Generate'));
+    $this->drupalPostForm('admin/config/media/filehash/generate', [], $this->t('Generate'));
     $this->assertText('Processed 5 files.');
   }
 

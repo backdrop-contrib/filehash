@@ -62,10 +62,10 @@ class GenerateBatch {
   public static function finished($success, $results, $operations) {
     $variables = ['@processed' => $results['processed']];
     if ($success) {
-      drupal_set_message(t('Processed @processed files.', $variables));
+      \Drupal::messenger()->addMessage(t('Processed @processed files.', $variables));
     }
     else {
-      drupal_set_message(t('An error occurred after processing @processed files.', $variables), 'warning');
+      \Drupal::messenger()->addWarning(t('An error occurred after processing @processed files.', $variables));
     }
   }
 
