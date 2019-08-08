@@ -275,7 +275,7 @@ function theme_filehash_table(array $variables) {
     t('@algo hash', array('@algo' => $names[$variables['settings']['algo']])),
   );
   $rows = array();
-  foreach ($variables['items'] as $delta => $item) {
+  foreach ($variables['items'] as $item) {
     // Media field items contain a file object.
     if (!isset($item['uri']) && isset($item['file'])) {
       $file = $item['file'];
