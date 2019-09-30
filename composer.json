@@ -1,0 +1,25 @@
+{
+    "name": "drupal/filehash",
+    "description": "File Hash module generates and stores MD5, SHA-1 and/or SHA-256 hashes for each file uploaded to the site.",
+    "type": "drupal-module",
+    "license": "GPL-2.0-or-later",
+    "homepage": "https://www.drupal.org/project/filehash",
+    "support": {
+        "issues": "https://www.drupal.org/project/issues/filehash",
+        "source": "https://git.drupalcode.org/project/filehash"
+    },
+    "authors": [
+        {
+            "name": "Mark Burdett (mfb)",
+            "homepage": "https://www.drupal.org/u/mfb",
+            "role": "Maintainer"
+        }
+    ],
+    "extra": {
+        "drush": {
+            "services": {
+                "drush.services.yml": "^9"
+            }
+        }
+    }
+}
