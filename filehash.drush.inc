@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Drush integration for the File hash module.
+ * Drush integration for File Hash module.
  */
 
 use Drupal\filehash\Batch\GenerateBatch;

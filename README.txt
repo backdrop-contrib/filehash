@@ -6,7 +6,7 @@ archive.org to wikileaks.org, allow files to be uniquely identified, allow
 duplicate files to be detected, and allow copies to be verified against the
 original source.
 
-File hash module generates and stores MD5, SHA-1 and/or SHA-256 hashes for each
+File Hash module generates and stores MD5, SHA-1 and/or SHA-256 hashes for each
 file uploaded to the site.
 
 Hash algorithms can be enabled and disabled by the site administrator.
@@ -27,7 +27,7 @@ e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855, you could
 store it in the files/e3/b0 directory using these tokens:
 [file:filehash-sha256-pair-1]/[file:filehash-sha256-pair-2].
 
-If the "disallow duplicate files" checkbox in file hash settings is checked, any
+If the "disallow duplicate files" checkbox in File Hash settings is checked, any
 duplicate uploaded files will be rejected site-wide. You may also leave this
 setting off, and apply the dedupe validator function manually to a particular
 file upload form in a custom module:

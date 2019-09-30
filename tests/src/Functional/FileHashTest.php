@@ -8,9 +8,9 @@ use Drupal\file\Entity\File;
 use Drupal\Tests\file\Functional\FileFieldTestBase;
 
 /**
- * File hash tests.
+ * File Hash tests.
  *
- * @group File hash
+ * @group File Hash
  */
 class FileHashTest extends FileFieldTestBase {
 
