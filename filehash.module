@@ -11,7 +11,7 @@
 function filehash_menu() {
   $items['admin/config/media/filehash'] = array(
     'title' => 'File hash',
-    'description' => 'Configure file hash settings.',
+    'description' => 'Configure File Hash settings.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('filehash_settings'),
     'access arguments' => array('administer site configuration'),

@@ -1,4 +1,4 @@
-name = File hash
+name = File Hash
 description = Generate hashes for each uploaded file.
 core = 7.x
 configure = admin/config/media/filehash
