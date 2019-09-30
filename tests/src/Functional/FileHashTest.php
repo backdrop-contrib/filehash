@@ -54,7 +54,7 @@ class FileHashTest extends FileFieldTestBase {
     ]);
     file_put_contents($file->getFileUri(), 'hello world');
     $file->save();
-    $this->assertEqual($file->filehash['sha1'], '2aae6c35c94fcfb415dbe95f408b9ce91ee846ed', 'File hash was set correctly.');
+    $this->assertEquals($file->filehash['sha1'], '2aae6c35c94fcfb415dbe95f408b9ce91ee846ed', 'File hash was set correctly.');
   }
 
   /**
@@ -88,18 +88,18 @@ class FileHashTest extends FileFieldTestBase {
     $test_file = $this->getTestFile('text');
 
     $nid = $this->uploadNodeFile($test_file, $field_name, $type_name);
-    $this->assertUrl("node/$nid");
+    $this->assertSession()->addressEquals("node/$nid");
 
     $nid = $this->uploadNodeFile($test_file, $field_name, $type_name);
-    $this->assertUrl("node/$nid/edit");
-    $this->assertRaw($this->t('The specified file %name could not be uploaded.', ['%name' => $test_file->getFilename()]));
-    $this->assertText($this->t('Sorry, duplicate files are not permitted.'));
+    $this->assertSession()->addressEquals("node/$nid/edit");
+    $this->assertSession()->responseContains($this->t('The specified file %name could not be uploaded.', ['%name' => $test_file->getFilename()]));
+    $this->assertSession()->pageTextContains($this->t('Sorry, duplicate files are not permitted.'));
 
     $fields = ['dedupe' => FALSE];
     $this->drupalPostForm('admin/config/media/filehash', $fields, $this->t('Save configuration'));
 
     $nid = $this->uploadNodeFile($test_file, $field_name, $type_name);
-    $this->assertUrl("node/$nid");
+    $this->assertSession()->addressEquals("node/$nid");
 
     $fields = ['dedupe' => TRUE];
     $this->drupalPostForm('admin/config/media/filehash', $fields, $this->t('Save configuration'));
@@ -107,7 +107,7 @@ class FileHashTest extends FileFieldTestBase {
     // Test that a node with duplicate file already attached can be saved.
     $this->drupalGet("node/$nid/edit");
     $this->drupalPostForm(NULL, [], $this->t('Save'));
-    $this->assertUrl("node/$nid");
+    $this->assertSession()->addressEquals("node/$nid");
   }
 
   /**
@@ -126,7 +126,7 @@ class FileHashTest extends FileFieldTestBase {
     $this->drupalPostForm('admin/config/media/filehash', $fields, $this->t('Save configuration'));
 
     $this->drupalPostForm('admin/config/media/filehash/generate', [], $this->t('Generate'));
-    $this->assertText('Processed 5 files.');
+    $this->assertSession()->pageTextContains('Processed 5 files.');
   }
 
 }

@@ -14,6 +14,13 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class FileHashConfigForm extends ConfigFormBase {
 
   /**
+   * Stores a module manager.
+   *
+   * @var \Drupal\Core\Extension\ModuleHandlerInterface
+   */
+  protected $moduleHandler;
+
+  /**
    * {@inheritdoc}
    */
   public function getFormId() {
