@@ -17,6 +17,11 @@ class FileHashTest extends FileFieldTestBase {
   use StringTranslationTrait;
 
   /**
+   * {@inheritdoc}
+   */
+  protected $defaultTheme = 'stark';
+
+  /**
    * Modules to enable.
    *
    * @var array
