@@ -1,5 +1,8 @@
 FILE HASH
----------
+=========
+
+INTRODUCTION
+------------
 
 Hashes of uploaded files, which can be found on a variety of sites from
 archive.org to wikileaks.org, allow files to be uniquely identified, allow
@@ -9,7 +12,25 @@ original source.
 File Hash module generates and stores MD5, SHA-1 and/or SHA-256 hashes for each
 file uploaded to the site.
 
-Hash algorithms can be enabled and disabled by the site administrator.
+REQUIREMENTS
+------------
+
+Drupal core File module is required.
+
+INSTALLATION
+------------
+
+Install as you would normally install a contributed Drupal module.
+
+CONFIGURATION
+-------------
+
+Hash algorithms can be enabled and disabled by the site administrator at
+admin/config/media/filehash.
+
+File hashes for pre-existing files will be generated "lazily," on demand, but
+you can generate them in bulk at admin/config/media/filehash/generate or by
+running `drush fgen`.
 
 Hash values are loaded into the $file object where they are available to the
 theme and other modules.
@@ -36,14 +57,12 @@ file upload form in a custom module:
 <?php
 
 /**
- * Implements hook_form_alter().
+ * Implements hook_form_FORM_ID_alter().
  */
-function example_form_alter(&$form, &$form_state, $form_id) {
-  if ($form_id == 'node_article_edit_form') {
-    foreach ($form['field_image']['widget'] as $item) {
-      if (is_array($item) && isset($item['#delta'])) {
-        $form['field_image']['widget'][$item['#delta']]['#upload_validators']['filehash_validate_dedupe'] = [];
-      }
+function example_form_node_article_edit_form_alter(&$form, $form_state, $form_id) {
+  foreach ($form['field_image']['widget'] as $item) {
+    if (is_array($item) && isset($item['#delta'])) {
+      $form['field_image']['widget'][$item['#delta']]['#upload_validators']['filehash_validate_dedupe'] = [];
     }
   }
 }

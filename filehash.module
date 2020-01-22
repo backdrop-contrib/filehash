@@ -10,6 +10,21 @@ use Drupal\Core\Link;
 use Drupal\Core\Url;
 use Drupal\file\Entity\File;
 use Drupal\file\FileInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ */
+function filehash_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.filehash':
+      return [
+        '#type' => 'html_tag',
+        '#tag' => 'p',
+        '#value' => t('File Hash module generates and stores MD5, SHA-1 and/or SHA-256 hashes for each file uploaded to the site. Hashes allow files to be uniquely identified, duplicate files to be detected, and copies to be verified against the original source.'),
+      ];
+  }
+}
 
 /**
  * Returns array of enabled hash algorithms.
