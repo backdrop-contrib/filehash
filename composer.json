@@ -18,6 +18,16 @@
             "role": "Maintainer"
         }
     ],
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/mfb"
+        },
+        {
+            "type": "patreon",
+            "url": "https://www.patreon.com/mfb"
+        }
+    ],
     "extra": {
         "drush": {
             "services": {
