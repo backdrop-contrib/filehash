@@ -5,7 +5,7 @@ namespace Drupal\filehash\Batch;
 use Drupal\file\Entity\File;
 
 /**
- * Class GenerateBatch.
+ * Generates file hashes in bulk.
  */
 class GenerateBatch {
 
