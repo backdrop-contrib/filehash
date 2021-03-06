@@ -144,7 +144,7 @@ function filehash_validate_dedupe(FileInterface $file) {
 /**
  * Calculates the file hashes.
  */
-function filehash_hash(FileInterface $file) {
+function filehash_hash($file) {
   $file->filehash = array_fill_keys(['md5', 'sha1', 'sha256'], NULL);
   // Unreadable files will have NULL hash values.
   if (!is_readable($file->getFileUri())) {
@@ -179,23 +179,25 @@ function filehash_node_build_defaults_alter(array &$build, EntityInterface $node
     ->getStorage('field_config')
     ->loadByProperties([
       'entity_type' => 'node',
-      'bundle' => $node->getType(),
+      'bundle' => $node->bundle(),
       'field_type' => 'file',
     ]);
   $fields += \Drupal::entityTypeManager()
     ->getStorage('field_config')
     ->loadByProperties([
       'entity_type' => 'node',
-      'bundle' => $node->getType(),
+      'bundle' => $node->bundle(),
       'field_type' => 'image',
     ]);
   foreach ($fields as $field) {
-    foreach ($node->{$field->getName()} as $item) {
-      if ($item->isDisplayed()) {
-        // Add <media:hash> elements for at most one file per RSS item.
-        $file = File::load($item->target_id);
-        filehash_rss_elements($file, $node);
-        return;
+    if (method_exists($field, 'getName')) {
+      foreach ($node->{$field->getName()} as $item) {
+        if ($item->isDisplayed()) {
+          // Add <media:hash> elements for at most one file per RSS item.
+          $file = File::load($item->target_id);
+          filehash_rss_elements($file, $node);
+          return;
+        }
       }
     }
   }

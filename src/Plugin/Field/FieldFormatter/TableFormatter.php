@@ -35,23 +35,25 @@ class TableFormatter extends DescriptionAwareFileFormatterBase {
       ];
       $rows = [];
       foreach ($files as $file) {
-        $item = $file->_referringItem;
-        $rows[] = [
-          [
-            'data' => [
-              '#theme' => 'file_link',
-              '#file' => $file,
-              '#description' => $this->getSetting('use_description_as_link_text') ? $item->description : NULL,
-              '#cache' => ['tags' => $file->getCacheTags()],
+        if (property_exists($file, '_referringItem')) {
+          $item = $file->_referringItem;
+          $rows[] = [
+            [
+              'data' => [
+                '#theme' => 'file_link',
+                '#file' => $file,
+                '#description' => $this->getSetting('use_description_as_link_text') ? $item->description : NULL,
+                '#cache' => ['tags' => $file->getCacheTags()],
+              ],
             ],
-          ],
-          ['data' => format_size($file->getSize())],
-          [
-            'data' => [
-              '#markup' => substr(chunk_split($file->filehash[$this->getSetting('algo')], 1, '<wbr />'), 0, -7),
+            ['data' => format_size(method_exists($file, 'getSize') ? $file->getSize() : 0)],
+            [
+              'data' => [
+                '#markup' => substr(chunk_split(property_exists($file, 'filehash') ? $file->filehash[$this->getSetting('algo')] : '', 1, '<wbr />'), 0, -7),
+              ],
             ],
-          ],
-        ];
+          ];
+        }
       }
 
       $elements[0] = [];
