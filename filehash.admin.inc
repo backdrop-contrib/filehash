@@ -72,7 +72,10 @@ function filehash_bulk_process(&$context) {
   $files = $query->entityCondition('entity_type', 'file')->addMetaData('account', user_load(1))->range($context['results']['processed'], 1)->execute();
   foreach ($files['file'] as $file) {
     $file = file_load($file->fid);
-    $context['message'] = t('Processed file ID !fid (%filename).', array('!fid' => $file->fid, '%filename' => $file->filename));
+    $context['message'] = t('Processed file ID !fid (%filename).', array(
+      '!fid' => $file->fid,
+      '%filename' => $file->filename,
+    ));
     $context['results']['processed']++;
     $context['finished'] = $context['results']['processed'] / $context['sandbox']['count'];
   }

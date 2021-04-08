@@ -289,7 +289,10 @@ function theme_filehash_table(array $variables) {
       substr(chunk_split($file->filehash[$variables['settings']['algo']], 1, '<wbr />'), 0, -7),
     );
   }
-  return empty($rows) ? '' : theme('table', array('header' => $header, 'rows' => $rows));
+  return empty($rows) ? '' : theme('table', array(
+    'header' => $header,
+    'rows' => $rows,
+  ));
 }
 
 /**
