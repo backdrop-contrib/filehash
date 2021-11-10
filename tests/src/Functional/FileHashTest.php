@@ -24,7 +24,7 @@ class FileHashTest extends FileFieldTestBase {
   /**
    * Modules to enable.
    *
-   * @var array
+   * @var string[]
    */
   public static $modules = [
     'filehash',
