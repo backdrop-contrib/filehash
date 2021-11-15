@@ -31,11 +31,11 @@
     "extra": {
         "drush": {
             "services": {
-                "drush.services.yml": "^9 || ^10"
+                "drush.services.yml": "^9 || ^10 || ^11"
             }
         }
     },
     "require-dev": {
-        "drush/drush": "^10.6"
+        "drush/drush": "^10.6 || ^11.0"
     }
 }
