@@ -7,10 +7,11 @@
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Link;
+use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
 use Drupal\file\Entity\File;
 use Drupal\file\FileInterface;
-use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\media\Plugin\media\Source\File as FileSource;
 
 /**
  * Implements hook_help().
@@ -180,6 +181,13 @@ function filehash_node_build_defaults_alter(array &$build, EntityInterface $node
     ->loadByProperties([
       'entity_type' => 'node',
       'bundle' => $node->bundle(),
+      'field_type' => 'entity_reference',
+    ]);
+  $fields += \Drupal::entityTypeManager()
+    ->getStorage('field_config')
+    ->loadByProperties([
+      'entity_type' => 'node',
+      'bundle' => $node->bundle(),
       'field_type' => 'file',
     ]);
   $fields += \Drupal::entityTypeManager()
@@ -192,9 +200,17 @@ function filehash_node_build_defaults_alter(array &$build, EntityInterface $node
   foreach ($fields as $field) {
     if (method_exists($field, 'getName')) {
       foreach ($node->{$field->getName()} as $item) {
-        if ($item->isDisplayed()) {
-          // Add <media:hash> elements for at most one file per RSS item.
-          $file = File::load($item->target_id);
+        // Add <media:hash> elements for at most one file per RSS item.
+        if ($item->getFieldDefinition()->getType() === 'entity_reference' && $item->getFieldDefinition()->getSetting('target_type') === 'media') {
+          $media = $item->get('entity')->getValue();
+          if ($media->getSource() instanceof FileSource) {
+            $file = File::load($media->getSource()->getSourceFieldValue($media));
+            filehash_rss_elements($file, $node);
+            return;
+          }
+        }
+        elseif (method_exists($item, 'isDisplayed') && $item->isDisplayed() && method_exists($item, 'get')) {
+          $file = $item->get('entity')->getValue();
           filehash_rss_elements($file, $node);
           return;
         }
