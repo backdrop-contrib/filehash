@@ -36,8 +36,8 @@ Hash values are loaded into the $file object where they are available to the
 theme and other modules.
 
 Handlers are provided for Views module compatibility. In addition, a
-<media:hash> element is added for file attachments in node RSS feeds (file and
-image field types are supported).
+<media:hash> element is added for file attachments in node RSS feeds (media,
+file and image field types are supported).
 
 Tokens are provided for the full hashes: [file:filehash-md5],
 [file:filehash-sha1], [file:filehash-sha256], as well as pairtree tokens useful
