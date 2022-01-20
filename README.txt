@@ -9,8 +9,9 @@ archive.org to wikileaks.org, allow files to be uniquely identified, allow
 duplicate files to be detected, and allow copies to be verified against the
 original source.
 
-File Hash module generates and stores MD5, SHA-1 and/or SHA-256 hashes for each
-file uploaded to the site.
+File Hash module generates and stores hashes for each file uploaded to the site.
+The MD5, SHA-1, SHA-224, SHA-256, SHA-384, SHA-512/224, SHA-512/256, SHA-512,
+SHA3-224, SHA3-256, SHA3-384 and SHA3-512 hash algorithms are supported.
 
 REQUIREMENTS
 ------------

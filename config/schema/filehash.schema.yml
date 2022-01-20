@@ -12,9 +12,36 @@ filehash.settings:
         sha1:
           type: string
           label: 'SHA-1'
+        sha224:
+          type: string
+          label: 'SHA-224'
         sha256:
           type: string
           label: 'SHA-256'
+        sha384:
+          type: string
+          label: 'SHA-384'
+        sha512_224:
+          type: string
+          label: 'SHA-512/224'
+        sha512_256:
+          type: string
+          label: 'SHA-512/256'
+        sha512:
+          type: string
+          label: 'SHA-512'
+        sha3_224:
+          type: string
+          label: 'SHA3-224'
+        sha3_256:
+          type: string
+          label: 'SHA3-256'
+        sha3_384:
+          type: string
+          label: 'SHA3-384'
+        sha3_512:
+          type: string
+          label: 'SHA3-512'
     dedupe:
       type: boolean
       label: 'Disallow duplicate files'

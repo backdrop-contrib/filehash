@@ -7,3 +7,8 @@ filehash.generate:
   route_name: filehash.generate
   title: Generate
   base_route: filehash.admin
+
+filehash.clean:
+  route_name: filehash.clean
+  title: Clean up
+  base_route: filehash.admin

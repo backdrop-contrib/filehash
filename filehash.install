@@ -18,31 +18,8 @@ function filehash_schema() {
         'unsigned' => TRUE,
         'not null' => TRUE,
       ],
-      'md5' => [
-        'description' => 'MD5 hash for this file.',
-        'type' => 'varchar_ascii',
-        'length' => 32,
-        'not null' => FALSE,
-      ],
-      'sha1' => [
-        'description' => 'SHA-1 hash for this file.',
-        'type' => 'varchar_ascii',
-        'length' => 40,
-        'not null' => FALSE,
-      ],
-      'sha256' => [
-        'description' => 'SHA-256 hash for this file.',
-        'type' => 'varchar_ascii',
-        'length' => 64,
-        'not null' => FALSE,
-      ],
     ],
     'primary key' => ['fid'],
-    'indexes' => [
-      'md5_idx' => ['md5'],
-      'sha1_idx' => ['sha1'],
-      'sha256_idx' => ['sha256'],
-    ],
     'foreign keys' => [
       'fid' => [
         'table' => 'file_managed',

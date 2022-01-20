@@ -142,4 +142,18 @@ class FileHashTest extends FileFieldTestBase {
     $this->assertSession()->pageTextContains('Processed 5 files.');
   }
 
+  /**
+   * Tests database cleanup.
+   */
+  public function testFileHashClean() {
+    $this->drupalGet('admin/config/media/filehash');
+    $fields = ['algos[sha512_256]' => TRUE];
+    $this->submitForm($fields, $this->t('Save configuration'));
+    $fields = ['algos[sha1]' => FALSE, 'algos[sha512_256]' => FALSE];
+    $this->submitForm($fields, $this->t('Save configuration'));
+    $this->drupalGet('admin/config/media/filehash/clean');
+    $this->submitForm([], $this->t('Delete'));
+    $this->assertSession()->pageTextContains('Processed 2 hash algorithm columns.');
+  }
+
 }

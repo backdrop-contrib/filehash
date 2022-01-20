@@ -17,8 +17,8 @@ class GenerateBatch {
    */
   public static function createBatch() {
     return [
-      'operations' => [['\Drupal\filehash\Batch\GenerateBatch::process', []]],
-      'finished' => '\Drupal\filehash\Batch\GenerateBatch::finished',
+      'operations' => [[[GenerateBatch::class, 'process'], []]],
+      'finished' => [GenerateBatch::class, 'finished'],
       'title' => t('Processing file hash batch'),
       'init_message' => t('File hash batch is starting.'),
       'progress_message' => t('Please wait...'),

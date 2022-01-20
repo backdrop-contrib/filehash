@@ -2,6 +2,7 @@
 
 namespace Drupal\filehash\Commands;
 
+use Drupal\filehash\Batch\CleanBatch;
 use Drupal\filehash\Batch\GenerateBatch;
 use Drush\Commands\DrushCommands;
 
@@ -20,6 +21,20 @@ class FileHashCommands extends DrushCommands {
    */
   public function generate() {
     batch_set(GenerateBatch::createBatch());
+    $batch =& batch_get();
+    $batch['progressive'] = FALSE;
+    drush_backend_batch_process();
+  }
+
+  /**
+   * Remove database columns for disabled hash algorithms.
+   *
+   * @aliases filehash-clean
+   * @command filehash:clean
+   * @usage drush filehash:clean
+   */
+  public function clean() {
+    batch_set(CleanBatch::createBatch());
     $batch =& batch_get();
     $batch['progressive'] = FALSE;
     drush_backend_batch_process();

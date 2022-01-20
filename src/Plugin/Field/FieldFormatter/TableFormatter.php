@@ -35,35 +35,32 @@ class TableFormatter extends DescriptionAwareFileFormatterBase {
       ];
       $rows = [];
       foreach ($files as $file) {
-        if (property_exists($file, '_referringItem')) {
+        if (isset($file->_referringItem)) {
           $item = $file->_referringItem;
-          $rows[] = [
-            [
-              'data' => [
-                '#theme' => 'file_link',
-                '#file' => $file,
-                '#description' => $this->getSetting('use_description_as_link_text') ? $item->description : NULL,
-                '#cache' => ['tags' => $file->getCacheTags()],
-              ],
-            ],
-            ['data' => format_size(method_exists($file, 'getSize') ? $file->getSize() : 0)],
-            [
-              'data' => [
-                '#markup' => substr(chunk_split(property_exists($file, 'filehash') ? $file->filehash[$this->getSetting('algo')] : '', 1, '<wbr />'), 0, -7),
-              ],
-            ],
-          ];
         }
-      }
-
-      $elements[0] = [];
-      if (!empty($rows)) {
-        $elements[0] = [
-          '#theme' => 'table__filehash_formatter_table',
-          '#header' => $header,
-          '#rows' => $rows,
+        $rows[] = [
+          [
+            'data' => [
+              '#theme' => 'file_link',
+              '#file' => $file,
+              '#description' => ($this->getSetting('use_description_as_link_text') && isset($item)) ? $item->description : NULL,
+              '#cache' => ['tags' => $file->getCacheTags()],
+            ],
+          ],
+          ['data' => format_size(method_exists($file, 'getSize') ? $file->getSize() : 0)],
+          [
+            'data' => [
+              '#markup' => (isset($file->filehash) && isset($file->filehash[$this->getSetting('algo')])) ? substr(chunk_split($file->filehash[$this->getSetting('algo')], 1, '<wbr />'), 0, -7) : '',
+            ],
+          ],
         ];
       }
+
+      $elements[0] = [
+        '#theme' => 'table__filehash_formatter_table',
+        '#header' => $header,
+        '#rows' => $rows,
+      ];
     }
 
     return $elements;
@@ -74,8 +71,8 @@ class TableFormatter extends DescriptionAwareFileFormatterBase {
    */
   public static function defaultSettings() {
     $settings = parent::defaultSettings();
-    $algos = filehash_algos();
-    $settings['algo'] = array_pop($algos);
+    $columns = filehash_columns();
+    $settings['algo'] = array_pop($columns);
     return $settings;
   }
 
@@ -86,8 +83,8 @@ class TableFormatter extends DescriptionAwareFileFormatterBase {
     $form = parent::settingsForm($form, $form_state);
     $names = filehash_names();
     $options = [];
-    foreach (filehash_algos() as $algo) {
-      $options[$algo] = $names[$algo];
+    foreach (filehash_columns() as $column) {
+      $options[$column] = $names[$column];
     }
     $form['algo'] = [
       '#title' => $this->t('Hash algorithm'),
@@ -103,9 +100,9 @@ class TableFormatter extends DescriptionAwareFileFormatterBase {
    */
   public function settingsSummary() {
     $summary = parent::settingsSummary();
-    $algos = filehash_names();
-    if (isset($algos[$this->getSetting('algo')])) {
-      $summary[] = $this->t('@algo hash', ['@algo' => $algos[$this->getSetting('algo')]]);
+    $names = filehash_names();
+    if (isset($names[$this->getSetting('algo')])) {
+      $summary[] = $this->t('@algo hash', ['@algo' => $names[$this->getSetting('algo')]]);
     }
     return $summary;
   }

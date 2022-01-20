@@ -13,3 +13,11 @@ filehash.generate:
     _title: 'Generate'
   requirements:
     _permission: 'administer site configuration'
+
+filehash.clean:
+  path: '/admin/config/media/filehash/clean'
+  defaults:
+    _form: 'Drupal\filehash\Form\FileHashCleanForm'
+    _title: 'Clean up'
+  requirements:
+    _permission: 'administer site configuration'
