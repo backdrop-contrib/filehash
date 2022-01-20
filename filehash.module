@@ -5,6 +5,7 @@
  * Generate hashes for each uploaded file.
  */
 
+use Drupal\Core\Database\DatabaseExceptionWrapper;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Link;
 use Drupal\Core\Routing\RouteMatchInterface;
@@ -80,7 +81,8 @@ function filehash_file_load($files) {
     ->execute();
   foreach ($result as $record) {
     foreach ($columns as $column) {
-      $files[$record->fid]->filehash[$column] = $record->$column;
+      // Handle missing database column.
+      $files[$record->fid]->filehash[$column] = property_exists($record, $column) ? $record->$column : NULL;
     }
   }
   // Generate hash if it does not already exist for the file.
@@ -288,9 +290,45 @@ function filehash_rss_elements($file, $node) {
  * Saves the file hashes.
  */
 function filehash_save(FileInterface $file) {
+  try {
+    filehash_merge($file);
+  }
+  catch (DatabaseExceptionWrapper $e) {
+    filehash_add_columns();
+    filehash_merge($file);
+  }
+}
+
+/**
+ * Merges file hash data.
+ */
+function filehash_merge(FileInterface $file) {
   \Drupal::database()
     ->merge('filehash')
     ->key(['fid' => $file->id()])
     ->fields($file->filehash)
     ->execute();
+}
+
+/**
+ * Adds missing database columns.
+ */
+function filehash_add_columns() {
+  $schema = \Drupal::database()->schema();
+  foreach (filehash_algos() as $column => $algo) {
+    $spec['fields'] = [
+      $column => [
+        'description' => "The $algo hash for this file.",
+        'type' => 'varchar_ascii',
+        'length' => strlen(hash($algo, '')),
+        'not null' => FALSE,
+      ],
+    ];
+    if (!$schema->fieldExists('filehash', $column)) {
+      $schema->addField('filehash', $column, $spec['fields'][$column]);
+    }
+    if (!$schema->indexExists('filehash', "{$column}_idx")) {
+      $schema->addIndex('filehash', "{$column}_idx", [$column], $spec);
+    }
+  }
 }
