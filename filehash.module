@@ -126,11 +126,14 @@ function filehash_validate_dedupe(FileInterface $file) {
   // We only run the dedupe check on initial file creation.
   if (!$file->id()) {
     foreach (filehash_columns() as $column) {
-      $query = \Drupal::database()->select('filehash');
-      $query->addField('filehash', 'fid');
-      $query->condition($column, $file->filehash[$column]);
-      $query->range(0, 1);
-      if ($fid = $query->execute()->fetchField()) {
+      try {
+        $fid = filehash_duplicate_lookup($column, $file);
+      }
+      catch (DatabaseExceptionWrapper $e) {
+        filehash_add_columns();
+        $fid = filehash_duplicate_lookup($column, $file);
+      }
+      if ($fid) {
         $error = t('Sorry, duplicate files are not permitted.');
         if (\Drupal::currentUser()->hasPermission('access files overview')) {
           try {
@@ -149,6 +152,17 @@ function filehash_validate_dedupe(FileInterface $file) {
     }
   }
   return $errors;
+}
+
+/**
+ * Returns file ID for any duplicates.
+ */
+function filehash_duplicate_lookup($column, $file) {
+  $query = \Drupal::database()->select('filehash');
+  $query->addField('filehash', 'fid');
+  $query->condition($column, $file->filehash[$column]);
+  $query->range(0, 1);
+  return $query->execute()->fetchField();
 }
 
 /**
