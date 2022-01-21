@@ -22,7 +22,7 @@ class DrushTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  public static $modules = ['filehash'];
+  protected static $modules = ['filehash'];
 
   /**
    * Tests drush commands.

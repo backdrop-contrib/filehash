@@ -26,7 +26,7 @@ class FileHashTest extends FileFieldTestBase {
    *
    * @var string[]
    */
-  public static $modules = [
+  protected static $modules = [
     'filehash',
     'node',
     'file',
@@ -37,7 +37,7 @@ class FileHashTest extends FileFieldTestBase {
   /**
    * Overrides WebTestBase::setUp().
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
     $this->drupalLogin($this->adminUser);
     $this->drupalGet('admin/config/media/filehash');
