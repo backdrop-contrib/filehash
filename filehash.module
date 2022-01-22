@@ -31,14 +31,34 @@ function filehash_menu() {
     'file' => 'filehash.admin.inc',
     'type' => MENU_LOCAL_TASK,
   );
+  $items['admin/config/media/filehash/clean'] = array(
+    'title' => 'Clean up',
+    'description' => 'Delete data for disabled hash algorithms.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('filehash_clean'),
+    'access arguments' => array('administer site configuration'),
+    'file' => 'filehash.admin.inc',
+    'type' => MENU_LOCAL_TASK,
+  );
   return $items;
 }
 
 /**
- * Returns array of enabled hash algorithms.
+ * Returns array of enabled File Hash algorithm identifiers.
+ */
+function filehash_columns() {
+  $options = filehash_names();
+  foreach ($options as $column => $name) {
+    $options[$column] = $column;
+  }
+  return array_intersect_assoc($options, variable_get('filehash_algos', array()));
+}
+
+/**
+ * Returns array of enabled PHP hash algorithm identifiers.
  */
 function filehash_algos() {
-  return array_diff(variable_get('filehash_algos', array()), array(0));
+  return str_replace(array('sha3_', 'sha512_'), array('sha3-', 'sha512/'), filehash_columns());
 }
 
 /**
@@ -61,7 +81,7 @@ function filehash_file_insert($file) {
  * Implements hook_file_load().
  */
 function filehash_file_load($files) {
-  $algos = filehash_algos();
+  $algos = filehash_columns();
   if ($algos) {
     $result = db_select('filehash')
       ->fields('filehash')
@@ -69,7 +89,8 @@ function filehash_file_load($files) {
       ->execute();
     foreach ($result as $record) {
       foreach ($algos as $algo) {
-        $files[$record->fid]->filehash[$algo] = $record->$algo;
+        // Handle missing column.
+        $files[$record->fid]->filehash[$algo] = property_exists($record, $algo) ? $record->$algo : NULL;
       }
     }
     // Generate hash if it does not already exist for the file.
@@ -98,8 +119,15 @@ function filehash_file_validate($file) {
   $errors = array();
   // Zero size may indicate unreadable remote media source; bypass dedupe.
   if ($file->filesize && variable_get('filehash_dedupe', 0)) {
-    foreach (filehash_algos() as $algo) {
-      if ($fid = db_query("SELECT fid FROM {filehash} WHERE $algo = :hash LIMIT 1", array(':hash' => hash_file($algo, $file->uri)))->fetchField()) {
+    foreach (filehash_algos() as $column => $algo) {
+      try {
+        $fid = filehash_duplicate_lookup($column, $algo, $file);
+      }
+      catch (PDOException $e) {
+        filehash_add_columns();
+        $fid = filehash_duplicate_lookup($column, $algo, $file);
+      }
+      if ($fid) {
         $duplicate = file_load($fid);
         if (file_download_access($duplicate->uri)) {
           $errors[] = t('This file has already been uploaded as %filename.', array('%filename' => $duplicate->filename));
@@ -115,10 +143,30 @@ function filehash_file_validate($file) {
 }
 
 /**
+ * Returns file ID for any duplicates.
+ */
+function filehash_duplicate_lookup($column, $algo, $file) {
+  return db_query("SELECT fid FROM {filehash} WHERE $column = :hash LIMIT 1", array(':hash' => hash_file($algo, $file->uri)))->fetchField();
+}
+
+/**
  * Returns array of human-readable hash algorithm names.
  */
 function filehash_names() {
-  return array('md5' => 'MD5', 'sha1' => 'SHA-1', 'sha256' => 'SHA-256');
+  return array(
+    'md5' => 'MD5',
+    'sha1' => 'SHA-1',
+    'sha224' => 'SHA-224',
+    'sha256' => 'SHA-256',
+    'sha384' => 'SHA-384',
+    'sha512_224' => 'SHA-512/224',
+    'sha512_256' => 'SHA-512/256',
+    'sha512' => 'SHA-512',
+    'sha3_224' => 'SHA3-224',
+    'sha3_256' => 'SHA3-256',
+    'sha3_384' => 'SHA3-384',
+    'sha3_512' => 'SHA3-512',
+  );
 }
 
 /**
@@ -181,14 +229,46 @@ function filehash_rss_elements(array $file, $node) {
  * Calculates and saves the file hashes.
  */
 function filehash_save($file) {
-  $file->filehash = array_fill_keys(array('md5', 'sha1', 'sha256'), NULL);
-  foreach (filehash_algos() as $algo) {
-    $file->filehash[$algo] = hash_file($algo, $file->uri);
+  $file->filehash = array_fill_keys(filehash_columns(), NULL);
+  foreach (filehash_algos() as $column => $algo) {
+    $file->filehash[$column] = hash_file($algo, $file->uri);
   }
+  try {
+    filehash_merge($file);
+  }
+  catch (PDOException $e) {
+    filehash_add_columns();
+    filehash_merge($file);
+  }
+}
+
+/**
+ * Merges file hashes into database.
+ */
+function filehash_merge($file) {
   db_merge('filehash')
     ->key(array('fid' => $file->fid))
     ->fields($file->filehash)
     ->execute();
+}
+
+/**
+ * Adds any database columns required by configuration.
+ */
+function filehash_add_columns() {
+  foreach (filehash_algos() as $column => $algo) {
+    if (!db_field_exists('filehash', $column)) {
+      db_add_field('filehash', $column, array(
+        'description' => "The $algo hash for this file.",
+        'type' => 'char',
+        'length' => strlen(hash($algo, '')),
+        'not null' => FALSE,
+      ));
+    }
+    if (!db_index_exists('filehash', $column . '_idx')) {
+      db_add_index('filehash', $column . '_idx', array($column));
+    }
+  }
 }
 
 /**
@@ -204,7 +284,7 @@ function filehash_views_api() {
  * Implements hook_field_formatter_info().
  */
 function filehash_field_formatter_info() {
-  $algos = filehash_algos();
+  $algos = filehash_columns();
   return array(
     'filehash_table' => array(
       'label' => t('Table of files with file hashes'),
@@ -220,7 +300,7 @@ function filehash_field_formatter_info() {
 function filehash_field_formatter_settings_form($field, $instance, $view_mode, $form, &$form_state) {
   $names = filehash_names();
   $options = array();
-  foreach (filehash_algos() as $algo) {
+  foreach (filehash_columns() as $algo) {
     $options[$algo] = $names[$algo];
   }
   $element['algo'] = array(

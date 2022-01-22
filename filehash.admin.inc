@@ -22,7 +22,16 @@ function filehash_settings() {
     '#title' => t('Disallow duplicate files'),
     '#type' => 'checkbox',
   );
-  return system_settings_form($form);
+  $form = system_settings_form($form);
+  $form['#submit'][] = 'filehash_settings_submit';
+  return $form;
+}
+
+/**
+ * Settings submit callback.
+ */
+function filehash_settings_submit() {
+  filehash_add_columns();
 }
 
 /**
@@ -91,5 +100,88 @@ function filehash_bulk_finished($success, $results, $operations) {
   }
   else {
     drupal_set_message(t('An error occurred after processing @processed files.', $variables), 'warning');
+  }
+}
+
+/**
+ * Builds the File Hash clean up form.
+ */
+function filehash_clean() {
+  $columns = filehash_get_disabled_columns_with_data();
+  if (!$columns) {
+    drupal_set_message(t('All clean! No disabled hash algorithms are installed.'));
+    return;
+  }
+  $form['explanation'] = array(
+    '#type' => 'item',
+    '#description' => t('Are you sure you want to delete data for disabled hash algorithms? @count hash algorithm columns (@algos) will be purged from the database.', array(
+      '@count' => count($columns),
+      '@algos' => implode(', ', $columns),
+    )),
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Delete data'),
+  );
+  return $form;
+}
+
+/**
+ * Submit callback for File Hash clean up.
+ */
+function filehash_clean_submit($form, &$form_state) {
+  batch_set(array(
+    'operations' => array(array('filehash_clean_process', array())),
+    'finished' => 'filehash_clean_finished',
+    'title' => t('Removing disabled database columns'),
+    'init_message' => t('File hash clean up is starting.'),
+    'progress_message' => t('Please wait...'),
+    'error_message' => t('File hash clean up has encountered an error.'),
+    'file' => drupal_get_path('module', 'filehash') . '/filehash.admin.inc',
+  ));
+}
+
+/**
+ * Returns an arry of disabled hash algorithms that have a database column.
+ */
+function filehash_get_disabled_columns_with_data() {
+  $columns = array();
+  $enabled = filehash_columns();
+  foreach (filehash_names() as $column => $name) {
+    if (empty($enabled[$column]) && db_field_exists('filehash', $column)) {
+      $columns[$column] = $name;
+    }
+  }
+  return $columns;
+}
+
+/**
+ * Drops database columns for disabled hash algorithms.
+ */
+function filehash_clean_process(&$context) {
+  $columns = filehash_get_disabled_columns_with_data();
+  if (!isset($context['results']['processed'])) {
+    $context['results']['processed'] = 0;
+    $context['sandbox']['count'] = count($columns);
+  }
+  foreach ($columns as $column => $name) {
+    db_drop_field('filehash', $column);
+    $context['results']['processed']++;
+    $context['message'] = t('Dropped %name column.', array('%name' => $name));
+    break;
+  }
+  $context['finished'] = $context['sandbox']['count'] ? ($context['results']['processed'] / $context['sandbox']['count']) : 1;
+}
+
+/**
+ * Batch finish callback.
+ */
+function filehash_clean_finished($success, $results, $operations) {
+  $variables = array('@processed' => $results['processed']);
+  if ($success) {
+    drupal_set_message(format_plural($results['processed'], 'Processed @processed hash algorithm column.', 'Processed @processed hash algorithm columns.', $variables));
+  }
+  else {
+    drupal_set_message(format_plural($results['processed'], 'An error occurred after processing @processed hash algorithm column.', 'An error occurred after processing @processed hash algorithm columns.', $variables), 'warning');
   }
 }
