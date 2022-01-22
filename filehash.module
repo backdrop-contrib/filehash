@@ -175,7 +175,7 @@ function filehash_hash($file) {
     return;
   }
   foreach (filehash_algos() as $column => $algo) {
-    $file->filehash[$column] = hash_file($algo, $file->getFileUri());
+    $file->filehash[$column] = hash_file($algo, $file->getFileUri()) ?: NULL;
   }
 }
 
