@@ -81,22 +81,22 @@ function filehash_file_insert($file) {
  * Implements hook_file_load().
  */
 function filehash_file_load($files) {
-  $algos = filehash_columns();
-  if ($algos) {
+  $columns = filehash_columns();
+  if ($columns) {
     $result = db_select('filehash')
       ->fields('filehash')
       ->condition('fid', array_keys($files), 'IN')
       ->execute();
     foreach ($result as $record) {
-      foreach ($algos as $algo) {
+      foreach ($columns as $column) {
         // Handle missing column.
-        $files[$record->fid]->filehash[$algo] = property_exists($record, $algo) ? $record->$algo : NULL;
+        $files[$record->fid]->filehash[$column] = property_exists($record, $column) ? $record->$column : NULL;
       }
     }
     // Generate hash if it does not already exist for the file.
     foreach ($files as $fid => $file) {
-      foreach ($algos as $algo) {
-        if (empty($file->filehash[$algo])) {
+      foreach ($columns as $column) {
+        if (empty($file->filehash[$column])) {
           filehash_save($files[$fid]);
           break;
         }
@@ -182,8 +182,8 @@ function filehash_node_view($node, $view_mode) {
     return;
   }
   // The <media:hash> element only supports MD5 and SHA-1.
-  $algos = filehash_algos();
-  if (!isset($algos['md5']) && !isset($algos['sha1'])) {
+  $columns = filehash_columns();
+  if (!isset($columns['md5']) && !isset($columns['sha1'])) {
     return;
   }
   if (!isset($fields[$node->type])) {
@@ -216,12 +216,12 @@ function filehash_node_view($node, $view_mode) {
  */
 function filehash_rss_elements(array $file, $node) {
   $names = array('md5' => 'md5', 'sha1' => 'sha-1');
-  foreach ($names as $algo => $name) {
-    if (!empty($file['filehash'][$algo])) {
+  foreach ($names as $column => $name) {
+    if (!empty($file['filehash'][$column])) {
       $node->rss_elements[] = array(
         'key' => 'media:hash',
         'attributes' => array('algo' => $name),
-        'value' => $file['filehash'][$algo],
+        'value' => $file['filehash'][$column],
       );
     }
   }
@@ -287,12 +287,12 @@ function filehash_views_api() {
  * Implements hook_field_formatter_info().
  */
 function filehash_field_formatter_info() {
-  $algos = filehash_columns();
+  $columns = filehash_columns();
   return array(
     'filehash_table' => array(
       'label' => t('Table of files with file hashes'),
       'field types' => array('file', 'image', 'media'),
-      'settings' => array('algo' => array_pop($algos)),
+      'settings' => array('algo' => array_pop($columns)),
     ),
   );
 }
@@ -303,8 +303,8 @@ function filehash_field_formatter_info() {
 function filehash_field_formatter_settings_form($field, $instance, $view_mode, $form, &$form_state) {
   $names = filehash_names();
   $options = array();
-  foreach (filehash_columns() as $algo) {
-    $options[$algo] = $names[$algo];
+  foreach (filehash_columns() as $column) {
+    $options[$column] = $names[$column];
   }
   $element['algo'] = array(
     '#title' => t('Hash algorithm'),
@@ -319,9 +319,9 @@ function filehash_field_formatter_settings_form($field, $instance, $view_mode, $
  * Implements hook_field_formatter_settings_summary().
  */
 function filehash_field_formatter_settings_summary($field, $instance, $view_mode) {
-  $algos = filehash_names();
-  if (isset($algos[$instance['display'][$view_mode]['settings']['algo']])) {
-    return t('@algo hash', array('@algo' => $algos[$instance['display'][$view_mode]['settings']['algo']]));
+  $names = filehash_names();
+  if (isset($names[$instance['display'][$view_mode]['settings']['algo']])) {
+    return t('@algo hash', array('@algo' => $names[$instance['display'][$view_mode]['settings']['algo']]));
   }
 }
 

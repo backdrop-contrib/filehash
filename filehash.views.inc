@@ -18,10 +18,10 @@ function filehash_views_data() {
   );
   // Use a nice human-readable name for each hash algorithm.
   $names = filehash_names();
-  foreach (filehash_columns() as $algo) {
-    $data['filehash'][$algo] = array(
-      'title' => t('@algo hash', array('@algo' => $names[$algo])),
-      'help' => t('The @algo hash of the file.', array('@algo' => $names[$algo])),
+  foreach (filehash_columns() as $column) {
+    $data['filehash'][$column] = array(
+      'title' => t('@algo hash', array('@algo' => $names[$column])),
+      'help' => t('The @algo hash of the file.', array('@algo' => $names[$column])),
       'field' => array(
         'click sortable' => TRUE,
       ),
