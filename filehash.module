@@ -120,12 +120,15 @@ function filehash_file_validate($file) {
   // Zero size may indicate unreadable remote media source; bypass dedupe.
   if ($file->filesize && variable_get('filehash_dedupe', 0)) {
     foreach (filehash_algos() as $column => $algo) {
+      if (!$hash = hash_file($algo, $file->uri)) {
+        continue;
+      }
       try {
-        $fid = filehash_duplicate_lookup($column, $algo, $file);
+        $fid = filehash_duplicate_lookup($column, $hash);
       }
       catch (PDOException $e) {
         filehash_add_columns();
-        $fid = filehash_duplicate_lookup($column, $algo, $file);
+        $fid = filehash_duplicate_lookup($column, $hash);
       }
       if ($fid) {
         $duplicate = file_load($fid);
@@ -145,8 +148,8 @@ function filehash_file_validate($file) {
 /**
  * Returns file ID for any duplicates.
  */
-function filehash_duplicate_lookup($column, $algo, $file) {
-  return db_query("SELECT fid FROM {filehash} WHERE $column = :hash LIMIT 1", array(':hash' => hash_file($algo, $file->uri)))->fetchField();
+function filehash_duplicate_lookup($column, $hash) {
+  return db_query("SELECT fid FROM {filehash} WHERE $column = :hash LIMIT 1", array(':hash' => $hash))->fetchField();
 }
 
 /**
@@ -231,7 +234,7 @@ function filehash_rss_elements(array $file, $node) {
 function filehash_save($file) {
   $file->filehash = array_fill_keys(filehash_columns(), NULL);
   foreach (filehash_algos() as $column => $algo) {
-    $file->filehash[$column] = hash_file($algo, $file->uri);
+    $file->filehash[$column] = hash_file($algo, $file->uri) ?: NULL;
   }
   try {
     filehash_merge($file);
