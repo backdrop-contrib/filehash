@@ -170,11 +170,8 @@ function filehash_duplicate_lookup($column, $file) {
  */
 function filehash_hash($file) {
   $file->filehash = array_fill_keys(filehash_columns(), NULL);
-  // Unreadable files will have NULL hash values.
-  if (!is_readable($file->getFileUri())) {
-    return;
-  }
   foreach (filehash_algos() as $column => $algo) {
+    // Unreadable files will have NULL hash values.
     $file->filehash[$column] = hash_file($algo, $file->getFileUri()) ?: NULL;
   }
 }
