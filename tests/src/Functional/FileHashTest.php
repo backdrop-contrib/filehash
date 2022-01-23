@@ -16,6 +16,9 @@ class FileHashTest extends FileFieldTestBase {
 
   use StringTranslationTrait;
 
+  const SHA1 = '2aae6c35c94fcfb415dbe95f408b9ce91ee846ed';
+  const URI = 'public://druplicon.txt';
+
   /**
    * {@inheritdoc}
    */
@@ -49,18 +52,21 @@ class FileHashTest extends FileFieldTestBase {
    * Tests that a file hash is set on the file object.
    */
   public function testFileHash() {
+    file_put_contents(static::URI, 'hello world');
     $file = File::create([
       'uid' => 1,
       'filename' => 'druplicon.txt',
-      'uri' => 'public://druplicon.txt',
+      'uri' => static::URI,
       'filemime' => 'text/plain',
       'created' => 1,
       'changed' => 1,
       'status' => FILE_STATUS_PERMANENT,
     ]);
-    file_put_contents($file->getFileUri(), 'hello world');
+    $this->assertEquals($file->filehash['sha1'], static::SHA1, 'File hash was set correctly at create.');
     $file->save();
-    $this->assertEquals($file->filehash['sha1'], '2aae6c35c94fcfb415dbe95f408b9ce91ee846ed', 'File hash was set correctly.');
+    $this->assertEquals($file->filehash['sha1'], static::SHA1, 'File hash was set correctly at save.');
+    $file = File::load($file->id());
+    $this->assertEquals($file->filehash['sha1'], static::SHA1, 'File hash was set correctly at load.');
   }
 
   /**
