@@ -16,6 +16,7 @@ class FileHashTest extends FileFieldTestBase {
 
   use StringTranslationTrait;
 
+  const BLAKE2B_512 = 'ba80a53f981c4d0d6a2797b69f12f6e94c212f14685ac4b74b12bb6fdbffa2d17d87c5392aab792dc252d5de4533cc9518d38aa8dbf1925ab92386edd4009923';
   const SHA1 = '2aae6c35c94fcfb415dbe95f408b9ce91ee846ed';
   const URI = 'public://druplicon.txt';
 
@@ -62,11 +63,36 @@ class FileHashTest extends FileFieldTestBase {
       'changed' => 1,
       'status' => FILE_STATUS_PERMANENT,
     ]);
-    $this->assertEquals($file->filehash['sha1'], static::SHA1, 'File hash was set correctly at create.');
+    $this->assertSame($file->filehash['sha1'], static::SHA1, 'File hash was set correctly at create.');
     $file->save();
-    $this->assertEquals($file->filehash['sha1'], static::SHA1, 'File hash was set correctly at save.');
+    $this->assertSame($file->filehash['sha1'], static::SHA1, 'File hash was set correctly at save.');
     $file = File::load($file->id());
-    $this->assertEquals($file->filehash['sha1'], static::SHA1, 'File hash was set correctly at load.');
+    $this->assertSame($file->filehash['sha1'], static::SHA1, 'File hash was set correctly at load.');
+  }
+
+  /**
+   * Tests BLAKE2b hash algorithm.
+   */
+  public function testBlake2b() {
+    $this->drupalGet('admin/config/media/filehash');
+    $fields = ['algos[blake2b_512]' => TRUE];
+    $this->submitForm($fields, $this->t('Save configuration'));
+    file_put_contents(static::URI, 'abc');
+    $file = File::create([
+      'uid' => 1,
+      'filename' => 'druplicon.txt',
+      'uri' => static::URI,
+      'filemime' => 'text/plain',
+      'created' => 1,
+      'changed' => 1,
+      'status' => FILE_STATUS_PERMANENT,
+    ]);
+    $hash = function_exists('sodium_crypto_generichash_init') ? static::BLAKE2B_512 : NULL;
+    $this->assertSame($file->filehash['blake2b_512'], $hash, 'File hash was set correctly at create.');
+    $file->save();
+    $this->assertSame($file->filehash['blake2b_512'], $hash, 'File hash was set correctly at save.');
+    $file = File::load($file->id());
+    $this->assertSame($file->filehash['blake2b_512'], $hash, 'File hash was set correctly at load.');
   }
 
   /**

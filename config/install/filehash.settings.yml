@@ -1,4 +1,10 @@
 algos:
+  blake2b_128: '0'
+  blake2b_160: '0'
+  blake2b_224: '0'
+  blake2b_256: '0'
+  blake2b_384: '0'
+  blake2b_512: '0'
   md5: '0'
   sha1: '0'
   sha224: '0'

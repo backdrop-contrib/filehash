@@ -10,13 +10,21 @@ duplicate files to be detected, and allow copies to be verified against the
 original source.
 
 File Hash module generates and stores hashes for each file uploaded to the site.
-The MD5, SHA-1, SHA-224, SHA-256, SHA-384, SHA-512/224, SHA-512/256, SHA-512,
-SHA3-224, SHA3-256, SHA3-384 and SHA3-512 hash algorithms are supported.
+The BLAKE2b-128, BLAKE2b-160, BLAKE2b-224, BLAKE2b-256, BLAKE2b-384,
+BLAKE2b-512, MD5, SHA-1, SHA-224, SHA-256, SHA-384, SHA-512/224, SHA-512/256,
+SHA-512, SHA3-224, SHA3-256, SHA3-384 and SHA3-512 hash algorithms are
+supported.
+
+If you need to verify a copy of a file, command-line utilities such as b2sum can
+be used to generate identical file hashes.
 
 REQUIREMENTS
 ------------
 
 Drupal core File module is required.
+
+If you want to use the BLAKE2b hash algorithm, either the Sodium PHP extension
+or paragonie/sodium_compat polyfill are required.
 
 INSTALLATION
 ------------

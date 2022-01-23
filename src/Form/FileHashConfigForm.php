@@ -69,6 +69,7 @@ class FileHashConfigForm extends ConfigFormBase {
       '#title' => $this->t('Disallow duplicate files'),
       '#type' => 'checkbox',
     ];
+    $form['#attached']['library'][] = 'filehash/admin';
     return parent::buildForm($form, $form_state);
   }
 

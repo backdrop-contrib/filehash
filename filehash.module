@@ -20,19 +20,23 @@ use Drupal\media\Plugin\media\Source\File as FileSource;
 function filehash_help($route_name, RouteMatchInterface $route_match) {
   switch ($route_name) {
     case 'help.page.filehash':
-      return [
-        '#type' => 'html_tag',
-        '#tag' => 'p',
-        '#value' => t('File Hash module generates and stores hashes for each file uploaded to the site. Hashes allow files to be uniquely identified, duplicate files to be detected, and copies to be verified against the original source.'),
-      ];
+    case 'filehash.admin':
+      $output = array_fill(0, 2, ['#type' => 'html_tag', '#tag' => 'p']);
+      $output[0]['#value'] = t('File Hash module generates and stores hashes for each file uploaded to the site. Hashes allow files to be uniquely identified, duplicate files to be detected, and copies to be verified against the original source.');
+      $output[1]['#value'] = function_exists('sodium_crypto_generichash_init') ? t('Note, the BLAKE2b hash algorithm requires the Sodium PHP extension, which is currently enabled.') : t('Note, the BLAKE2b hash algorithm requires the Sodium PHP extension, which is not currently enabled.');
+      return $output;
   }
 }
 
 /**
  * Returns array of enabled PHP hash algorithm identifiers.
+ *
+ * Converts the safe algorithm identifiers used by this module to the algorithm
+ * identifers actually used by PHP, which may contain slashes, dashes, etc. The
+ * "blake2b" algorithm will be handled by the Sodium PHP extension.
  */
 function filehash_algos() {
-  return str_replace(['sha3_', 'sha512_'], ['sha3-', 'sha512/'], filehash_columns());
+  return str_replace(['sha3_', 'sha512_', '2b_'], ['sha3-', 'sha512/', '2b-'], filehash_columns());
 }
 
 /**
@@ -172,7 +176,12 @@ function filehash_hash($file) {
   $file->filehash = array_fill_keys(filehash_columns(), NULL);
   foreach (filehash_algos() as $column => $algo) {
     // Unreadable files will have NULL hash values.
-    $file->filehash[$column] = hash_file($algo, $file->getFileUri()) ?: NULL;
+    if (preg_match('/^blake2b-([0-9]{3})$/', $algo, $matches)) {
+      $file->filehash[$column] = filehash_blake2b($file->getFileUri(), $matches[1] / 8) ?: NULL;
+    }
+    else {
+      $file->filehash[$column] = hash_file($algo, $file->getFileUri()) ?: NULL;
+    }
   }
 }
 
@@ -188,6 +197,12 @@ function filehash_intersect($config) {
  */
 function filehash_keys() {
   $keys = [
+    'blake2b_128',
+    'blake2b_160',
+    'blake2b_224',
+    'blake2b_256',
+    'blake2b_384',
+    'blake2b_512',
     'md5',
     'sha1',
     'sha224',
@@ -205,10 +220,25 @@ function filehash_keys() {
 }
 
 /**
+ * Returns array of hash algorithm hexadecimal output lengths.
+ */
+function filehash_lengths() {
+  return array_combine(filehash_keys(), [
+    32, 40, 56, 64, 96, 128, 32, 40, 56, 64, 96, 56, 64, 128, 56, 64, 96, 128,
+  ]);
+}
+
+/**
  * Returns array of human-readable hash algorithm names.
  */
 function filehash_names() {
   return array_combine(filehash_keys(), [
+    t('BLAKE2b-128'),
+    t('BLAKE2b-160'),
+    t('BLAKE2b-224'),
+    t('BLAKE2b-256'),
+    t('BLAKE2b-384'),
+    t('BLAKE2b-512'),
     t('MD5'),
     t('SHA-1'),
     t('SHA-224'),
@@ -326,12 +356,13 @@ function filehash_merge(FileInterface $file) {
  */
 function filehash_add_columns() {
   $schema = \Drupal::database()->schema();
+  $lengths = filehash_lengths();
   foreach (filehash_algos() as $column => $algo) {
     $spec['fields'] = [
       $column => [
         'description' => "The $algo hash for this file.",
         'type' => 'varchar_ascii',
-        'length' => strlen(hash($algo, '')),
+        'length' => $lengths[$column],
         'not null' => FALSE,
       ],
     ];
@@ -342,4 +373,36 @@ function filehash_add_columns() {
       $schema->addIndex('filehash', "{$column}_idx", [$column], $spec);
     }
   }
+}
+
+/**
+ * Implements hash_file() for the BLAKE2b hash algorithm.
+ *
+ * Requires the Sodium PHP extension.
+ *
+ * @return string|false
+ *   Same return type as hash_file().
+ */
+function filehash_blake2b($file, $length, $chunk_size = 8192) {
+  if (!function_exists('sodium_crypto_generichash_init')) {
+    return FALSE;
+  }
+  $handle = fopen($file, 'rb');
+  if (FALSE === $handle) {
+    return FALSE;
+  }
+  $state = sodium_crypto_generichash_init('', $length);
+  while (($message = stream_get_contents($handle, $chunk_size)) !== '') {
+    if (FALSE === $message) {
+      return FALSE;
+    }
+    if (!sodium_crypto_generichash_update($state, $message)) {
+      return FALSE;
+    }
+  }
+  if (!feof($handle)) {
+    return FALSE;
+  }
+  fclose($handle);
+  return bin2hex(sodium_crypto_generichash_final($state, $length));
 }
