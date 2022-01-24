@@ -116,11 +116,17 @@ function filehash_file_update($file) {
  * Wraps hash_file() to also support BLAKE2b.
  */
 function filehash_hash($algo, $uri) {
-  if (preg_match('/^blake2b-([0-9]{3})$/', $algo, $matches)) {
-    return filehash_blake2b($uri, $matches[1] / 8);
+  try {
+    if (preg_match('/^blake2b-([0-9]{3})$/', $algo, $matches)) {
+      return filehash_blake2b($uri, $matches[1] / 8);
+    }
+    else {
+      return hash_file($algo, $uri);
+    }
   }
-  else {
-    return hash_file($algo, $uri);
+  catch (ValueError $e) {
+    filehash_watchdog($e);
+    return FALSE;
   }
 }
 
@@ -397,7 +403,7 @@ function theme_filehash_table(array $variables) {
     $rows[] = array(
       theme('file_link', array('file' => $file)),
       format_size($file->filesize),
-      substr(chunk_split($file->filehash[$variables['settings']['algo']], 1, '<wbr />'), 0, -7),
+      isset($file->filehash[$variables['settings']['algo']]) ? substr(chunk_split($file->filehash[$variables['settings']['algo']], 1, '<wbr />'), 0, -7) : '',
     );
   }
   return empty($rows) ? '' : theme('table', array(
@@ -458,4 +464,15 @@ function filehash_blake2b($file, $length, $chunk_size = 8192) {
   }
   fclose($handle);
   return bin2hex(sodium_crypto_generichash_final($state, $length));
+}
+
+/**
+ * Provides an alternative to watchdog_exception() that can log Error objects.
+ */
+function filehash_watchdog($error) {
+  $message = '%type: !message in %function (line %line of %file).';
+  $variables = array();
+  require_once DRUPAL_ROOT . '/includes/errors.inc';
+  $variables += _drupal_decode_exception($error);
+  watchdog('filehash', $message, $variables, WATCHDOG_ERROR);
 }
