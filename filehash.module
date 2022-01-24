@@ -130,7 +130,7 @@ function filehash_hash($algo, $uri) {
     $variables = array('%uri' => $uri);
     require_once DRUPAL_ROOT . '/includes/errors.inc';
     $variables += _drupal_decode_exception($e);
-    watchdog('filehash', '%type while hashing %uri (directory may not exist): !message in %function (line %line of %file).', $variables, WATCHDOG_ERROR);
+    watchdog('filehash', '%type while hashing %uri (directory may not exist or not be accessible): !message in %function (line %line of %file).', $variables, WATCHDOG_ERROR);
     return FALSE;
   }
 }
