@@ -392,7 +392,7 @@ function filehash_blake2b($file, $length, $chunk_size = 8192) {
     return FALSE;
   }
   $state = sodium_crypto_generichash_init('', $length);
-  while (($message = stream_get_contents($handle, $chunk_size)) !== '') {
+  while (($message = fread($handle, $chunk_size)) !== '') {
     if (FALSE === $message) {
       return FALSE;
     }
