@@ -125,7 +125,7 @@ function filehash_hash($algo, $uri) {
     }
   }
   catch (ValueError $e) {
-    filehash_watchdog($e);
+    filehash_watchdog_error($e);
     return FALSE;
   }
 }
@@ -469,7 +469,7 @@ function filehash_blake2b($file, $length, $chunk_size = 8192) {
 /**
  * Provides an alternative to watchdog_exception() that can log Error objects.
  */
-function filehash_watchdog($error) {
+function filehash_watchdog_error($error) {
   $message = '%type: !message in %function (line %line of %file).';
   $variables = array();
   require_once DRUPAL_ROOT . '/includes/errors.inc';
