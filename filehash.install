@@ -37,3 +37,26 @@ function filehash_uninstall() {
   variable_del('filehash_algos');
   variable_del('filehash_dedupe');
 }
+
+/**
+ * Implements hook_requirements().
+ */
+function filehash_requirements($phase) {
+  $requirements = array();
+  if ('runtime' === $phase && preg_grep('/^blake/', filehash_columns())) {
+    $t = get_t();
+    $requirements['filehash_sodium'] = array(
+      'title' => $t('Sodium PHP extension'),
+      'description' => $t('File Hash is configured to use the BLAKE2b hash algorithm, which requires the Sodium PHP extension.'),
+    );
+    if (function_exists('sodium_crypto_generichash_init')) {
+      $requirements['filehash_sodium']['value'] = $t('Enabled');
+      $requirements['filehash_sodium']['severity'] = REQUIREMENT_OK;
+    }
+    else {
+      $requirements['filehash_sodium']['value'] = $t('Not enabled');
+      $requirements['filehash_sodium']['severity'] = REQUIREMENT_WARNING;
+    }
+  }
+  return $requirements;
+}

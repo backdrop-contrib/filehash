@@ -58,7 +58,7 @@ function filehash_columns() {
  * Returns array of enabled PHP hash algorithm identifiers.
  */
 function filehash_algos() {
-  return str_replace(array('sha3_', 'sha512_'), array('sha3-', 'sha512/'), filehash_columns());
+  return str_replace(array('3_', '512_', '2b_'), array('3-', '512/', '2b-'), filehash_columns());
 }
 
 /**
@@ -113,6 +113,18 @@ function filehash_file_update($file) {
 }
 
 /**
+ * Wraps hash_file() to also support BLAKE2b.
+ */
+function filehash_hash($algo, $uri) {
+  if (preg_match('/^blake2b-([0-9]{3})$/', $algo, $matches)) {
+    return filehash_blake2b($uri, $matches[1] / 8);
+  }
+  else {
+    return hash_file($algo, $uri);
+  }
+}
+
+/**
  * Implements hook_file_validate().
  */
 function filehash_file_validate($file) {
@@ -120,7 +132,7 @@ function filehash_file_validate($file) {
   // Zero size may indicate unreadable remote media source; bypass dedupe.
   if ($file->filesize && variable_get('filehash_dedupe', 0)) {
     foreach (filehash_algos() as $column => $algo) {
-      if (!$hash = hash_file($algo, $file->uri)) {
+      if (!$hash = filehash_hash($algo, $file->uri)) {
         continue;
       }
       try {
@@ -153,10 +165,25 @@ function filehash_duplicate_lookup($column, $hash) {
 }
 
 /**
+ * Returns array of hash algorithm hexadecimal output lengths.
+ */
+function filehash_lengths() {
+  return array_combine(array_keys(filehash_names()), array(
+    32, 40, 56, 64, 96, 128, 32, 40, 56, 64, 96, 56, 64, 128, 56, 64, 96, 128,
+  ));
+}
+
+/**
  * Returns array of human-readable hash algorithm names.
  */
 function filehash_names() {
   return array(
+    'blake2b_128' => 'BLAKE2b-128',
+    'blake2b_160' => 'BLAKE2b-160',
+    'blake2b_224' => 'BLAKE2b-224',
+    'blake2b_256' => 'BLAKE2b-256',
+    'blake2b_384' => 'BLAKE2b-384',
+    'blake2b_512' => 'BLAKE2b-512',
     'md5' => 'MD5',
     'sha1' => 'SHA-1',
     'sha224' => 'SHA-224',
@@ -234,7 +261,7 @@ function filehash_rss_elements(array $file, $node) {
 function filehash_save($file) {
   $file->filehash = array_fill_keys(filehash_columns(), NULL);
   foreach (filehash_algos() as $column => $algo) {
-    $file->filehash[$column] = hash_file($algo, $file->uri) ?: NULL;
+    $file->filehash[$column] = filehash_hash($algo, $file->uri) ?: NULL;
   }
   try {
     filehash_merge($file);
@@ -259,12 +286,13 @@ function filehash_merge($file) {
  * Adds any database columns required by configuration.
  */
 function filehash_add_columns() {
+  $lengths = filehash_lengths();
   foreach (filehash_algos() as $column => $algo) {
     if (!db_field_exists('filehash', $column)) {
       db_add_field('filehash', $column, array(
         'description' => "The $algo hash for this file.",
         'type' => 'char',
-        'length' => strlen(hash($algo, '')),
+        'length' => $lengths[$column],
         'not null' => FALSE,
       ));
     }
@@ -387,4 +415,47 @@ function filehash_theme() {
       'variables' => array('items' => array(), 'settings' => array()),
     ),
   );
+}
+
+/**
+ * Implements hook_help().
+ */
+function filehash_help($path) {
+  switch ($path) {
+    case 'admin/help#filehash':
+    case 'admin/config/media/filehash':
+      return function_exists('sodium_crypto_generichash_init') ? t('Note, the BLAKE2b hash algorithm requires the Sodium PHP extension, which is currently enabled.') : t('Note, the BLAKE2b hash algorithm requires the Sodium PHP extension, which is not currently enabled.');
+  }
+}
+
+/**
+ * Implements hash_file() for the BLAKE2b hash algorithm.
+ *
+ * Requires the Sodium PHP extension.
+ *
+ * @return string|false
+ *   Same return type as hash_file().
+ */
+function filehash_blake2b($file, $length, $chunk_size = 8192) {
+  if (!function_exists('sodium_crypto_generichash_init')) {
+    return FALSE;
+  }
+  $handle = fopen($file, 'rb');
+  if (FALSE === $handle) {
+    return FALSE;
+  }
+  $state = sodium_crypto_generichash_init('', $length);
+  while (($message = stream_get_contents($handle, $chunk_size)) !== '') {
+    if (FALSE === $message) {
+      return FALSE;
+    }
+    if (!sodium_crypto_generichash_update($state, $message)) {
+      return FALSE;
+    }
+  }
+  if (!feof($handle)) {
+    return FALSE;
+  }
+  fclose($handle);
+  return bin2hex(sodium_crypto_generichash_final($state, $length));
 }

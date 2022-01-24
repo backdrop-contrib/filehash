@@ -24,6 +24,7 @@ function filehash_settings() {
   );
   $form = system_settings_form($form);
   $form['#submit'][] = 'filehash_settings_submit';
+  $form['#attached']['css'][] = drupal_get_path('module', 'filehash') . '/filehash.css';
   return $form;
 }
 
