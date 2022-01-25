@@ -292,7 +292,7 @@ function filehash_node_build_defaults_alter(array &$build, EntityInterface $node
     if (method_exists($field, 'getName')) {
       foreach ($node->{$field->getName()} as $item) {
         // Add <media:hash> elements for at most one file per RSS item.
-        if ($item->getFieldDefinition()->getType() === 'entity_reference' && $item->getFieldDefinition()->getSetting('target_type') === 'media') {
+        if ('entity_reference' === $item->getFieldDefinition()->getType() && 'media' === $item->getFieldDefinition()->getSetting('target_type')) {
           $media = $item->get('entity')->getValue();
           if ($media->getSource() instanceof FileSource) {
             $file = File::load($media->getSource()->getSourceFieldValue($media));
@@ -392,7 +392,7 @@ function filehash_blake2b($file, $length, $chunk_size = 8192) {
     return FALSE;
   }
   $state = sodium_crypto_generichash_init('', $length);
-  while (($message = fread($handle, $chunk_size)) !== '') {
+  while ('' !== ($message = fread($handle, $chunk_size))) {
     if (FALSE === $message) {
       return FALSE;
     }
