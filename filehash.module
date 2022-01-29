@@ -174,13 +174,18 @@ function filehash_duplicate_lookup($column, $file) {
  */
 function filehash_hash($file) {
   $file->filehash = array_fill_keys(filehash_columns(), NULL);
+  $uri = $file->getFileUri();
+  // Nothing to do if file URI is empty.
+  if (NULL === $uri || '' === $uri) {
+    return;
+  }
   foreach (filehash_algos() as $column => $algo) {
     // Unreadable files will have NULL hash values.
     if (preg_match('/^blake2b-([0-9]{3})$/', $algo, $matches)) {
-      $file->filehash[$column] = filehash_blake2b($file->getFileUri(), $matches[1] / 8) ?: NULL;
+      $file->filehash[$column] = filehash_blake2b($uri, $matches[1] / 8) ?: NULL;
     }
     else {
-      $file->filehash[$column] = hash_file($algo, $file->getFileUri()) ?: NULL;
+      $file->filehash[$column] = hash_file($algo, $uri) ?: NULL;
     }
   }
 }
