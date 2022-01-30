@@ -57,7 +57,7 @@ function filehash_file_create(EntityInterface $file) {
  * Implements hook_ENTITY_TYPE_delete().
  */
 function filehash_file_delete(EntityInterface $file) {
-  \Drupal::database()
+  Drupal::database()
     ->delete('filehash')
     ->condition('fid', $file->id())
     ->execute();
@@ -78,7 +78,7 @@ function filehash_file_load($files) {
   if (!$columns) {
     return;
   }
-  $result = \Drupal::database()
+  $result = Drupal::database()
     ->select('filehash')
     ->fields('filehash')
     ->condition('fid', array_keys($files), 'IN')
@@ -119,7 +119,7 @@ function filehash_file_update(EntityInterface $file) {
  * Implements hook_file_validate().
  */
 function filehash_file_validate(FileInterface $file) {
-  return \Drupal::config('filehash.settings')->get('dedupe') ? filehash_validate_dedupe($file) : [];
+  return Drupal::config('filehash.settings')->get('dedupe') ? filehash_validate_dedupe($file) : [];
 }
 
 /**
@@ -139,7 +139,7 @@ function filehash_validate_dedupe(FileInterface $file) {
       }
       if ($fid) {
         $error = t('Sorry, duplicate files are not permitted.');
-        if (\Drupal::currentUser()->hasPermission('access files overview')) {
+        if (Drupal::currentUser()->hasPermission('access files overview')) {
           try {
             $url = Url::fromRoute('view.files.page_2', ['arg_0' => $fid], ['attributes' => ['target' => '_blank']]);
             $error = t('This file has already been uploaded as %filename.', [
@@ -162,7 +162,7 @@ function filehash_validate_dedupe(FileInterface $file) {
  * Returns file ID for any duplicates.
  */
 function filehash_duplicate_lookup($column, $file) {
-  $query = \Drupal::database()->select('filehash');
+  $query = Drupal::database()->select('filehash');
   $query->addField('filehash', 'fid');
   $query->condition($column, $file->filehash[$column]);
   $query->range(0, 1);
@@ -272,21 +272,21 @@ function filehash_node_build_defaults_alter(array &$build, EntityInterface $node
     return;
   }
   // The following field types are currently supported.
-  $fields = \Drupal::entityTypeManager()
+  $fields = Drupal::entityTypeManager()
     ->getStorage('field_config')
     ->loadByProperties([
       'entity_type' => 'node',
       'bundle' => $node->bundle(),
       'field_type' => 'entity_reference',
     ]);
-  $fields += \Drupal::entityTypeManager()
+  $fields += Drupal::entityTypeManager()
     ->getStorage('field_config')
     ->loadByProperties([
       'entity_type' => 'node',
       'bundle' => $node->bundle(),
       'field_type' => 'file',
     ]);
-  $fields += \Drupal::entityTypeManager()
+  $fields += Drupal::entityTypeManager()
     ->getStorage('field_config')
     ->loadByProperties([
       'entity_type' => 'node',
@@ -349,7 +349,7 @@ function filehash_save(FileInterface $file) {
  * Merges file hash data.
  */
 function filehash_merge(FileInterface $file) {
-  \Drupal::database()
+  Drupal::database()
     ->merge('filehash')
     ->key(['fid' => $file->id()])
     ->fields($file->filehash)
@@ -360,7 +360,7 @@ function filehash_merge(FileInterface $file) {
  * Adds missing database columns.
  */
 function filehash_add_columns() {
-  $schema = \Drupal::database()->schema();
+  $schema = Drupal::database()->schema();
   $lengths = filehash_lengths();
   foreach (filehash_algos() as $column => $algo) {
     $spec['fields'] = [
