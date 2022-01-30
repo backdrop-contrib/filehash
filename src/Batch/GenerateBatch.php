@@ -17,8 +17,8 @@ class GenerateBatch {
    */
   public static function createBatch() {
     return [
-      'operations' => [[[GenerateBatch::class, 'process'], []]],
-      'finished' => [GenerateBatch::class, 'finished'],
+      'operations' => [[[static::class, 'process'], []]],
+      'finished' => [static::class, 'finished'],
       'title' => t('Processing file hash batch'),
       'init_message' => t('File hash batch is starting.'),
       'progress_message' => t('Please wait...'),

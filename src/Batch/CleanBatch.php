@@ -15,7 +15,7 @@ class CleanBatch {
    */
   public static function createBatch() {
     return [
-      'operations' => [['\Drupal\filehash\Batch\CleanBatch::process', []]],
+      'operations' => [[[static::class, 'process'], []]],
       'finished' => [static::class, 'finished'],
       'title' => t('Processing file hash batch'),
       'init_message' => t('File hash batch is starting.'),
