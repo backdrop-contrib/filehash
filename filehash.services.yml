@@ -1,6 +1,11 @@
 services:
+
   filehash.config_subscriber:
     class: Drupal\filehash\EventSubscriber\FileHashConfigSubscriber
-    arguments: ['@cache_tags.invalidator', '@module_handler']
+    arguments: ['@cache_tags.invalidator', '@filehash', '@module_handler']
     tags:
       - { name: event_subscriber }
+
+  filehash:
+    class: Drupal\filehash\FileHash
+    arguments: ['@config.factory', '@entity.definition_update_manager', '@entity_type.manager']

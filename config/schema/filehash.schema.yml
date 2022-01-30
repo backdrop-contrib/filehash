@@ -61,8 +61,14 @@ filehash.settings:
           type: string
           label: 'SHA3-512'
     dedupe:
-      type: boolean
+      type: integer
       label: 'Disallow duplicate files'
+    rehash:
+      type: boolean
+      label: 'Always rehash file when saving'
+    original:
+      type: boolean
+      label: 'Store an additional original hash for each uploaded file'
 
 field.formatter.settings.filehash_table:
   type: mapping

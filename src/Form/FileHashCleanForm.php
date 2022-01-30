@@ -52,7 +52,7 @@ class FileHashCleanForm extends ConfirmFormBase {
     if (!$this->columns) {
       return $this->t('All clean! No disabled hash algorithms are installed.');
     }
-    return $this->t('Are you sure you want to delete data for disabled hash algorithms? @count hash algorithm columns (@algos) will be purged from the database.', [
+    return $this->formatPlural(count($this->columns), 'Are you sure you want to delete all data for one disabled hash algorithm column (@algos)?', 'Are you sure you want to delete all data for @count disabled hash algorithm columns (@algos)?', [
       '@count' => count($this->columns),
       '@algos' => implode(', ', $this->columns),
     ]);

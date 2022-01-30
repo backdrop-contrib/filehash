@@ -2,9 +2,12 @@
 
 namespace Drupal\filehash\Plugin\Field\FieldFormatter;
 
+use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\file\Plugin\Field\FieldFormatter\DescriptionAwareFileFormatterBase;
+use Drupal\filehash\FileHashInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Plugin implementation of the 'filehash_table' formatter.
@@ -21,17 +24,42 @@ use Drupal\file\Plugin\Field\FieldFormatter\DescriptionAwareFileFormatterBase;
 class TableFormatter extends DescriptionAwareFileFormatterBase {
 
   /**
+   * The File Hash service.
+   *
+   * @var \Drupal\filehash\FileHashInterface
+   */
+  public $fileHash;
+
+  /**
+   * Creates File Hash service.
+   */
+  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, $label, $view_mode, array $third_party_settings, FileHashInterface $filehash) {
+    parent::__construct($plugin_id, $plugin_definition, $field_definition, $settings, $label, $view_mode, $third_party_settings);
+    $this->fileHash = $filehash;
+  }
+
+  /**
+   * The File Hash service.
+   */
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+    return new static(
+      $plugin_id, $plugin_definition, $configuration['field_definition'], $configuration['settings'],
+      $configuration['label'], $configuration['view_mode'], $configuration['third_party_settings'],
+      $container->get('filehash')
+    );
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
     $elements = [];
 
     if ($files = $this->getEntitiesToView($items, $langcode)) {
-      $names = filehash_names();
       $header = [
         $this->t('Attachment'),
         $this->t('Size'),
-        $this->t('@algo hash', ['@algo' => $names[$this->getSetting('algo')]]),
+        $this->fileHash->labels()[$this->getSetting('algo')],
       ];
       $rows = [];
       foreach ($files as $file) {
@@ -50,7 +78,11 @@ class TableFormatter extends DescriptionAwareFileFormatterBase {
           ['data' => format_size(method_exists($file, 'getSize') ? $file->getSize() : 0)],
           [
             'data' => [
-              '#markup' => (isset($file->filehash) && isset($file->filehash[$this->getSetting('algo')])) ? substr(chunk_split($file->filehash[$this->getSetting('algo')], 1, '<wbr />'), 0, -7) : '',
+              '#type' => 'html_tag',
+              '#tag' => 'span',
+              '#value' => $file->{$this->getSetting('algo')}->value ?? '',
+              '#attributes' => ['class' => ['filehash-value']],
+              '#attached' => ['library' => ['filehash/field']],
             ],
           ],
         ];
@@ -71,7 +103,7 @@ class TableFormatter extends DescriptionAwareFileFormatterBase {
    */
   public static function defaultSettings() {
     $settings = parent::defaultSettings();
-    $columns = filehash_columns();
+    $columns = \Drupal::service('filehash')->columns();
     $settings['algo'] = array_pop($columns);
     return $settings;
   }
@@ -81,9 +113,9 @@ class TableFormatter extends DescriptionAwareFileFormatterBase {
    */
   public function settingsForm(array $form, FormStateInterface $form_state) {
     $form = parent::settingsForm($form, $form_state);
-    $names = filehash_names();
+    $names = $this->fileHash->names();
     $options = [];
-    foreach (filehash_columns() as $column) {
+    foreach ($this->fileHash->columns() as $column) {
       $options[$column] = $names[$column];
     }
     $form['algo'] = [
@@ -100,7 +132,7 @@ class TableFormatter extends DescriptionAwareFileFormatterBase {
    */
   public function settingsSummary() {
     $summary = parent::settingsSummary();
-    $names = filehash_names();
+    $names = $this->fileHash->names();
     if (isset($names[$this->getSetting('algo')])) {
       $summary[] = $this->t('@algo hash', ['@algo' => $names[$this->getSetting('algo')]]);
     }

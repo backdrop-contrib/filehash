@@ -17,4 +17,6 @@ algos:
   sha3_256: '0'
   sha3_384: '0'
   sha3_512: '0'
-dedupe: false
+dedupe: 0
+rehash: false
+original: false

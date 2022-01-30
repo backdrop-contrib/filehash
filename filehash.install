@@ -6,36 +6,11 @@
  */
 
 /**
- * Implements hook_schema().
- */
-function filehash_schema() {
-  $schema['filehash'] = [
-    'description' => 'Store hashes for each uploaded file.',
-    'fields' => [
-      'fid' => [
-        'description' => 'Primary key: {file_managed}.fid.',
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-      ],
-    ],
-    'primary key' => ['fid'],
-    'foreign keys' => [
-      'fid' => [
-        'table' => 'file_managed',
-        'columns' => ['fid' => 'fid'],
-      ],
-    ],
-  ];
-  return $schema;
-}
-
-/**
  * Implements hook_requirements().
  */
 function filehash_requirements($phase) {
   $requirements = [];
-  if ('runtime' === $phase && preg_grep('/^blake/', filehash_columns())) {
+  if ('runtime' === $phase && preg_grep('/^blake/', Drupal::service('filehash')->columns())) {
     $requirements['filehash_sodium'] = [
       'title' => t('Sodium PHP extension'),
       'description' => t('File Hash is configured to use the BLAKE2b hash algorithm, which requires the Sodium PHP extension.'),
@@ -50,4 +25,78 @@ function filehash_requirements($phase) {
     }
   }
   return $requirements;
+}
+
+/**
+ * Add file hash columns to the file_managed table.
+ */
+function filehash_update_8200() {
+  Drupal::service('filehash')->addColumns();
+  return t('File hashes will now be stored in the file_managed table, and are directly available as base fields on file entities. You may need to update any views, templates, etc. that use file hashes.');
+}
+
+/**
+ * Migrate file hashes from the filehash table to the file_managed table.
+ *
+ * Warning: Any data for disabled file hash algorithms will not be migrated!
+ * Please ensure hash algorithms for which you want to save data are enabled
+ * before running this update.
+ */
+function filehash_update_8201(&$sandbox) {
+  if (!Drupal::service('filehash')->columns()) {
+    return t('No file hash algorithms are enabled, so no data was migrated from the filehash table.');
+  }
+  if (!isset($sandbox['progress'])) {
+    $sandbox['progress'] = 0;
+    $sandbox['max'] = Drupal::database()
+      ->query('SELECT COUNT(fid) FROM {filehash}')
+      ->fetchField();
+  }
+  $records = Drupal::database()
+    ->select('filehash')
+    ->fields('filehash', ['fid' => 'fid'] + Drupal::service('filehash')->columns())
+    ->range(0, 1)
+    ->execute();
+  foreach ($records as $record) {
+    $fields = [];
+    foreach (Drupal::service('filehash')->columns() as $column) {
+      $fields[$column] = $record->{$column};
+    }
+    Drupal::database()
+      ->update('file_managed')
+      ->fields($fields)
+      ->condition('fid', $record->fid)
+      ->execute();
+    Drupal::database()
+      ->delete('filehash')
+      ->condition('fid', $record->fid)
+      ->execute();
+    $sandbox['progress']++;
+  }
+  $sandbox['#finished'] = empty($sandbox['max']) ? 1 : $sandbox['progress'] / $sandbox['max'];
+  return t('All file hashes have been migrated from the filehash table to the file_managed table.');
+}
+
+/**
+ * Drop the filehash table.
+ *
+ * Warning: Any data for disabled file hash algorithms was not migrated and will
+ * be permanently deleted!
+ */
+function filehash_update_8202() {
+  Drupal::database()->schema()->dropTable('filehash');
+  return t('The filehash table has been dropped.');
+}
+
+/**
+ * Enable the "Always rehash file when saving" setting.
+ */
+function filehash_update_8203() {
+  $dedupe = Drupal::config('filehash.settings')->get('dedupe');
+  Drupal::configFactory()
+    ->getEditable('filehash.settings')
+    ->set('rehash', TRUE)
+    ->set('dedupe', (int) $dedupe)
+    ->save();
+  return t('The <em>Always rehash file when saving</em> setting has been enabled to match previous File Hash module bahavior. You can disable this setting if you do not have any modules that modify files after creation, or you do not want to keep file hashes in sync with the file on disk. Note: If you were using the dedupe setting, you now have the option to turn it off and configure dedupe in the widget settings for each upload field.');
 }

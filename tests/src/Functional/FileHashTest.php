@@ -63,11 +63,11 @@ class FileHashTest extends FileFieldTestBase {
       'changed' => 1,
       'status' => FILE_STATUS_PERMANENT,
     ]);
-    $this->assertSame($file->filehash['sha1'], static::SHA1, 'File hash was set correctly at create.');
+    $this->assertSame($file->sha1->value, static::SHA1, 'File hash was set correctly at create.');
     $file->save();
-    $this->assertSame($file->filehash['sha1'], static::SHA1, 'File hash was set correctly at save.');
+    $this->assertSame($file->sha1->value, static::SHA1, 'File hash was set correctly at save.');
     $file = File::load($file->id());
-    $this->assertSame($file->filehash['sha1'], static::SHA1, 'File hash was set correctly at load.');
+    $this->assertSame($file->sha1->value, static::SHA1, 'File hash was set correctly at load.');
   }
 
   /**
@@ -88,11 +88,11 @@ class FileHashTest extends FileFieldTestBase {
       'status' => FILE_STATUS_PERMANENT,
     ]);
     $hash = function_exists('sodium_crypto_generichash_init') ? static::BLAKE2B_512 : NULL;
-    $this->assertSame($file->filehash['blake2b_512'], $hash, 'File hash was set correctly at create.');
+    $this->assertSame($file->blake2b_512->value, $hash, 'File hash was set correctly at create.');
     $file->save();
-    $this->assertSame($file->filehash['blake2b_512'], $hash, 'File hash was set correctly at save.');
+    $this->assertSame($file->blake2b_512->value, $hash, 'File hash was set correctly at save.');
     $file = File::load($file->id());
-    $this->assertSame($file->filehash['blake2b_512'], $hash, 'File hash was set correctly at load.');
+    $this->assertSame($file->blake2b_512->value, $hash, 'File hash was set correctly at load.');
   }
 
   /**

@@ -2,4 +2,9 @@ admin:
   version: VERSION
   css:
     theme:
-      filehash.css: {}
+      css/admin.css: {}
+field:
+  version: VERSION
+  css:
+    theme:
+      css/field.css: {}

@@ -6,13 +6,145 @@
  */
 
 use Drupal\Core\Database\DatabaseExceptionWrapper;
+use Drupal\Core\Entity\EntityFormInterface;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Link;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
+use Drupal\field\FieldConfigInterface;
 use Drupal\file\Entity\File;
 use Drupal\file\FileInterface;
-use Drupal\media\Plugin\media\Source\File as FileSource;
+use Drupal\file\Plugin\Field\FieldType\FileFieldItemList;
+use Drupal\filehash\FileHashInterface;
+
+/**
+ * Implements hook_entity_base_field_info().
+ */
+function filehash_entity_base_field_info(EntityTypeInterface $entity_type) {
+  $fields = [];
+  if ('file' === $entity_type->id()) {
+    $columns = Drupal::service('filehash')->columns();
+    $labels = Drupal::service('filehash')->labels();
+    $lengths = Drupal::service('filehash')->lengths();
+    $descriptions = Drupal::service('filehash')->descriptions();
+    $original = Drupal::config('filehash.settings')->get('original');
+    if ($original) {
+      $original_labels = Drupal::service('filehash')->originalLabels();
+      $original_descriptions = Drupal::service('filehash')->originalDescriptions();
+    }
+    foreach ($columns as $column) {
+      $fields[$column] = BaseFieldDefinition::create('filehash')
+        ->setLabel($labels[$column])
+        ->setSetting('max_length', $lengths[$column])
+        ->setDescription($descriptions[$column]);
+      if ($original) {
+        $fields["original_$column"] = BaseFieldDefinition::create('filehash')
+          ->setLabel($original_labels[$column])
+          ->setSetting('max_length', $lengths[$column])
+          ->setDescription($original_descriptions[$column]);
+      }
+    }
+  }
+  return $fields;
+}
+
+/**
+ * Implements hook_field_widget_form_alter().
+ */
+function filehash_field_widget_form_alter(&$element, FormStateInterface $form_state, $context) {
+  if (isset($element['#type']) && $element['#type'] === 'managed_file') {
+    $settings = $context['items']->getFieldDefinition()->getThirdPartySettings('filehash');
+    if (!empty($settings['dedupe'])) {
+      $strict = FileHashInterface::STRICT_DEDUPE == $settings['dedupe'];
+      $element['#upload_validators']['filehash_validate_dedupe'] = [$strict];
+    }
+  }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_create().
+ */
+function filehash_file_create(EntityInterface $file) {
+  Drupal::service('filehash')->hash($file, NULL, Drupal::config('filehash.settings')->get('original'));
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_load().
+ *
+ * Generates hash if it does not already exist for the file.
+ */
+function filehash_file_load($files) {
+  // @todo Add a setting to toggle the auto-hash behavior?
+  foreach ($files as $file) {
+    foreach (Drupal::service('filehash')->columns() as $column) {
+      if (!$file->{$column}->value) {
+        $file->original = clone($file);
+        // Entity post-save will clean up the dangling "original" property.
+        $file->save();
+        break;
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_presave().
+ */
+function filehash_file_presave(EntityInterface $file) {
+  if (Drupal::config('filehash.settings')->get('rehash')) {
+    // Regenerate all hashes.
+    Drupal::service('filehash')->hash($file);
+  }
+  else {
+    // Only generate missing hashes.
+    foreach (Drupal::service('filehash')->columns() as $column) {
+      if (empty($file->{$column}->value)) {
+        Drupal::service('filehash')->hash($file, $column);
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_file_validate().
+ */
+function filehash_file_validate(FileInterface $file) {
+  $dedupe = Drupal::config('filehash.settings')->get('dedupe');
+  $strict = FileHashInterface::STRICT_DEDUPE == $dedupe;
+  return $dedupe ? filehash_validate_dedupe($file, $strict) : [];
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function filehash_form_field_config_edit_form_alter(array &$form, FormStateInterface $form_state) {
+  if (!($form_state->getFormObject() instanceof EntityFormInterface)) {
+    return;
+  }
+  $field = $form_state->getFormObject()->getEntity();
+  if (!($field instanceof FieldConfigInterface)) {
+    return;
+  }
+  if (!is_a($field->getClass(), FileFieldItemList::class, TRUE)) {
+    return;
+  }
+  $settings = $field->getThirdPartySettings('filehash');
+  $form['settings']['filehash'] = [
+    '#type'    => 'container',
+    '#tree'    => TRUE,
+    '#parents' => ['third_party_settings', 'filehash'],
+  ];
+  $form['settings']['filehash']['dedupe'] = [
+    '#type'          => 'select',
+    '#title'         => t('Disallow duplicate files'),
+    '#options'       => [t('Off'), t('Enabled'), t('Strict')],
+    '#default_value' => $settings['dedupe'] ?? 0,
+    '#description'   => t('If enabled, prevent duplicate uploaded files from being saved when the file already exists as a permanent file. If strict, also include temporary files in the duplicate check, which prevents duplicates from being uploaded at the same time. Note, enabling this setting has privacy implications, as it allows users to determine if a particular file has been uploaded to the site.'),
+  ];
+}
 
 /**
  * Implements hook_help().
@@ -29,113 +161,19 @@ function filehash_help($route_name, RouteMatchInterface $route_match) {
 }
 
 /**
- * Returns array of enabled PHP hash algorithm identifiers.
- *
- * Converts the safe algorithm identifiers used by this module to the algorithm
- * identifers actually used by PHP, which may contain slashes, dashes, etc. The
- * "blake2b" algorithm will be handled by the Sodium PHP extension.
- */
-function filehash_algos() {
-  return str_replace(['sha3_', 'sha512_', '2b_'], ['sha3-', 'sha512/', '2b-'], filehash_columns());
-}
-
-/**
- * Returns array of enabled File Hash algorithm identifiers.
- */
-function filehash_columns() {
-  return filehash_intersect(Drupal::config('filehash.settings')->get('algos'));
-}
-
-/**
- * Implements hook_ENTITY_TYPE_create().
- */
-function filehash_file_create(EntityInterface $file) {
-  filehash_hash($file);
-}
-
-/**
- * Implements hook_ENTITY_TYPE_delete().
- */
-function filehash_file_delete(EntityInterface $file) {
-  Drupal::database()
-    ->delete('filehash')
-    ->condition('fid', $file->id())
-    ->execute();
-}
-
-/**
- * Implements hook_ENTITY_TYPE_insert().
- */
-function filehash_file_insert(EntityInterface $file) {
-  filehash_save($file);
-}
-
-/**
- * Implements hook_ENTITY_TYPE_load().
- */
-function filehash_file_load($files) {
-  $columns = filehash_columns();
-  if (!$columns) {
-    return;
-  }
-  $result = Drupal::database()
-    ->select('filehash')
-    ->fields('filehash')
-    ->condition('fid', array_keys($files), 'IN')
-    ->execute();
-  foreach ($result as $record) {
-    foreach ($columns as $column) {
-      // Handle missing database column.
-      $files[$record->fid]->filehash[$column] = property_exists($record, $column) ? $record->$column : NULL;
-    }
-  }
-  // Generate hash if it does not already exist for the file.
-  foreach ($files as $fid => $file) {
-    foreach ($columns as $column) {
-      if (empty($file->filehash[$column])) {
-        filehash_hash($files[$fid]);
-        filehash_save($files[$fid]);
-        break;
-      }
-    }
-  }
-}
-
-/**
- * Implements hook_ENTITY_TYPE_presave().
- */
-function filehash_file_presave(EntityInterface $file) {
-  filehash_hash($file);
-}
-
-/**
- * Implements hook_ENTITY_TYPE_update().
- */
-function filehash_file_update(EntityInterface $file) {
-  filehash_save($file);
-}
-
-/**
- * Implements hook_file_validate().
- */
-function filehash_file_validate(FileInterface $file) {
-  return Drupal::config('filehash.settings')->get('dedupe') ? filehash_validate_dedupe($file) : [];
-}
-
-/**
  * Checks that file is not a duplicate.
  */
-function filehash_validate_dedupe(FileInterface $file) {
+function filehash_validate_dedupe(FileInterface $file, $strict = FALSE) {
   $errors = [];
   // We only run the dedupe check on initial file creation.
   if (!$file->id()) {
-    foreach (filehash_columns() as $column) {
+    foreach (Drupal::service('filehash')->columns() as $column) {
       try {
-        $fid = filehash_duplicate_lookup($column, $file);
+        $fid = Drupal::service('filehash')->duplicateLookup($column, $file, $strict);
       }
       catch (DatabaseExceptionWrapper $e) {
-        filehash_add_columns();
-        $fid = filehash_duplicate_lookup($column, $file);
+        Drupal::service('filehash')->addColumns();
+        $fid = Drupal::service('filehash')->duplicateLookup($column, $file, $strict);
       }
       if ($fid) {
         $error = t('Sorry, duplicate files are not permitted.');
@@ -156,258 +194,4 @@ function filehash_validate_dedupe(FileInterface $file) {
     }
   }
   return $errors;
-}
-
-/**
- * Returns file ID for any duplicates.
- */
-function filehash_duplicate_lookup($column, $file) {
-  $query = Drupal::database()->select('filehash');
-  $query->addField('filehash', 'fid');
-  $query->condition($column, $file->filehash[$column]);
-  $query->range(0, 1);
-  return $query->execute()->fetchField();
-}
-
-/**
- * Calculates the file hashes.
- */
-function filehash_hash($file) {
-  $file->filehash = array_fill_keys(filehash_columns(), NULL);
-  $uri = $file->getFileUri();
-  // Nothing to do if file URI is empty.
-  if (NULL === $uri || '' === $uri) {
-    return;
-  }
-  foreach (filehash_algos() as $column => $algo) {
-    // Unreadable files will have NULL hash values.
-    if (preg_match('/^blake2b-([0-9]{3})$/', $algo, $matches)) {
-      $file->filehash[$column] = filehash_blake2b($uri, $matches[1] / 8) ?: NULL;
-    }
-    else {
-      $file->filehash[$column] = hash_file($algo, $uri) ?: NULL;
-    }
-  }
-}
-
-/**
- * Validates File Hash algorithm config.
- */
-function filehash_intersect($config) {
-  return array_intersect_assoc($config ?? [], filehash_keys());
-}
-
-/**
- * Returns array of valid File Hash algorithm identifiers.
- */
-function filehash_keys() {
-  $keys = [
-    'blake2b_128',
-    'blake2b_160',
-    'blake2b_224',
-    'blake2b_256',
-    'blake2b_384',
-    'blake2b_512',
-    'md5',
-    'sha1',
-    'sha224',
-    'sha256',
-    'sha384',
-    'sha512_224',
-    'sha512_256',
-    'sha512',
-    'sha3_224',
-    'sha3_256',
-    'sha3_384',
-    'sha3_512',
-  ];
-  return array_combine($keys, $keys);
-}
-
-/**
- * Returns array of hash algorithm hexadecimal output lengths.
- */
-function filehash_lengths() {
-  return array_combine(filehash_keys(), [
-    32, 40, 56, 64, 96, 128, 32, 40, 56, 64, 96, 56, 64, 128, 56, 64, 96, 128,
-  ]);
-}
-
-/**
- * Returns array of human-readable hash algorithm names.
- */
-function filehash_names() {
-  return array_combine(filehash_keys(), [
-    t('BLAKE2b-128'),
-    t('BLAKE2b-160'),
-    t('BLAKE2b-224'),
-    t('BLAKE2b-256'),
-    t('BLAKE2b-384'),
-    t('BLAKE2b-512'),
-    t('MD5'),
-    t('SHA-1'),
-    t('SHA-224'),
-    t('SHA-256'),
-    t('SHA-384'),
-    t('SHA-512/224'),
-    t('SHA-512/256'),
-    t('SHA-512'),
-    t('SHA3-224'),
-    t('SHA3-256'),
-    t('SHA3-384'),
-    t('SHA3-512'),
-  ]);
-}
-
-/**
- * Implements hook_ENTITY_TYPE_build_defaults_alter().
- */
-function filehash_node_build_defaults_alter(array &$build, EntityInterface $node, $view_mode = 'full', $langcode = NULL) {
-  if ($view_mode != 'rss') {
-    return;
-  }
-  // The <media:hash> element only supports MD5 and SHA-1.
-  $columns = filehash_columns();
-  if (!isset($columns['md5']) && !isset($columns['sha1'])) {
-    return;
-  }
-  // The following field types are currently supported.
-  $fields = Drupal::entityTypeManager()
-    ->getStorage('field_config')
-    ->loadByProperties([
-      'entity_type' => 'node',
-      'bundle' => $node->bundle(),
-      'field_type' => 'entity_reference',
-    ]);
-  $fields += Drupal::entityTypeManager()
-    ->getStorage('field_config')
-    ->loadByProperties([
-      'entity_type' => 'node',
-      'bundle' => $node->bundle(),
-      'field_type' => 'file',
-    ]);
-  $fields += Drupal::entityTypeManager()
-    ->getStorage('field_config')
-    ->loadByProperties([
-      'entity_type' => 'node',
-      'bundle' => $node->bundle(),
-      'field_type' => 'image',
-    ]);
-  foreach ($fields as $field) {
-    if (method_exists($field, 'getName')) {
-      foreach ($node->{$field->getName()} as $item) {
-        // Add <media:hash> elements for at most one file per RSS item.
-        if ('entity_reference' === $item->getFieldDefinition()->getType() && 'media' === $item->getFieldDefinition()->getSetting('target_type')) {
-          $media = $item->get('entity')->getValue();
-          if ($media->getSource() instanceof FileSource) {
-            $file = File::load($media->getSource()->getSourceFieldValue($media));
-            filehash_rss_elements($file, $node);
-            return;
-          }
-        }
-        elseif (method_exists($item, 'isDisplayed') && $item->isDisplayed() && method_exists($item, 'get')) {
-          $file = $item->get('entity')->getValue();
-          filehash_rss_elements($file, $node);
-          return;
-        }
-      }
-    }
-  }
-}
-
-/**
- * Adds <media:hash> RSS elements to $node object.
- */
-function filehash_rss_elements($file, $node) {
-  $names = ['md5' => 'md5', 'sha1' => 'sha-1'];
-  foreach ($names as $column => $name) {
-    if (!empty($file->filehash[$column])) {
-      $node->rss_elements[] = [
-        'key' => 'media:hash',
-        'attributes' => ['algo' => $name],
-        'value' => $file->filehash[$column],
-      ];
-    }
-  }
-  $node->rss_namespaces['xmlns:media'] = 'http://search.yahoo.com/mrss/';
-}
-
-/**
- * Saves the file hashes.
- */
-function filehash_save(FileInterface $file) {
-  try {
-    filehash_merge($file);
-  }
-  catch (DatabaseExceptionWrapper $e) {
-    filehash_add_columns();
-    filehash_merge($file);
-  }
-}
-
-/**
- * Merges file hash data.
- */
-function filehash_merge(FileInterface $file) {
-  Drupal::database()
-    ->merge('filehash')
-    ->key(['fid' => $file->id()])
-    ->fields($file->filehash)
-    ->execute();
-}
-
-/**
- * Adds missing database columns.
- */
-function filehash_add_columns() {
-  $schema = Drupal::database()->schema();
-  $lengths = filehash_lengths();
-  foreach (filehash_algos() as $column => $algo) {
-    $spec['fields'] = [
-      $column => [
-        'description' => "The $algo hash for this file.",
-        'type' => 'varchar_ascii',
-        'length' => $lengths[$column],
-        'not null' => FALSE,
-      ],
-    ];
-    if (!$schema->fieldExists('filehash', $column)) {
-      $schema->addField('filehash', $column, $spec['fields'][$column]);
-    }
-    if (!$schema->indexExists('filehash', "{$column}_idx")) {
-      $schema->addIndex('filehash', "{$column}_idx", [$column], $spec);
-    }
-  }
-}
-
-/**
- * Implements hash_file() for the BLAKE2b hash algorithm.
- *
- * Requires the Sodium PHP extension.
- *
- * @return string|false
- *   Same return type as hash_file().
- */
-function filehash_blake2b($file, $length, $chunk_size = 8192) {
-  if (!function_exists('sodium_crypto_generichash_init')) {
-    return FALSE;
-  }
-  $handle = fopen($file, 'rb');
-  if (FALSE === $handle) {
-    return FALSE;
-  }
-  $state = sodium_crypto_generichash_init('', $length);
-  while ('' !== ($message = fread($handle, $chunk_size))) {
-    if (FALSE === $message) {
-      return FALSE;
-    }
-    if (!sodium_crypto_generichash_update($state, $message)) {
-      return FALSE;
-    }
-  }
-  if (!feof($handle)) {
-    return FALSE;
-  }
-  fclose($handle);
-  return bin2hex(sodium_crypto_generichash_final($state, $length));
 }

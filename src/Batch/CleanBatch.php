@@ -2,6 +2,8 @@
 
 namespace Drupal\filehash\Batch;
 
+use Drupal\Core\Entity\EntityDefinitionUpdateManagerInterface;
+
 /**
  * Drops disabled database columns.
  */
@@ -29,10 +31,13 @@ class CleanBatch {
    */
   public static function columns() {
     $columns = [];
-    $enabled = filehash_columns();
-    foreach (filehash_names() as $column => $name) {
-      if (empty($enabled[$column]) && \Drupal::database()->schema()->fieldExists('filehash', $column)) {
-        $columns[$column] = $name;
+    foreach (\Drupal::entityDefinitionUpdateManager()->getChangeList() as $entity_type_id => $change_list) {
+      if ($entity_type_id === 'file') {
+        foreach ($change_list['field_storage_definitions'] as $field_name => $change) {
+          if ($change === EntityDefinitionUpdateManagerInterface::DEFINITION_DELETED) {
+            $columns[$field_name] = \Drupal::entityDefinitionUpdateManager()->getFieldStorageDefinition($field_name, 'file')->getLabel();
+          }
+        }
       }
     }
     return $columns;
@@ -46,14 +51,13 @@ class CleanBatch {
       $context['results']['processed'] = 0;
       $context['sandbox']['count'] = count(self::columns());
     }
-    $enabled = filehash_columns();
-    foreach (filehash_names() as $column => $name) {
-      if (empty($enabled[$column]) && \Drupal::database()->schema()->fieldExists('filehash', $column)) {
-        \Drupal::database()->schema()->dropField('filehash', $column);
-        $context['message'] = t('Dropped %name column.', ['%name' => $name]);
-        $context['results']['processed']++;
-        break;
-      }
+    $fields = self::columns();
+    foreach ($fields as $column => $name) {
+      $definition = \Drupal::entityDefinitionUpdateManager()->getFieldStorageDefinition($column, 'file');
+      \Drupal::entityDefinitionUpdateManager()->uninstallFieldStorageDefinition($definition);
+      $context['message'] = t('Dropped %name column.', ['%name' => $name]);
+      $context['results']['processed']++;
+      break;
     }
     $context['finished'] = $context['sandbox']['count'] ? $context['results']['processed'] / $context['sandbox']['count'] : 1;
   }
