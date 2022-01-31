@@ -119,7 +119,7 @@ class FileHashTest extends FileFieldTestBase {
    */
   public function testFileHashFieldDuplicate() {
     $this->drupalGet('admin/config/media/filehash');
-    $fields = ['dedupe' => TRUE];
+    $fields = ['dedupe' => 1];
     $this->submitForm($fields, $this->t('Save configuration'));
 
     $field_name = strtolower($this->randomMachineName());
@@ -136,14 +136,14 @@ class FileHashTest extends FileFieldTestBase {
     $this->assertSession()->pageTextContains($this->t('Sorry, duplicate files are not permitted.'));
 
     $this->drupalGet('admin/config/media/filehash');
-    $fields = ['dedupe' => FALSE];
+    $fields = ['dedupe' => 0];
     $this->submitForm($fields, $this->t('Save configuration'));
 
     $nid = $this->uploadNodeFile($test_file, $field_name, $type_name);
     $this->assertSession()->addressEquals("node/$nid");
 
     $this->drupalGet('admin/config/media/filehash');
-    $fields = ['dedupe' => TRUE];
+    $fields = ['dedupe' => 1];
     $this->submitForm($fields, $this->t('Save configuration'));
 
     // Test that a node with duplicate file already attached can be saved.
