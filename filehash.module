@@ -95,6 +95,9 @@ function filehash_file_load($files) {
     }
     // Generate hash if it does not already exist for the file.
     foreach ($files as $fid => $file) {
+      if (!filehash_should_hash($file->uri)) {
+        continue;
+      }
       foreach ($columns as $column) {
         if (empty($file->filehash[$column])) {
           filehash_save($files[$fid]);
@@ -113,14 +116,24 @@ function filehash_file_update($file) {
 }
 
 /**
- * Wraps hash_file() to also support BLAKE2b.
+ * Allows file hashing to be skipped.
  */
-function filehash_hash($algo, $uri) {
+function filehash_should_hash($uri) {
   if (variable_get('filehash_local_only', FALSE)) {
     $local = file_get_stream_wrappers(STREAM_WRAPPERS_LOCAL);
     if (!isset($local[file_uri_scheme($uri)])) {
       return FALSE;
     }
+  }
+  return TRUE;
+}
+
+/**
+ * Wraps hash_file() to also support BLAKE2b.
+ */
+function filehash_hash($algo, $uri) {
+  if (!filehash_should_hash($uri)) {
+    return FALSE;
   }
   // If a file's directory was deleted, the stream wrapper will generate an
   // empty path. Opening a file with empty path throws a ValueError on PHP 8.
