@@ -78,7 +78,7 @@ class FileHash implements FileHashInterface {
    * Returns array of enabled File Hash algorithm identifiers.
    */
   public function columns() {
-    return static::intersect($this->configFactory->get('filehash.settings')->get('algos'));
+    return $this->intersect($this->configFactory->get('filehash.settings')->get('algos'));
   }
 
   /**
@@ -110,7 +110,7 @@ class FileHash implements FileHashInterface {
     foreach ($algos as $column => $algo) {
       // Unreadable files will have NULL hash values.
       if (preg_match('/^blake2b_([0-9]{3})$/', $algo, $matches)) {
-        $hash = static::blake2b($uri, $matches[1] / 8) ?: NULL;
+        $hash = $this->blake2b($uri, $matches[1] / 8) ?: NULL;
       }
       else {
         $hash = hash_file($algo, $uri) ?: NULL;
