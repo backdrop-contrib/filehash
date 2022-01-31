@@ -16,6 +16,12 @@ function filehash_settings() {
     '#title' => t('Enabled hash algorithms'),
     '#type' => 'checkboxes',
   );
+  $form['filehash_local_only'] = array(
+    '#default_value' => variable_get('filehash_local_only', FALSE),
+    '#description' => t('If checked, file hashes will be generated only for files using local stream wrappers (public, temporary, etc.).'),
+    '#title' => t('Hash local files only'),
+    '#type' => 'checkbox',
+  );
   $form['filehash_dedupe'] = array(
     '#default_value' => variable_get('filehash_dedupe', 0),
     '#description' => t('If checked, prevent duplicate uploaded files from being saved. Note, enabling this setting has privacy implications, as it allows users to determine if a particular file has been uploaded to the site.'),

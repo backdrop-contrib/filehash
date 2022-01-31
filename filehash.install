@@ -36,6 +36,7 @@ function filehash_schema() {
 function filehash_uninstall() {
   variable_del('filehash_algos');
   variable_del('filehash_dedupe');
+  variable_del('filehash_local_only');
 }
 
 /**

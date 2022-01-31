@@ -116,6 +116,12 @@ function filehash_file_update($file) {
  * Wraps hash_file() to also support BLAKE2b.
  */
 function filehash_hash($algo, $uri) {
+  if (variable_get('filehash_local_only', FALSE)) {
+    $local = file_get_stream_wrappers(STREAM_WRAPPERS_LOCAL);
+    if (!isset($local[file_uri_scheme($uri)])) {
+      return FALSE;
+    }
+  }
   // If a file's directory was deleted, the stream wrapper will generate an
   // empty path. Opening a file with empty path throws a ValueError on PHP 8.
   try {
