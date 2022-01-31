@@ -3,6 +3,7 @@
 namespace Drupal\filehash\Batch;
 
 use Drupal\Core\Entity\EntityDefinitionUpdateManagerInterface;
+use Drupal\filehash\FileHash;
 
 /**
  * Drops disabled database columns.
@@ -35,7 +36,11 @@ class CleanBatch {
       if ($entity_type_id === 'file') {
         foreach ($change_list['field_storage_definitions'] as $field_name => $change) {
           if ($change === EntityDefinitionUpdateManagerInterface::DEFINITION_DELETED) {
-            $columns[$field_name] = \Drupal::entityDefinitionUpdateManager()->getFieldStorageDefinition($field_name, 'file')->getLabel();
+            // Only add File Hash columns to the list.
+            $base_column = preg_replace('/^original_/', '', $field_name);
+            if (isset(FileHash::keys()[$base_column])) {
+              $columns[$field_name] = \Drupal::entityDefinitionUpdateManager()->getFieldStorageDefinition($field_name, 'file')->getLabel();
+            }
           }
         }
       }
