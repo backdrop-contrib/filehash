@@ -101,15 +101,15 @@ class FileHash implements FileHashInterface {
    */
   public function hash($file, $column = NULL, $original = FALSE) {
     $uri = $file->getFileUri();
-    // Nothing to do if file URI is empty.
-    if (NULL === $uri || '' === $uri) {
-      return;
-    }
     // If column is set, only generate that hash.
     $algos = $column ? [$column => $this->algos()[$column]] : $this->algos();
     foreach ($algos as $column => $algo) {
+      // Nothing to do if file URI is empty.
+      if (NULL === $uri || '' === $uri) {
+        $hash = NULL;
+      }
       // Unreadable files will have NULL hash values.
-      if (preg_match('/^blake2b_([0-9]{3})$/', $algo, $matches)) {
+      elseif (preg_match('/^blake2b_([0-9]{3})$/', $algo, $matches)) {
         $hash = $this->blake2b($uri, $matches[1] / 8) ?: NULL;
       }
       else {
