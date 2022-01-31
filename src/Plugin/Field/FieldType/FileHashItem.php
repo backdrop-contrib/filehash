@@ -14,7 +14,7 @@ use Drupal\Core\Field\Plugin\Field\FieldType\StringItem;
  *   description = @Translation("A field containing a hexadecimal hash value."),
  *   category = @Translation("Text"),
  *   default_widget = "string_textfield",
- *   default_formatter = "string",
+ *   default_formatter = "filehash",
  *   no_ui = TRUE
  * )
  */
