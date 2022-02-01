@@ -42,7 +42,7 @@ class FileHashTest extends KernelTestBase implements FileHashTestInterface {
   }
 
   /**
-   * Tests entity query.
+   * Tests entity query and always rehash setting.
    */
   public function testEntityQuery() {
     $uri = 'temporary://' . $this->randomMachineName() . '.txt';
@@ -54,12 +54,50 @@ class FileHashTest extends KernelTestBase implements FileHashTestInterface {
     $file->save();
     $this->assertGreaterThan(0, $file->id());
     $count = \Drupal::entityQuery('file')
-      ->condition('fid', '1')
       ->condition('sha1', static::SHA1)
       ->accessCheck(TRUE)
       ->count()
       ->execute();
     $this->assertSame('1', $count);
+
+    // Modify contents and save, with rehash disabled.
+    file_put_contents($uri, static::DIFFERENT_CONTENTS);
+    $file->save();
+
+    $count = \Drupal::entityQuery('file')
+      ->condition('sha1', static::SHA1)
+      ->accessCheck(TRUE)
+      ->count()
+      ->execute();
+    $this->assertSame('1', $count);
+    $count = \Drupal::entityQuery('file')
+      ->condition('sha1', static::DIFFERENT_SHA1)
+      ->accessCheck(TRUE)
+      ->count()
+      ->execute();
+    $this->assertSame('0', $count);
+
+    // Enable rehash and save file again.
+    \Drupal::configFactory()
+      ->getEditable('filehash.settings')
+      ->set('rehash', TRUE)
+      ->save();
+    $file->save();
+
+    $count = \Drupal::entityQuery('file')
+      ->condition('sha1', static::SHA1)
+      ->accessCheck(TRUE)
+      ->count()
+      ->execute();
+    $this->assertSame('0', $count);
+
+    $count = \Drupal::entityQuery('file')
+      ->condition('sha1', static::DIFFERENT_SHA1)
+      ->accessCheck(TRUE)
+      ->count()
+      ->execute();
+    $this->assertSame('1', $count);
+
     unlink($uri);
   }
 
