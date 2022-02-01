@@ -52,6 +52,28 @@ function filehash_entity_base_field_info(EntityTypeInterface $entity_type) {
 }
 
 /**
+ * Implements hook_entity_storage_load().
+ *
+ * Generates hash if it does not already exist for the file.
+ */
+function filehash_entity_storage_load($files, $entity_type) {
+  if ('file' !== $entity_type) {
+    return;
+  }
+  // @todo Add a setting to toggle the auto-hash behavior?
+  foreach ($files as $file) {
+    foreach (Drupal::service('filehash')->columns() as $column) {
+      if (!$file->{$column}->value) {
+        $file->original = clone($file);
+        // Entity post-save will clean up the dangling "original" property.
+        $file->save();
+        break;
+      }
+    }
+  }
+}
+
+/**
  * Implements hook_field_widget_form_alter().
  */
 function filehash_field_widget_form_alter(&$element, FormStateInterface $form_state, $context) {
@@ -69,25 +91,6 @@ function filehash_field_widget_form_alter(&$element, FormStateInterface $form_st
  */
 function filehash_file_create(EntityInterface $file) {
   Drupal::service('filehash')->hash($file, NULL, Drupal::config('filehash.settings')->get('original'));
-}
-
-/**
- * Implements hook_ENTITY_TYPE_load().
- *
- * Generates hash if it does not already exist for the file.
- */
-function filehash_file_load($files) {
-  // @todo Add a setting to toggle the auto-hash behavior?
-  foreach ($files as $file) {
-    foreach (Drupal::service('filehash')->columns() as $column) {
-      if (!$file->{$column}->value) {
-        $file->original = clone($file);
-        // Entity post-save will clean up the dangling "original" property.
-        $file->save();
-        break;
-      }
-    }
-  }
 }
 
 /**
