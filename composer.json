@@ -37,5 +37,8 @@
     },
     "require-dev": {
         "drush/drush": "^10.6 || ^11.0"
+    },
+    "suggest": {
+        "yzalis/identicon": "^2.0"
     }
 }
