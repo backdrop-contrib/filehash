@@ -71,9 +71,14 @@ function filehash_file_insert(EntityInterface $file) {
 }
 
 /**
- * Implements hook_ENTITY_TYPE_load().
+ * Implements hook_entity_storage_load().
+ *
+ * Generates hash if it does not already exist for the file.
  */
-function filehash_file_load($files) {
+function filehash_entity_storage_load($files, $entity_type) {
+  if ('file' !== $entity_type) {
+    return;
+  }
   $columns = filehash_columns();
   if (!$columns) {
     return;
