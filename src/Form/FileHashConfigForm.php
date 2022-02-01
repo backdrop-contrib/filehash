@@ -75,17 +75,6 @@ class FileHashConfigForm extends ConfigFormBase {
       '#title' => $this->t('Enabled hash algorithms'),
       '#type' => 'checkboxes',
     ];
-    $form['dedupe'] = [
-      '#default_value' => $this->config('filehash.settings')->get('dedupe'),
-      '#description' => $this->t('If enabled, prevent duplicate uploaded files from being saved when the file already exists as a permanent file. If strict, also include temporary files in the duplicate check, which prevents duplicates from being uploaded at the same time. If off, you can still disallow duplicate files in the widget settings for any particular file upload field. Note, enabling this setting has privacy implications, as it allows users to determine if a particular file has been uploaded to the site.'),
-      '#title' => $this->t('Disallow duplicate files'),
-      '#options' => [
-        $this->t('Off (use field widget settings)'),
-        $this->t('Enabled'),
-        $this->t('Strict'),
-      ],
-      '#type' => 'select',
-    ];
     $form['rehash'] = [
       '#default_value' => $this->config('filehash.settings')->get('rehash'),
       '#description' => $this->t('If checked, always regenerate the hash when saving a file, even if the hash has been generated previously. This should be enabled if you have modules that modify the file on disk and you want to make sure the hash is in sync. If disabled, only generate the hash if it is missing, which is much faster.'),
@@ -97,6 +86,17 @@ class FileHashConfigForm extends ConfigFormBase {
       '#description' => $this->t('If checked, store an additional "original" hash for each uploaded file which will not be updated.'),
       '#title' => $this->t('Store an additional original hash for each uploaded file'),
       '#type' => 'checkbox',
+    ];
+    $form['dedupe'] = [
+      '#default_value' => $this->config('filehash.settings')->get('dedupe'),
+      '#description' => $this->t('If enabled, prevent duplicate uploaded files from being saved when the file already exists as a permanent file. If strict, also include temporary files in the duplicate check, which prevents duplicates from being uploaded at the same time. If off, you can still disallow duplicate files in the widget settings for any particular file upload field. Note, enabling this setting has privacy implications, as it allows users to determine if a particular file has been uploaded to the site.'),
+      '#title' => $this->t('Disallow duplicate files'),
+      '#options' => [
+        $this->t('Off (use field widget settings)'),
+        $this->t('Enabled'),
+        $this->t('Strict'),
+      ],
+      '#type' => 'select',
     ];
     $form['#attached']['library'][] = 'filehash/admin';
     return parent::buildForm($form, $form_state);
