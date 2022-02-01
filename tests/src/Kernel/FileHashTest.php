@@ -9,6 +9,8 @@ use Drupal\Tests\filehash\Functional\FileHashTestInterface;
 
 /**
  * Using kernel tests rather than functional for speediness.
+ *
+ * @group filehash
  */
 class FileHashTest extends KernelTestBase implements FileHashTestInterface {
 

@@ -80,3 +80,11 @@ field.formatter.settings.filehash_table:
     use_description_as_link_text:
       type: boolean
       label: 'Replace the file name by its description when available'
+
+field.field.*.*.*.third_party.filehash:
+  type: mapping
+  label: 'File Hash settings'
+  mapping:
+    dedupe:
+      type: integer
+      label: 'Disallow duplicate files'

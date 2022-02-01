@@ -74,13 +74,15 @@ function filehash_entity_storage_load($files, $entity_type) {
 }
 
 /**
- * Implements hook_field_widget_single_element_WIDGET_TYPE_form_alter().
+ * Implements hook_field_widget_single_element_form_alter().
  */
-function filehash_field_widget_single_element_managed_file_form_alter(&$element, FormStateInterface $form_state, $context) {
-  $settings = $context['items']->getFieldDefinition()->getThirdPartySettings('filehash');
-  if (!empty($settings['dedupe'])) {
-    $strict = FileHashInterface::STRICT_DEDUPE == $settings['dedupe'];
-    $element['#upload_validators']['filehash_validate_dedupe'] = [$strict];
+function filehash_field_widget_single_element_form_alter(&$element, FormStateInterface $form_state, $context) {
+  if (isset($element['#type']) && $element['#type'] === 'managed_file') {
+    $settings = $context['items']->getFieldDefinition()->getThirdPartySettings('filehash');
+    if (!empty($settings['dedupe'])) {
+      $strict = FileHashInterface::STRICT_DEDUPE == $settings['dedupe'];
+      $element['#upload_validators']['filehash_validate_dedupe'] = [$strict];
+    }
   }
 }
 

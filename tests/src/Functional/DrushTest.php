@@ -8,7 +8,7 @@ use Drush\TestTraits\DrushTestTrait;
 /**
  * @coversDefaultClass \Drupal\filehash\Commands\FileHashCommands
  *
- * @group File Hash
+ * @group filehash
  */
 class DrushTest extends BrowserTestBase {
 

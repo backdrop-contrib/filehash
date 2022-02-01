@@ -10,7 +10,7 @@ use Drupal\Tests\file\Functional\FileFieldTestBase;
 /**
  * File Hash tests.
  *
- * @group File Hash
+ * @group filehash
  */
 class FileHashTest extends FileFieldTestBase implements FileHashTestInterface {
 
@@ -149,6 +149,29 @@ class FileHashTest extends FileFieldTestBase implements FileHashTestInterface {
     // Test that a node with duplicate file already attached can be saved.
     $this->drupalGet("node/$nid/edit");
     $this->submitForm([], 'Save');
+    $this->assertSession()->addressEquals("node/$nid");
+
+    // Disable global dedupe setting.
+    $this->drupalGet('admin/config/media/filehash');
+    $fields = ['dedupe' => 0];
+    $this->submitForm($fields, 'Save configuration');
+
+    // Test field-level dedupe enabled.
+    $this->drupalGet("admin/structure/types/manage/article/fields/node.article.$field_name");
+    $fields = ['third_party_settings[filehash][dedupe]' => 2];
+    $this->submitForm($fields, 'Save settings');
+
+    $nid = $this->uploadNodeFile($test_file, $field_name, $type_name);
+    $this->assertSession()->addressEquals("node/$nid/edit");
+    $this->assertSession()->pageTextContains(strtr('The specified file %name could not be uploaded.', ['%name' => $test_file->getFilename()]));
+    $this->assertSession()->pageTextContains('Sorry, duplicate files are not permitted.');
+
+    // Test field-level dedupe disabled.
+    $this->drupalGet("admin/structure/types/manage/article/fields/node.article.$field_name");
+    $fields = ['third_party_settings[filehash][dedupe]' => 0];
+    $this->submitForm($fields, 'Save settings');
+
+    $nid = $this->uploadNodeFile($test_file, $field_name, $type_name);
     $this->assertSession()->addressEquals("node/$nid");
   }
 
