@@ -4,5 +4,5 @@ description: Generate hashes for each uploaded file.
 name: File Hash
 type: module
 dependencies:
-  - drupal:file (>=8.5.0)
+  - drupal:file
 core_version_requirement: ^8 || ^9 || ^10
