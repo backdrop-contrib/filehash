@@ -60,11 +60,11 @@ class FileHashTest extends FileFieldTestBase implements FileHashTestInterface {
       'changed' => 1,
       'status' => FileInterface::STATUS_PERMANENT,
     ]);
-    $this->assertSame($file->sha1->value, static::SHA1, 'File hash was set correctly at create.');
+    $this->assertSame(static::SHA1, $file->sha1->value, 'File hash was set correctly at create.');
     $file->save();
-    $this->assertSame($file->sha1->value, static::SHA1, 'File hash was set correctly at save.');
+    $this->assertSame(static::SHA1, $file->sha1->value, 'File hash was set correctly at save.');
     $file = File::load($file->id());
-    $this->assertSame($file->sha1->value, static::SHA1, 'File hash was set correctly at load.');
+    $this->assertSame(static::SHA1, $file->sha1->value, 'File hash was set correctly at load.');
     unlink($uri);
   }
 
@@ -87,11 +87,11 @@ class FileHashTest extends FileFieldTestBase implements FileHashTestInterface {
       'status' => FileInterface::STATUS_PERMANENT,
     ]);
     $hash = function_exists('sodium_crypto_generichash_init') ? static::BLAKE2B_512 : NULL;
-    $this->assertSame($file->blake2b_512->value, $hash, 'File hash was set correctly at create.');
+    $this->assertSame($hash, $file->blake2b_512->value, 'File hash was set correctly at create.');
     $file->save();
-    $this->assertSame($file->blake2b_512->value, $hash, 'File hash was set correctly at save.');
+    $this->assertSame($hash, $file->blake2b_512->value, 'File hash was set correctly at save.');
     $file = File::load($file->id());
-    $this->assertSame($file->blake2b_512->value, $hash, 'File hash was set correctly at load.');
+    $this->assertSame($hash, $file->blake2b_512->value, 'File hash was set correctly at load.');
     unlink($uri);
   }
 
