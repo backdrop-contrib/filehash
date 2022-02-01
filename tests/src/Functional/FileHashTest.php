@@ -5,6 +5,7 @@ namespace Drupal\Tests\filehash\Functional;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\file\Entity\File;
+use Drupal\file\FileInterface;
 use Drupal\Tests\file\Functional\FileFieldTestBase;
 
 /**
@@ -61,7 +62,7 @@ class FileHashTest extends FileFieldTestBase {
       'filemime' => 'text/plain',
       'created' => 1,
       'changed' => 1,
-      'status' => FILE_STATUS_PERMANENT,
+      'status' => FileInterface::STATUS_PERMANENT,
     ]);
     $this->assertSame($file->filehash['sha1'], static::SHA1, 'File hash was set correctly at create.');
     $file->save();
@@ -85,7 +86,7 @@ class FileHashTest extends FileFieldTestBase {
       'filemime' => 'text/plain',
       'created' => 1,
       'changed' => 1,
-      'status' => FILE_STATUS_PERMANENT,
+      'status' => FileInterface::STATUS_PERMANENT,
     ]);
     $hash = function_exists('sodium_crypto_generichash_init') ? static::BLAKE2B_512 : NULL;
     $this->assertSame($file->filehash['blake2b_512'], $hash, 'File hash was set correctly at create.');
