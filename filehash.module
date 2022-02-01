@@ -73,7 +73,7 @@ function filehash_file_insert(EntityInterface $file) {
 /**
  * Implements hook_entity_storage_load().
  *
- * Generates hash if it does not already exist for the file.
+ * Adds file hashes to the entity cache.
  */
 function filehash_entity_storage_load($files, $entity_type) {
   if ('file' !== $entity_type) {
@@ -94,15 +94,31 @@ function filehash_entity_storage_load($files, $entity_type) {
       $files[$record->fid]->filehash[$column] = property_exists($record, $column) ? $record->$column : NULL;
     }
   }
-  // Generate hash if it does not already exist for the file.
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_load().
+ *
+ * Generates hash if it does not already exist for the file.
+ */
+function filehash_file_load($files) {
+  $columns = filehash_columns();
+  if (!$columns) {
+    return;
+  }
+  $fids = [];
   foreach ($files as $fid => $file) {
     foreach ($columns as $column) {
       if (empty($file->filehash[$column])) {
         filehash_hash($files[$fid]);
         filehash_save($files[$fid]);
+        $fids[] = $fid;
         break;
       }
     }
+  }
+  if ($fids) {
+    Drupal::entityTypeManager()->getStorage('file')->resetCache($fids);
   }
 }
 
