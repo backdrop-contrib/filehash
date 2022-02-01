@@ -101,4 +101,43 @@ class FileHashTest extends KernelTestBase implements FileHashTestInterface {
     unlink($uri);
   }
 
+  /**
+   * Tests the save original hash setting.
+   */
+  public function testOriginalSetting() {
+    \Drupal::configFactory()
+      ->getEditable('filehash.settings')
+      ->set('rehash', TRUE)
+      ->set('original', TRUE)
+      ->save();
+    $uri = 'temporary://' . $this->randomMachineName() . '.txt';
+    file_put_contents($uri, static::CONTENTS);
+    $file = File::create([
+      'uri' => $uri,
+      'uid' => 1,
+    ]);
+    $file->save();
+
+    $count = \Drupal::entityQuery('file')
+      ->condition('sha1', static::SHA1)
+      ->condition('original_sha1', static::SHA1)
+      ->accessCheck(TRUE)
+      ->count()
+      ->execute();
+    $this->assertSame('1', $count);
+
+    file_put_contents($uri, static::DIFFERENT_CONTENTS);
+    $file->save();
+
+    $count = \Drupal::entityQuery('file')
+      ->condition('sha1', static::DIFFERENT_SHA1)
+      ->condition('original_sha1', static::SHA1)
+      ->accessCheck(TRUE)
+      ->count()
+      ->execute();
+    $this->assertSame('1', $count);
+
+    unlink($uri);
+  }
+
 }
