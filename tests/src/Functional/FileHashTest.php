@@ -3,7 +3,6 @@
 namespace Drupal\Tests\filehash\Functional;
 
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
-use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\file\Entity\File;
 use Drupal\file\FileInterface;
 use Drupal\Tests\file\Functional\FileFieldTestBase;
@@ -13,13 +12,9 @@ use Drupal\Tests\file\Functional\FileFieldTestBase;
  *
  * @group File Hash
  */
-class FileHashTest extends FileFieldTestBase {
-
-  use StringTranslationTrait;
+class FileHashTest extends FileFieldTestBase implements FileHashTestInterface {
 
   const BLAKE2B_512 = 'ba80a53f981c4d0d6a2797b69f12f6e94c212f14685ac4b74b12bb6fdbffa2d17d87c5392aab792dc252d5de4533cc9518d38aa8dbf1925ab92386edd4009923';
-  const SHA1 = '2aae6c35c94fcfb415dbe95f408b9ce91ee846ed';
-  const URI = 'public://druplicon.txt';
 
   /**
    * {@inheritdoc}
@@ -47,18 +42,19 @@ class FileHashTest extends FileFieldTestBase {
     $this->drupalLogin($this->adminUser);
     $this->drupalGet('admin/config/media/filehash');
     $fields = ['algos[sha1]' => TRUE];
-    $this->submitForm($fields, $this->t('Save configuration'));
+    $this->submitForm($fields, 'Save configuration');
   }
 
   /**
    * Tests that a file hash is set on the file object.
    */
   public function testFileHash() {
-    file_put_contents(static::URI, 'hello world');
+    $uri = 'temporary://' . $this->randomMachineName() . '.txt';
+    file_put_contents($uri, static::CONTENTS);
     $file = File::create([
       'uid' => 1,
       'filename' => 'druplicon.txt',
-      'uri' => static::URI,
+      'uri' => $uri,
       'filemime' => 'text/plain',
       'created' => 1,
       'changed' => 1,
@@ -69,20 +65,22 @@ class FileHashTest extends FileFieldTestBase {
     $this->assertSame($file->sha1->value, static::SHA1, 'File hash was set correctly at save.');
     $file = File::load($file->id());
     $this->assertSame($file->sha1->value, static::SHA1, 'File hash was set correctly at load.');
+    unlink($uri);
   }
 
   /**
    * Tests BLAKE2b hash algorithm.
    */
   public function testBlake2b() {
+    $uri = 'temporary://' . $this->randomMachineName() . '.txt';
     $this->drupalGet('admin/config/media/filehash');
     $fields = ['algos[blake2b_512]' => TRUE];
-    $this->submitForm($fields, $this->t('Save configuration'));
-    file_put_contents(static::URI, 'abc');
+    $this->submitForm($fields, 'Save configuration');
+    file_put_contents($uri, 'abc');
     $file = File::create([
       'uid' => 1,
       'filename' => 'druplicon.txt',
-      'uri' => static::URI,
+      'uri' => $uri,
       'filemime' => 'text/plain',
       'created' => 1,
       'changed' => 1,
@@ -94,6 +92,7 @@ class FileHashTest extends FileFieldTestBase {
     $this->assertSame($file->blake2b_512->value, $hash, 'File hash was set correctly at save.');
     $file = File::load($file->id());
     $this->assertSame($file->blake2b_512->value, $hash, 'File hash was set correctly at load.');
+    unlink($uri);
   }
 
   /**
@@ -112,7 +111,7 @@ class FileHashTest extends FileFieldTestBase {
     $this->createFileField($field_name, 'node', $type_name, $field_storage_settings, $field_settings, $widget_settings);
     $this->drupalGet("admin/structure/types/manage/$type_name/display");
     $fields = ["fields[$field_name][type]" => 'filehash_table'];
-    $this->submitForm($fields, $this->t('Save'));
+    $this->submitForm($fields, 'Save');
   }
 
   /**
@@ -121,7 +120,7 @@ class FileHashTest extends FileFieldTestBase {
   public function testFileHashFieldDuplicate() {
     $this->drupalGet('admin/config/media/filehash');
     $fields = ['dedupe' => 1];
-    $this->submitForm($fields, $this->t('Save configuration'));
+    $this->submitForm($fields, 'Save configuration');
 
     $field_name = strtolower($this->randomMachineName());
     $type_name = 'article';
@@ -133,23 +132,23 @@ class FileHashTest extends FileFieldTestBase {
 
     $nid = $this->uploadNodeFile($test_file, $field_name, $type_name);
     $this->assertSession()->addressEquals("node/$nid/edit");
-    $this->assertSession()->responseContains($this->t('The specified file %name could not be uploaded.', ['%name' => $test_file->getFilename()]));
-    $this->assertSession()->pageTextContains($this->t('Sorry, duplicate files are not permitted.'));
+    $this->assertSession()->pageTextContains(strtr('The specified file %name could not be uploaded.', ['%name' => $test_file->getFilename()]));
+    $this->assertSession()->pageTextContains('Sorry, duplicate files are not permitted.');
 
     $this->drupalGet('admin/config/media/filehash');
     $fields = ['dedupe' => 0];
-    $this->submitForm($fields, $this->t('Save configuration'));
+    $this->submitForm($fields, 'Save configuration');
 
     $nid = $this->uploadNodeFile($test_file, $field_name, $type_name);
     $this->assertSession()->addressEquals("node/$nid");
 
     $this->drupalGet('admin/config/media/filehash');
     $fields = ['dedupe' => 1];
-    $this->submitForm($fields, $this->t('Save configuration'));
+    $this->submitForm($fields, 'Save configuration');
 
     // Test that a node with duplicate file already attached can be saved.
     $this->drupalGet("node/$nid/edit");
-    $this->submitForm([], $this->t('Save'));
+    $this->submitForm([], 'Save');
     $this->assertSession()->addressEquals("node/$nid");
   }
 
@@ -159,7 +158,7 @@ class FileHashTest extends FileFieldTestBase {
   public function testFileHashGenerate() {
     $this->drupalGet('admin/config/media/filehash');
     $fields = ['algos[sha1]' => FALSE];
-    $this->submitForm($fields, $this->t('Save configuration'));
+    $this->submitForm($fields, 'Save configuration');
 
     do {
       $file = $this->getTestFile('text');
@@ -168,10 +167,10 @@ class FileHashTest extends FileFieldTestBase {
 
     $this->drupalGet('admin/config/media/filehash');
     $fields = ['algos[sha1]' => TRUE];
-    $this->submitForm($fields, $this->t('Save configuration'));
+    $this->submitForm($fields, 'Save configuration');
 
     $this->drupalGet('admin/config/media/filehash/generate');
-    $this->submitForm([], $this->t('Generate'));
+    $this->submitForm([], 'Generate');
     $this->assertSession()->pageTextContains('Processed 5 files.');
   }
 
@@ -181,11 +180,11 @@ class FileHashTest extends FileFieldTestBase {
   public function testFileHashClean() {
     $this->drupalGet('admin/config/media/filehash');
     $fields = ['algos[sha512_256]' => TRUE];
-    $this->submitForm($fields, $this->t('Save configuration'));
+    $this->submitForm($fields, 'Save configuration');
     $fields = ['algos[sha1]' => FALSE, 'algos[sha512_256]' => FALSE];
-    $this->submitForm($fields, $this->t('Save configuration'));
+    $this->submitForm($fields, 'Save configuration');
     $this->drupalGet('admin/config/media/filehash/clean');
-    $this->submitForm([], $this->t('Delete'));
+    $this->submitForm([], 'Delete');
     $this->assertSession()->pageTextContains('Processed 2 hash algorithm columns.');
   }
 

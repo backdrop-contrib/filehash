@@ -59,21 +59,22 @@ store it in the files/e3/b0 directory using these tokens:
 
 If the "disallow duplicate files" checkbox in File Hash settings is checked, any
 duplicate uploaded files will be rejected site-wide. You may also leave this
-setting off, and apply the dedupe validator function manually to a particular
-file upload form in a custom module:
+setting off, and enable the dedupe validator in the field widget settings for a
+particular file upload form.
+
+ENTITY QUERY SUPPORT
+--------------------
+
+Because this module adds fields to the file entity, you can use file hashes in
+an entity query. For example:
 
 ```
 <?php
 
-/**
- * Implements hook_form_FORM_ID_alter().
- */
-function example_form_node_article_edit_form_alter(&$form, $form_state, $form_id) {
-  foreach ($form['field_image']['widget'] as $item) {
-    if (is_array($item) && isset($item['#delta'])) {
-      $form['field_image']['widget'][$item['#delta']]['#upload_validators']['filehash_validate_dedupe'] = [];
-    }
-  }
-}
-
+$fids = \Drupal::entityQuery('file')
+  ->condition('sha256', 'my sha256 here')
+  ->condition('status', 1)
+  ->sort('created', 'DESC')
+  ->accessCheck(TRUE)
+  ->execute();
 ```
