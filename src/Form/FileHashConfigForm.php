@@ -77,7 +77,7 @@ class FileHashConfigForm extends ConfigFormBase {
     ];
     $form['rehash'] = [
       '#default_value' => $this->config('filehash.settings')->get('rehash'),
-      '#description' => $this->t('If checked, always regenerate the hash when saving a file, even if the hash has been generated previously. This should be enabled if you have modules that modify the file on disk and you want to make sure the hash is in sync. If disabled, only generate the hash if it is missing, which is much faster.'),
+      '#description' => $this->t('If checked, always regenerate the hash when saving a file, even if the hash has been generated previously. This should be enabled if you have modules that modify files and you want to keep the hash in sync with the file on disk. If disabled, only generate the hash if it is missing, which is much faster.'),
       '#title' => $this->t('Always rehash file when saving'),
       '#type' => 'checkbox',
     ];

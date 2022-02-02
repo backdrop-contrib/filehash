@@ -15,10 +15,7 @@ use Identicon\Identicon;
  *   id = "filehash_identicon",
  *   label = @Translation("Identicon"),
  *   field_types = {
- *     "email",
  *     "filehash",
- *     "string",
- *     "uuid"
  *   },
  * )
  */
@@ -48,7 +45,7 @@ class IdenticonFormatter extends StringFormatter {
       $element['#attributes']['src'] = $identicon->getImageDataUri($item->getString());
     }
     else {
-      $element['#attributes']['title'] = $this->t('Could not generate Identicon.');
+      $element['#attributes']['title'] = $this->t('Identicon generator not found.');
     }
     return $element;
   }
