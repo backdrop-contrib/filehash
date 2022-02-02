@@ -3,6 +3,7 @@
 namespace Drupal\filehash\Batch;
 
 use Drupal\Core\Entity\EntityDefinitionUpdateManagerInterface;
+use Drupal\Core\Entity\EntityStorageException;
 use Drupal\filehash\FileHash;
 
 /**
@@ -59,7 +60,15 @@ class CleanBatch {
     $fields = self::columns();
     foreach ($fields as $column => $name) {
       $definition = \Drupal::entityDefinitionUpdateManager()->getFieldStorageDefinition($column, 'file');
-      \Drupal::entityDefinitionUpdateManager()->uninstallFieldStorageDefinition($definition);
+      try {
+        \Drupal::entityDefinitionUpdateManager()->uninstallFieldStorageDefinition($definition);
+      }
+      catch (EntityStorageException $e) {
+        $context['finished'] = 1;
+        watchdog_exception('filehash', $e);
+        \Drupal::messenger()->addWarning(t('Entity storage error: %message Try running cron before proceeding.', ['%message' => $e->getMessage()]));
+        return;
+      }
       $context['message'] = t('Dropped %name column.', ['%name' => $name]);
       $context['results']['processed']++;
       break;
