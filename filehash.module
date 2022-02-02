@@ -81,7 +81,11 @@ function filehash_field_widget_single_element_form_alter(&$element, FormStateInt
     $settings = $context['items']->getFieldDefinition()->getThirdPartySettings('filehash');
     if (!empty($settings['dedupe'])) {
       $strict = FileHashInterface::STRICT_DEDUPE == $settings['dedupe'];
-      $element['#upload_validators']['filehash_validate_dedupe'] = [$strict];
+      $dedupe_original = !empty($settings['dedupe_original']);
+      $element['#upload_validators']['filehash_validate_dedupe'] = [
+        $strict,
+        $dedupe_original,
+      ];
     }
   }
 }
@@ -117,7 +121,8 @@ function filehash_file_presave(EntityInterface $file) {
 function filehash_file_validate(FileInterface $file) {
   $dedupe = Drupal::config('filehash.settings')->get('dedupe');
   $strict = FileHashInterface::STRICT_DEDUPE == $dedupe;
-  return $dedupe ? filehash_validate_dedupe($file, $strict) : [];
+  $original = Drupal::config('filehash.settings')->get('dedupe_original');
+  return $dedupe ? filehash_validate_dedupe($file, $strict, $original) : [];
 }
 
 /**
@@ -147,6 +152,12 @@ function filehash_form_field_config_edit_form_alter(array &$form, FormStateInter
     '#default_value' => $settings['dedupe'] ?? 0,
     '#description'   => t('If enabled, prevent duplicate uploaded files from being saved when the file already exists as a permanent file. If strict, also include temporary files in the duplicate check, which prevents duplicates from being uploaded at the same time. Note, enabling this setting has privacy implications, as it allows users to determine if a particular file has been uploaded to the site.'),
   ];
+  $form['settings']['filehash']['dedupe_original'] = [
+    '#default_value' => $settings['dedupe_original'] ?? FALSE,
+    '#description' => t('If checked, also prevent an uploaded file from being saved if its hash matches the "original" hash of another file. This is useful if you apply processing to uploaded files, and want to check uploads against both the original and derivative file hash. Only active if original file hash is enabled in File Hash settings, and the above dedupe setting is enabled (or strict).'),
+    '#title' => t('Include original file hashes in duplicate check'),
+    '#type' => 'checkbox',
+  ];
 }
 
 /**
@@ -166,17 +177,17 @@ function filehash_help($route_name, RouteMatchInterface $route_match) {
 /**
  * Checks that file is not a duplicate.
  */
-function filehash_validate_dedupe(FileInterface $file, $strict = FALSE) {
+function filehash_validate_dedupe(FileInterface $file, $strict = FALSE, $original = FALSE) {
   $errors = [];
   // We only run the dedupe check on initial file creation.
   if (!$file->id()) {
     foreach (Drupal::service('filehash')->columns() as $column) {
       try {
-        $fid = Drupal::service('filehash')->duplicateLookup($column, $file, $strict);
+        $fid = Drupal::service('filehash')->duplicateLookup($column, $file, $strict, $original);
       }
       catch (DatabaseExceptionWrapper $e) {
         Drupal::service('filehash')->addColumns();
-        $fid = Drupal::service('filehash')->duplicateLookup($column, $file, $strict);
+        $fid = Drupal::service('filehash')->duplicateLookup($column, $file, $strict, $original);
       }
       if ($fid) {
         $error = t('Sorry, duplicate files are not permitted.');

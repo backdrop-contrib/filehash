@@ -20,3 +20,4 @@ algos:
 dedupe: 0
 rehash: false
 original: false
+dedupe_original: false

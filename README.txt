@@ -85,6 +85,4 @@ VISUAL OUTPUT
 You can use the included Identicon field formatter to visualize each file hash
 (in a view, for example) if you install this third-party dependency:
 
-```
-composer require yzalis/identicon:^2.0
-```
+        composer require yzalis/identicon:^2.0

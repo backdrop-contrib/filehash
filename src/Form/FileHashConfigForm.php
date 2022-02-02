@@ -98,6 +98,12 @@ class FileHashConfigForm extends ConfigFormBase {
       ],
       '#type' => 'select',
     ];
+    $form['dedupe_original'] = [
+      '#default_value' => $this->config('filehash.settings')->get('dedupe_original'),
+      '#description' => $this->t('If checked, also prevent an uploaded file from being saved if its hash matches the "original" hash of another file. This is useful if you apply processing to uploaded files, and want to check uploads against both the original and derivative file hash. Only active if the above original file hash and dedupe settings are enabled.'),
+      '#title' => $this->t('Include original file hashes in duplicate check'),
+      '#type' => 'checkbox',
+    ];
     $form['#attached']['library'][] = 'filehash/admin';
     return parent::buildForm($form, $form_state);
   }
@@ -111,6 +117,7 @@ class FileHashConfigForm extends ConfigFormBase {
       ->set('dedupe', $form_state->getValue('dedupe'))
       ->set('rehash', $form_state->getValue('rehash'))
       ->set('original', $form_state->getValue('original'))
+      ->set('dedupe_original', $form_state->getValue('dedupe_original'))
       ->save();
     parent::submitForm($form, $form_state);
     if (CleanBatch::columns()) {

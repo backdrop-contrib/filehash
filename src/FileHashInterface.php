@@ -56,7 +56,7 @@ interface FileHashInterface {
   /**
    * Returns file ID for any duplicates.
    */
-  public function duplicateLookup($column, $file, $strict = FALSE);
+  public function duplicateLookup($column, $file, $strict = FALSE, $original = FALSE);
 
   /**
    * Calculates the file hashes.

@@ -84,11 +84,22 @@ class FileHash implements FileHashInterface {
   /**
    * Returns file ID for any duplicates.
    */
-  public function duplicateLookup($column, $file, $strict = FALSE) {
-    $query = $this->entityTypeManager->getStorage('file')->getQuery('AND')
-      ->condition($column, $file->{$column}->value);
+  public function duplicateLookup($column, $file, $strict = FALSE, $original = FALSE) {
+    // @fixme This code results in *multiple* SQL joins on the file_managed
+    // table; if slow maybe it should be refactored to use a normal database
+    // query? See also https://www.drupal.org/project/drupal/issues/2875033
+    $query = $this->entityTypeManager->getStorage('file')->getQuery('AND');
+    if ($original && $this->configFactory->get('filehash.settings')->get('original')) {
+      $group = $query->orConditionGroup()
+        ->condition("original_$column", $file->{$column}->value, '=')
+        ->condition($column, $file->{$column}->value, '=');
+      $query->condition($group);
+    }
+    else {
+      $query->condition($column, $file->{$column}->value);
+    }
     if (!$strict) {
-      $query->condition('status', FileInterface::STATUS_PERMANENT);
+      $query->condition('status', FileInterface::STATUS_PERMANENT, '=');
     }
     $results = $query->range(0, 1)
       ->accessCheck(FALSE)

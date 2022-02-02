@@ -1,0 +1,6 @@
+description: Provides test functionality.
+name: File Hash Test
+type: module
+dependencies:
+  - drupal:file
+package: Testing

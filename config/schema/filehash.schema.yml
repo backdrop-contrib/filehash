@@ -69,6 +69,9 @@ filehash.settings:
     original:
       type: boolean
       label: 'Store an additional original hash for each uploaded file'
+    dedupe_original:
+      type: boolean
+      label: 'Include original file hashes in duplicate check'
 
 field.formatter.settings.filehash_table:
   type: mapping
@@ -88,3 +91,6 @@ field.field.*.*.*.third_party.filehash:
     dedupe:
       type: integer
       label: 'Disallow duplicate files'
+    dedupe_original:
+      type: boolean
+      label: 'Include original file hashes in duplicate check'
