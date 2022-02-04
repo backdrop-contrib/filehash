@@ -4,6 +4,7 @@ namespace Drupal\filehash\Form;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\Core\Field\DeletedFieldsRepositoryInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
@@ -15,6 +16,13 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * Implements the file hash config form.
  */
 class FileHashConfigForm extends ConfigFormBase {
+
+  /**
+   * Deleted fields repository.
+   *
+   * @var \Drupal\Core\Field\DeletedFieldsRepositoryInterface
+   */
+  protected $deletedFieldsRepository;
 
   /**
    * File Hash service.
@@ -47,8 +55,9 @@ class FileHashConfigForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function __construct(ConfigFactoryInterface $config_factory, FileHashInterface $filehash, ModuleHandlerInterface $module_handler) {
+  public function __construct(ConfigFactoryInterface $config_factory, DeletedFieldsRepositoryInterface $deleted_fields_repository, FileHashInterface $filehash, ModuleHandlerInterface $module_handler) {
     parent::__construct($config_factory);
+    $this->deletedFieldsRepository = $deleted_fields_repository;
     $this->fileHash = $filehash;
     $this->moduleHandler = $module_handler;
   }
@@ -59,6 +68,7 @@ class FileHashConfigForm extends ConfigFormBase {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('config.factory'),
+      $container->get('entity_field.deleted_fields_repository'),
       $container->get('filehash'),
       $container->get('module_handler')
     );
@@ -106,6 +116,27 @@ class FileHashConfigForm extends ConfigFormBase {
     ];
     $form['#attached']['library'][] = 'filehash/admin';
     return parent::buildForm($form, $form_state);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function validateForm(array &$form, FormStateInterface $form_state) {
+    parent::validateForm($form, $form_state);
+    foreach ($form_state->getValue('algos') as $column => $value) {
+      if ($value) {
+        if ($this->deletedFieldsRepository->getFieldDefinitions("file-$column")) {
+          $form_state->setErrorByName("algos][$column", $this->t('Please run cron first to finish deleting the %label column before enabling it.', [
+            '%label' => $this->fileHash->labels()[$column],
+          ]));
+        }
+        if ($form_state->getValue('original') && $this->deletedFieldsRepository->getFieldDefinitions("file-original_$column")) {
+          $form_state->setErrorByName('original', $this->t('Please run cron first to finish deleting the %label column before enabling it.', [
+            '%label' => $this->fileHash->originalLabels()[$column],
+          ]));
+        }
+      }
+    }
   }
 
   /**
