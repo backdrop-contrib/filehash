@@ -73,7 +73,7 @@ class FileHash implements FileHashInterface {
    */
   public function addColumns(): void {
     $original = $this->configFactory->get('filehash.settings')->get('original');
-    $fields = filehash_entity_base_field_info($this->entityTypeManager->getDefinition('file'));
+    $fields = $this->entityBaseFieldInfo();
     foreach ($this->columns() as $column) {
       $this->entityDefinitionUpdateManager->installFieldStorageDefinition($column, 'file', 'file', $fields[$column]);
       if ($original) {
