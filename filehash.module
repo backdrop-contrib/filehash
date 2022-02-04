@@ -5,17 +5,12 @@
  * Generate hashes for each uploaded file.
  */
 
-use Drupal\Core\Database\DatabaseExceptionWrapper;
 use Drupal\Core\Entity\EntityFormInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
-use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Link;
 use Drupal\Core\Routing\RouteMatchInterface;
-use Drupal\Core\Url;
 use Drupal\field\FieldConfigInterface;
-use Drupal\file\Entity\File;
 use Drupal\file\FileInterface;
 use Drupal\file\Plugin\Field\FieldType\FileFieldItemList;
 use Drupal\filehash\FileHashInterface;
@@ -23,32 +18,11 @@ use Drupal\filehash\FileHashInterface;
 /**
  * Implements hook_entity_base_field_info().
  */
-function filehash_entity_base_field_info(EntityTypeInterface $entity_type) {
-  $fields = [];
+function filehash_entity_base_field_info(EntityTypeInterface $entity_type): array {
   if ('file' === $entity_type->id()) {
-    $columns = Drupal::service('filehash')->columns();
-    $labels = Drupal::service('filehash')->labels();
-    $lengths = Drupal::service('filehash')->lengths();
-    $descriptions = Drupal::service('filehash')->descriptions();
-    $original = Drupal::config('filehash.settings')->get('original');
-    if ($original) {
-      $original_labels = Drupal::service('filehash')->originalLabels();
-      $original_descriptions = Drupal::service('filehash')->originalDescriptions();
-    }
-    foreach ($columns as $column) {
-      $fields[$column] = BaseFieldDefinition::create('filehash')
-        ->setLabel($labels[$column])
-        ->setSetting('max_length', $lengths[$column])
-        ->setDescription($descriptions[$column]);
-      if ($original) {
-        $fields["original_$column"] = BaseFieldDefinition::create('filehash')
-          ->setLabel($original_labels[$column])
-          ->setSetting('max_length', $lengths[$column])
-          ->setDescription($original_descriptions[$column]);
-      }
-    }
+    return Drupal::service('filehash')->entityBaseFieldInfo();
   }
-  return $fields;
+  return [];
 }
 
 /**
@@ -56,27 +30,16 @@ function filehash_entity_base_field_info(EntityTypeInterface $entity_type) {
  *
  * Generates hash if it does not already exist for the file.
  */
-function filehash_entity_storage_load($files, $entity_type) {
-  if ('file' !== $entity_type) {
-    return;
-  }
-  // @todo Add a setting to toggle the auto-hash behavior?
-  foreach ($files as $file) {
-    foreach (Drupal::service('filehash')->columns() as $column) {
-      if (!$file->{$column}->value) {
-        $file->original = clone($file);
-        // Entity post-save will clean up the dangling "original" property.
-        $file->save();
-        break;
-      }
-    }
+function filehash_entity_storage_load($files, $entity_type): void {
+  if ('file' === $entity_type) {
+    Drupal::service('filehash')->entityStorageLoad($files);
   }
 }
 
 /**
  * Implements hook_field_widget_single_element_form_alter().
  */
-function filehash_field_widget_single_element_form_alter(&$element, FormStateInterface $form_state, $context) {
+function filehash_field_widget_single_element_form_alter(&$element, FormStateInterface $form_state, $context): void {
   if (isset($element['#type']) && $element['#type'] === 'managed_file') {
     $settings = $context['items']->getFieldDefinition()->getThirdPartySettings('filehash');
     if (!empty($settings['dedupe'])) {
@@ -93,32 +56,21 @@ function filehash_field_widget_single_element_form_alter(&$element, FormStateInt
 /**
  * Implements hook_ENTITY_TYPE_create().
  */
-function filehash_file_create(EntityInterface $file) {
+function filehash_file_create(EntityInterface $file): void {
   Drupal::service('filehash')->hash($file, NULL, Drupal::config('filehash.settings')->get('original'));
 }
 
 /**
  * Implements hook_ENTITY_TYPE_presave().
  */
-function filehash_file_presave(EntityInterface $file) {
-  if (Drupal::config('filehash.settings')->get('rehash')) {
-    // Regenerate all hashes.
-    Drupal::service('filehash')->hash($file);
-  }
-  else {
-    // Only generate missing hashes.
-    foreach (Drupal::service('filehash')->columns() as $column) {
-      if (empty($file->{$column}->value)) {
-        Drupal::service('filehash')->hash($file, $column);
-      }
-    }
-  }
+function filehash_file_presave(EntityInterface $file): void {
+  Drupal::service('filehash')->filePresave($file);
 }
 
 /**
  * Implements hook_file_validate().
  */
-function filehash_file_validate(FileInterface $file) {
+function filehash_file_validate(FileInterface $file): array {
   $dedupe = Drupal::config('filehash.settings')->get('dedupe');
   $strict = FileHashInterface::STRICT_DEDUPE == $dedupe;
   $original = Drupal::config('filehash.settings')->get('dedupe_original');
@@ -128,7 +80,7 @@ function filehash_file_validate(FileInterface $file) {
 /**
  * Implements hook_form_FORM_ID_alter().
  */
-function filehash_form_field_config_edit_form_alter(array &$form, FormStateInterface $form_state) {
+function filehash_form_field_config_edit_form_alter(array &$form, FormStateInterface $form_state): void {
   if (!($form_state->getFormObject() instanceof EntityFormInterface)) {
     return;
   }
@@ -177,35 +129,10 @@ function filehash_help($route_name, RouteMatchInterface $route_match) {
 /**
  * Checks that file is not a duplicate.
  */
-function filehash_validate_dedupe(FileInterface $file, $strict = FALSE, $original = FALSE) {
-  $errors = [];
+function filehash_validate_dedupe(FileInterface $file, $strict = FALSE, $original = FALSE): array {
   // We only run the dedupe check on initial file creation.
   if (!$file->id()) {
-    foreach (Drupal::service('filehash')->columns() as $column) {
-      try {
-        $fid = Drupal::service('filehash')->duplicateLookup($column, $file, $strict, $original);
-      }
-      catch (DatabaseExceptionWrapper $e) {
-        Drupal::service('filehash')->addColumns();
-        $fid = Drupal::service('filehash')->duplicateLookup($column, $file, $strict, $original);
-      }
-      if ($fid) {
-        $error = t('Sorry, duplicate files are not permitted.');
-        if (Drupal::currentUser()->hasPermission('access files overview')) {
-          try {
-            $url = Url::fromRoute('view.files.page_2', ['arg_0' => $fid], ['attributes' => ['target' => '_blank']]);
-            $error = t('This file has already been uploaded as %filename.', [
-              '%filename' => Link::fromTextAndUrl(File::load($fid)->label(), $url)->toString(),
-            ]);
-          }
-          catch (Exception $e) {
-            // Maybe the view was disabled?
-          }
-        }
-        $errors[] = $error;
-        break;
-      }
-    }
+    return Drupal::service('filehash')->validateDedupe($file, $strict, $original);
   }
-  return $errors;
+  return [];
 }

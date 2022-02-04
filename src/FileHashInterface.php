@@ -61,6 +61,28 @@ interface FileHashInterface {
   public function duplicateLookup(string $column, FileInterface $file, bool $strict = FALSE, bool $original = FALSE): ?string;
 
   /**
+   * Implements hook_entity_base_field_info().
+   */
+  public function entityBaseFieldInfo(): array;
+
+  /**
+   * Implements hook_entity_storage_load().
+   *
+   * Generates hash if it does not already exist for the file.
+   */
+  public function entityStorageLoad($files): void;
+
+  /**
+   * Implements hook_ENTITY_TYPE_presave().
+   */
+  public function filePresave(FileInterface $file): void;
+
+  /**
+   * Checks that file is not a duplicate.
+   */
+  public function validateDedupe(FileInterface $file, bool $strict = FALSE, bool $original = FALSE): array;
+
+  /**
    * Calculates the file hashes and sets values in the file object.
    */
   public function hash($file, ?string $column = NULL, bool $original = FALSE): void;

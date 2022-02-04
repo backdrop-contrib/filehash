@@ -8,4 +8,4 @@ services:
 
   filehash:
     class: Drupal\filehash\FileHash
-    arguments: ['@config.factory', '@entity.definition_update_manager', '@entity_type.manager']
+    arguments: ['@config.factory', '@current_user', '@entity.definition_update_manager', '@entity_type.manager']

@@ -3,8 +3,15 @@
 namespace Drupal\filehash;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Database\DatabaseExceptionWrapper;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\EntityDefinitionUpdateManagerInterface;
+use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\Link;
+use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\Core\Url;
+use Drupal\file\Entity\File;
 use Drupal\file\FileInterface;
 
 /**
@@ -12,12 +19,21 @@ use Drupal\file\FileInterface;
  */
 class FileHash implements FileHashInterface {
 
+  use StringTranslationTrait;
+
   /**
    * Config factory.
    *
    * @var \Drupal\Core\Config\ConfigFactoryInterface
    */
   protected $configFactory;
+
+  /**
+   * The current user making the request.
+   *
+   * @var \Drupal\Core\Session\AccountInterface
+   */
+  protected $currentUser;
 
   /**
    * The entity definition update manager.
@@ -38,13 +54,16 @@ class FileHash implements FileHashInterface {
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The configuration factory object.
+   * @param \Drupal\Core\Session\AccountInterface $current_user
+   *   The current user.
    * @param \Drupal\Core\Entity\EntityDefinitionUpdateManagerInterface $entity_definition_update_manager
    *   The entity type manager.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, EntityDefinitionUpdateManagerInterface $entity_definition_update_manager, EntityTypeManagerInterface $entity_type_manager) {
+  public function __construct(ConfigFactoryInterface $config_factory, AccountInterface $current_user, EntityDefinitionUpdateManagerInterface $entity_definition_update_manager, EntityTypeManagerInterface $entity_type_manager) {
     $this->configFactory = $config_factory;
+    $this->currentUser = $current_user;
     $this->entityDefinitionUpdateManager = $entity_definition_update_manager;
     $this->entityTypeManager = $entity_type_manager;
   }
@@ -108,6 +127,72 @@ class FileHash implements FileHashInterface {
   }
 
   /**
+   * Implements hook_entity_base_field_info().
+   */
+  public function entityBaseFieldInfo(): array {
+    $columns = $this->columns();
+    $labels = $this->labels();
+    $lengths = $this->lengths();
+    $descriptions = $this->descriptions();
+    $original = $this->configFactory->get('filehash.settings')->get('original');
+    if ($original) {
+      $original_labels = $this->originalLabels();
+      $original_descriptions = $this->originalDescriptions();
+    }
+    $fields = [];
+    foreach ($columns as $column) {
+      $fields[$column] = BaseFieldDefinition::create('filehash')
+        ->setLabel($labels[$column])
+        ->setSetting('max_length', $lengths[$column])
+        ->setDescription($descriptions[$column]);
+      if ($original) {
+        $fields["original_$column"] = BaseFieldDefinition::create('filehash')
+          ->setLabel($original_labels[$column])
+          ->setSetting('max_length', $lengths[$column])
+          ->setDescription($original_descriptions[$column]);
+      }
+    }
+    return $fields;
+  }
+
+  /**
+   * Implements hook_entity_storage_load().
+   *
+   * Generates hash if it does not already exist for the file.
+   */
+  public function entityStorageLoad($files): void {
+    // @todo Add a setting to toggle the auto-hash behavior?
+    foreach ($files as $file) {
+      foreach ($this->columns() as $column) {
+        if (!$file->{$column}->value) {
+          $file->original = clone($file);
+          // Entity post-save will clean up the dangling "original" property.
+          $file->save();
+          break;
+        }
+      }
+    }
+  }
+
+  /**
+   * Implements hook_ENTITY_TYPE_presave().
+   */
+  public function filePresave(FileInterface $file): void {
+    if ($this->configFactory->get('filehash.settings')->get('rehash')) {
+      // Regenerate all hashes.
+      $this->hash($file);
+    }
+    else {
+      // Only generate missing hashes.
+      foreach ($this->columns() as $column) {
+        if (empty($file->{$column}->value)) {
+          $this->hash($file, $column);
+        }
+      }
+    }
+  }
+
+  /**
    * Calculates the file hashes.
    */
   public function hash($file, ?string $column = NULL, bool $original = FALSE): void {
@@ -131,6 +216,39 @@ class FileHash implements FileHashInterface {
         $file->set("original_$column", $hash);
       }
     }
+  }
+
+  /**
+   * Checks that file is not a duplicate.
+   */
+  public function validateDedupe(FileInterface $file, bool $strict = FALSE, bool $original = FALSE): array {
+    $errors = [];
+    foreach ($this->columns() as $column) {
+      try {
+        $fid = $this->duplicateLookup($column, $file, $strict, $original);
+      }
+      catch (DatabaseExceptionWrapper $e) {
+        $this->addColumns();
+        $fid = $this->duplicateLookup($column, $file, $strict, $original);
+      }
+      if ($fid) {
+        $error = $this->t('Sorry, duplicate files are not permitted.');
+        if ($this->currentUser->hasPermission('access files overview')) {
+          try {
+            $url = Url::fromRoute('view.files.page_2', ['arg_0' => $fid], ['attributes' => ['target' => '_blank']]);
+            $error = $this->t('This file has already been uploaded as %filename.', [
+              '%filename' => Link::fromTextAndUrl(File::load($fid)->label(), $url)->toString(),
+            ]);
+          }
+          catch (\Exception $e) {
+            // Maybe the view was disabled?
+          }
+        }
+        $errors[] = $error;
+        break;
+      }
+    }
+    return $errors;
   }
 
   /**
