@@ -52,7 +52,7 @@ class FileHash implements FileHashInterface {
   /**
    * Adds missing database columns.
    */
-  public function addColumns() {
+  public function addColumns(): void {
     $original = $this->configFactory->get('filehash.settings')->get('original');
     $fields = filehash_entity_base_field_info($this->entityTypeManager->getDefinition('file'));
     foreach ($this->columns() as $column) {
@@ -70,21 +70,21 @@ class FileHash implements FileHashInterface {
    * algorithm identifers actually used by PHP, which may contain slashes,
    * dashes, etc.
    */
-  public function algos() {
+  public function algos(): array {
     return str_replace(['sha3_', 'sha512_'], ['sha3-', 'sha512/'], $this->columns());
   }
 
   /**
    * Returns array of enabled File Hash algorithm identifiers.
    */
-  public function columns() {
+  public function columns(): array {
     return $this->intersect($this->configFactory->get('filehash.settings')->get('algos'));
   }
 
   /**
    * Returns file ID for any duplicates.
    */
-  public function duplicateLookup($column, $file, $strict = FALSE, $original = FALSE) {
+  public function duplicateLookup(string $column, FileInterface $file, bool $strict = FALSE, bool $original = FALSE): ?string {
     // @fixme This code results in *multiple* SQL joins on the file_managed
     // table; if slow maybe it should be refactored to use a normal database
     // query? See also https://www.drupal.org/project/drupal/issues/2875033
@@ -110,7 +110,7 @@ class FileHash implements FileHashInterface {
   /**
    * Calculates the file hashes.
    */
-  public function hash($file, $column = NULL, $original = FALSE) {
+  public function hash($file, ?string $column = NULL, bool $original = FALSE): void {
     $uri = $file->getFileUri();
     // If column is set, only generate that hash.
     $algos = $column ? [$column => $this->algos()[$column]] : $this->algos();
@@ -141,11 +141,11 @@ class FileHash implements FileHashInterface {
    * @return string|false
    *   Same return type as hash_file().
    */
-  public static function blake2b($file, $length, $chunk_size = 8192) {
+  public static function blake2b(string $uri, int $length, int $chunk_size = 8192) {
     if (!function_exists('sodium_crypto_generichash_init')) {
       return FALSE;
     }
-    $handle = fopen($file, 'rb');
+    $handle = fopen($uri, 'rb');
     if (FALSE === $handle) {
       return FALSE;
     }
@@ -168,7 +168,7 @@ class FileHash implements FileHashInterface {
   /**
    * Returns array of field descriptions.
    */
-  public static function descriptions() {
+  public static function descriptions(): array {
     return array_combine(static::KEYS, [
       t('The BLAKE2b-128 hash for this file.'),
       t('The BLAKE2b-160 hash for this file.'),
@@ -194,21 +194,21 @@ class FileHash implements FileHashInterface {
   /**
    * Validates File Hash algorithm config.
    */
-  public static function intersect($config) {
+  public static function intersect($config): array {
     return array_intersect_assoc($config ?? [], static::keys());
   }
 
   /**
    * Returns array of valid File Hash algorithm identifiers.
    */
-  public static function keys() {
+  public static function keys(): array {
     return array_combine(static::KEYS, static::KEYS);
   }
 
   /**
    * Returns array of field labels.
    */
-  public static function labels() {
+  public static function labels(): array {
     return array_combine(static::KEYS, [
       t('BLAKE2b-128 hash'),
       t('BLAKE2b-160 hash'),
@@ -234,7 +234,7 @@ class FileHash implements FileHashInterface {
   /**
    * Returns array of hash algorithm hexadecimal output lengths.
    */
-  public static function lengths() {
+  public static function lengths(): array {
     return array_combine(static::KEYS, [
       32, 40, 56, 64, 96, 128, 32, 40, 56, 64, 96, 56, 64, 128, 56, 64, 96, 128,
     ]);
@@ -243,7 +243,7 @@ class FileHash implements FileHashInterface {
   /**
    * Returns array of human-readable hash algorithm names.
    */
-  public static function names() {
+  public static function names(): array {
     return array_combine(static::KEYS, [
       t('BLAKE2b-128'),
       t('BLAKE2b-160'),
@@ -269,7 +269,7 @@ class FileHash implements FileHashInterface {
   /**
    * Returns array of field descriptions.
    */
-  public static function originalDescriptions() {
+  public static function originalDescriptions(): array {
     return array_combine(static::KEYS, [
       t('The original BLAKE2b-128 hash for this file.'),
       t('The original BLAKE2b-160 hash for this file.'),
@@ -295,7 +295,7 @@ class FileHash implements FileHashInterface {
   /**
    * Returns array of field labels.
    */
-  public static function originalLabels() {
+  public static function originalLabels(): array {
     return array_combine(static::KEYS, [
       t('Original BLAKE2b-128 hash'),
       t('Original BLAKE2b-160 hash'),
