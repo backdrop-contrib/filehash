@@ -22,6 +22,37 @@ class FileHash implements FileHashInterface {
   use StringTranslationTrait;
 
   /**
+   * Array of valid File Hash algorithm identifiers.
+   */
+  const KEYS = [
+    'blake2b_128',
+    'blake2b_160',
+    'blake2b_224',
+    'blake2b_256',
+    'blake2b_384',
+    'blake2b_512',
+    'md5',
+    'sha1',
+    'sha224',
+    'sha256',
+    'sha384',
+    'sha512_224',
+    'sha512_256',
+    'sha512',
+    'sha3_224',
+    'sha3_256',
+    'sha3_384',
+    'sha3_512',
+  ];
+
+  /**
+   * Array of hexadecimal lengths for each supported hash algorithm.
+   */
+  const LENGTHS = [
+    32, 40, 56, 64, 96, 128, 32, 40, 56, 64, 96, 56, 64, 128, 56, 64, 96, 128,
+  ];
+
+  /**
    * Config factory.
    *
    * @var \Drupal\Core\Config\ConfigFactoryInterface
