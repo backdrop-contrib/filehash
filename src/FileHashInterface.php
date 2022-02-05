@@ -20,7 +20,7 @@ interface FileHashInterface {
   public function addColumns(): void;
 
   /**
-   * Returns array of enabled File Hash algorithm identifiers, keyed by KEYS.
+   * Returns array of enabled File Hash algorithm identifiers.
    */
   public function columns(): array;
 
@@ -57,7 +57,7 @@ interface FileHashInterface {
   public function hash($file, ?string $column = NULL, bool $original = FALSE): void;
 
   /**
-   * Returns array of field descriptions, keyed by KEYS.
+   * Returns array of field descriptions.
    */
   public static function descriptions(): array;
 
@@ -67,32 +67,32 @@ interface FileHashInterface {
   public static function intersect($config): array;
 
   /**
-   * Returns array of valid File Hash algorithm identifiers, keyed by KEYS.
+   * Returns array of valid File Hash algorithm identifiers.
    */
   public static function keys(): array;
 
   /**
-   * Returns array of field labels, keyed by KEYS.
+   * Returns array of field labels.
    */
   public static function labels(): array;
 
   /**
-   * Returns array of hash algorithm hexadecimal output lengths, keyed by KEYS.
+   * Returns array of hash algorithm hexadecimal output lengths.
    */
   public static function lengths(): array;
 
   /**
-   * Returns array of human-readable hash algorithm names, keyed by KEYS.
+   * Returns array of human-readable hash algorithm names.
    */
   public static function names(): array;
 
   /**
-   * Returns array of field descriptions, keyed by KEYS.
+   * Returns array of field descriptions.
    */
   public static function originalDescriptions(): array;
 
   /**
-   * Returns array of field labels, keyed by KEYS.
+   * Returns array of field labels.
    */
   public static function originalLabels(): array;
 
