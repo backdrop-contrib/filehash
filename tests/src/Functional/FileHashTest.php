@@ -142,14 +142,33 @@ class FileHashTest extends FileFieldTestBase implements FileHashTestInterface {
     $nid = $this->uploadNodeFile($test_file, $field_name, $type_name);
     $this->assertSession()->addressEquals("node/$nid");
 
+    // Enable strict dedupe.
     $this->drupalGet('admin/config/media/filehash');
-    $fields = ['dedupe' => 1];
+    $fields = ['dedupe' => 2];
     $this->submitForm($fields, 'Save configuration');
 
     // Test that a node with duplicate file already attached can be saved.
     $this->drupalGet("node/$nid/edit");
     $this->submitForm([], 'Save');
     $this->assertSession()->addressEquals("node/$nid");
+
+    // Test that duplicate files cannot be uploaded at the same time.
+    $this->drupalGet("node/add/$type_name");
+    $test_file_2 = $this->getTestFile('binary');
+    $edit['files[' . $field_name . '_0]'] = \Drupal::service('file_system')->realpath($test_file_2->getFileUri());
+    $this->submitForm($edit, 'Upload');
+    $this->submitForm([], 'Preview');
+    $nid_2 = $this->uploadNodeFile($test_file_2, $field_name, $type_name);
+    $this->assertSession()->addressEquals("node/$nid_2/edit");
+
+    // Enable normal dedupe.
+    $this->drupalGet('admin/config/media/filehash');
+    $fields = ['dedupe' => 1];
+    $this->submitForm($fields, 'Save configuration');
+
+    // Test that duplicate files can be uploaded at the same time.
+    $nid_2 = $this->uploadNodeFile($test_file_2, $field_name, $type_name);
+    $this->assertSession()->addressEquals("node/$nid_2");
 
     // Disable global dedupe setting.
     $this->drupalGet('admin/config/media/filehash');
