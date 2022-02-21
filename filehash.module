@@ -98,7 +98,7 @@ function filehash_form_field_config_edit_form_alter(array &$form, FormStateInter
     '#parents' => ['third_party_settings', 'filehash'],
   ];
   $form['settings']['filehash']['dedupe'] = [
-    '#type'          => 'select',
+    '#type'          => 'radios',
     '#title'         => t('Disallow duplicate files'),
     '#options'       => [t('Off'), t('Enabled'), t('Strict')],
     '#default_value' => $settings['dedupe'] ?? 0,

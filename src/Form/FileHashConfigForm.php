@@ -106,7 +106,7 @@ class FileHashConfigForm extends ConfigFormBase {
         $this->t('Enabled'),
         $this->t('Strict'),
       ],
-      '#type' => 'select',
+      '#type' => 'radios',
     ];
     $form['dedupe_original'] = [
       '#default_value' => $this->config('filehash.settings')->get('dedupe_original'),
