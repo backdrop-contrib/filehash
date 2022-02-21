@@ -230,9 +230,10 @@ class FileHash implements FileHashInterface {
     $uri = $file->getFileUri();
     // If column is set, only generate that hash.
     $algos = $column ? [$column => $this->algos()[$column]] : $this->algos();
+    $types = $this->configFactory->get('filehash.settings')->get('mime_types');
     foreach ($algos as $column => $algo) {
       // Nothing to do if file URI is empty.
-      if (NULL === $uri || '' === $uri) {
+      if (NULL === $uri || '' === $uri || ($types && !in_array($file->getMimeType(), $types))) {
         $hash = NULL;
       }
       // Unreadable files will have NULL hash values.

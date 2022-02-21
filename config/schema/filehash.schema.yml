@@ -72,6 +72,12 @@ filehash.settings:
     dedupe_original:
       type: boolean
       label: 'Include original file hashes in duplicate check'
+    mime_types:
+      type: sequence
+      label: 'List of MIME types to hash'
+      sequence:
+        type: string
+        label: 'MIME type'
 
 field.formatter.settings.filehash_table:
   type: mapping

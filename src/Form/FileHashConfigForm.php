@@ -97,6 +97,12 @@ class FileHashConfigForm extends ConfigFormBase {
       '#title' => $this->t('Store an additional original hash for each uploaded file'),
       '#type' => 'checkbox',
     ];
+    $form['mime_types'] = [
+      '#default_value' => implode(PHP_EOL, $this->config('filehash.settings')->get('mime_types') ?? []),
+      '#description' => $this->t('If set, only these MIME types will be hashed. If empty, all files will be hashed. MIME types (e.g. <em>application/octet-stream</em>) can be separated by newline, space, tab or comma.'),
+      '#title' => $this->t('List of MIME types to hash'),
+      '#type' => 'textarea',
+    ];
     $form['dedupe'] = [
       '#default_value' => $this->config('filehash.settings')->get('dedupe'),
       '#description' => $this->t('If enabled, prevent duplicate uploaded files from being saved when the file already exists as a permanent file. If strict, also include temporary files in the duplicate check, which prevents duplicates from being uploaded at the same time. If off, you can still disallow duplicate files in the widget settings for any particular file upload field. Note, enabling this setting has privacy implications, as it allows users to determine if a particular file has been uploaded to the site.'),
@@ -149,6 +155,7 @@ class FileHashConfigForm extends ConfigFormBase {
       ->set('rehash', $form_state->getValue('rehash'))
       ->set('original', $form_state->getValue('original'))
       ->set('dedupe_original', $form_state->getValue('dedupe_original'))
+      ->set('mime_types', preg_split('/[\s,]+/', $form_state->getValue('mime_types'), -1, PREG_SPLIT_NO_EMPTY))
       ->save();
     parent::submitForm($form, $form_state);
     if (CleanBatch::columns()) {

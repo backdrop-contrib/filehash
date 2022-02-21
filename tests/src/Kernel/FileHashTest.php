@@ -140,4 +140,35 @@ class FileHashTest extends KernelTestBase implements FileHashTestInterface {
     unlink($uri);
   }
 
+  /**
+   * Tests the MIME types setting.
+   */
+  public function testMimeTypesSetting() {
+    \Drupal::configFactory()
+      ->getEditable('filehash.settings')
+      ->set('mime_types', ['application/octet-stream'])
+      ->save();
+
+    $uri = 'temporary://' . $this->randomMachineName() . '.txt';
+    file_put_contents($uri, static::CONTENTS);
+    $file = File::create([
+      'uri' => $uri,
+      'uid' => 1,
+    ]);
+    $file->save();
+    $this->assertNull($file->sha1->value);
+    $file->delete();
+
+    $uri = 'temporary://' . $this->randomMachineName() . '.txt';
+    file_put_contents($uri, static::CONTENTS);
+    $file = File::create([
+      'uri' => $uri,
+      'uid' => 1,
+      'filemime' => 'application/octet-stream',
+    ]);
+    $file->save();
+    $this->assertSame(static::SHA1, $file->sha1->value);
+    $file->delete();
+  }
+
 }
