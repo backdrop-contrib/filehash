@@ -3,9 +3,10 @@
 namespace Drupal\Tests\filehash\Kernel;
 
 use Drupal\file\Entity\File;
+use Drupal\file\FileInterface;
 use Drupal\KernelTests\KernelTestBase;
-use Drupal\user\Entity\User;
 use Drupal\Tests\filehash\Functional\FileHashTestInterface;
+use Drupal\user\Entity\User;
 
 /**
  * Using kernel tests rather than functional for speediness.
@@ -39,6 +40,29 @@ class FileHashTest extends KernelTestBase implements FileHashTestInterface {
       ->getEditable('filehash.settings')
       ->set('algos.sha1', 'sha1')
       ->save();
+  }
+
+  /**
+   * Tests that a file hash is set on the file object.
+   */
+  public function testFileHash() {
+    $uri = 'temporary://' . $this->randomMachineName() . '.txt';
+    file_put_contents($uri, static::CONTENTS);
+    $file = File::create([
+      'uid' => 1,
+      'filename' => 'druplicon.txt',
+      'uri' => $uri,
+      'filemime' => 'text/plain',
+      'created' => 1,
+      'changed' => 1,
+      'status' => FileInterface::STATUS_PERMANENT,
+    ]);
+    $this->assertSame(static::SHA1, $file->sha1->value, 'File hash was set correctly at create.');
+    $file->save();
+    $this->assertSame(static::SHA1, $file->sha1->value, 'File hash was set correctly at save.');
+    $file = File::load($file->id());
+    $this->assertSame(static::SHA1, $file->sha1->value, 'File hash was set correctly at load.');
+    $file->delete();
   }
 
   /**

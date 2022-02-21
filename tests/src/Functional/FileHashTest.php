@@ -46,29 +46,6 @@ class FileHashTest extends FileFieldTestBase implements FileHashTestInterface {
   }
 
   /**
-   * Tests that a file hash is set on the file object.
-   */
-  public function testFileHash() {
-    $uri = 'temporary://' . $this->randomMachineName() . '.txt';
-    file_put_contents($uri, static::CONTENTS);
-    $file = File::create([
-      'uid' => 1,
-      'filename' => 'druplicon.txt',
-      'uri' => $uri,
-      'filemime' => 'text/plain',
-      'created' => 1,
-      'changed' => 1,
-      'status' => FileInterface::STATUS_PERMANENT,
-    ]);
-    $this->assertSame(static::SHA1, $file->sha1->value, 'File hash was set correctly at create.');
-    $file->save();
-    $this->assertSame(static::SHA1, $file->sha1->value, 'File hash was set correctly at save.');
-    $file = File::load($file->id());
-    $this->assertSame(static::SHA1, $file->sha1->value, 'File hash was set correctly at load.');
-    unlink($uri);
-  }
-
-  /**
    * Tests BLAKE2b hash algorithm.
    */
   public function testBlake2b() {
@@ -92,7 +69,7 @@ class FileHashTest extends FileFieldTestBase implements FileHashTestInterface {
     $this->assertSame($hash, $file->blake2b_512->value, 'File hash was set correctly at save.');
     $file = File::load($file->id());
     $this->assertSame($hash, $file->blake2b_512->value, 'File hash was set correctly at load.');
-    unlink($uri);
+    $file->delete();
   }
 
   /**
