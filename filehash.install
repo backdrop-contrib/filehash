@@ -43,7 +43,8 @@ function filehash_update_8200() {
  * before running this update.
  */
 function filehash_update_8201(&$sandbox) {
-  if (!Drupal::service('filehash')->columns()) {
+  $columns = Drupal::service('filehash')->columns();
+  if (!$columns) {
     return t('No file hash algorithms are enabled, so no data was migrated from the filehash table.');
   }
   if (!isset($sandbox['progress'])) {
@@ -54,12 +55,12 @@ function filehash_update_8201(&$sandbox) {
   }
   $records = Drupal::database()
     ->select('filehash')
-    ->fields('filehash', ['fid' => 'fid'] + Drupal::service('filehash')->columns())
+    ->fields('filehash', ['fid' => 'fid'] + $columns)
     ->range(0, 1)
     ->execute();
   foreach ($records as $record) {
     $fields = [];
-    foreach (Drupal::service('filehash')->columns() as $column) {
+    foreach ($columns as $column) {
       $fields[$column] = $record->{$column};
     }
     Drupal::database()
