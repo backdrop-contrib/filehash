@@ -36,5 +36,22 @@ function filehash_views_data() {
       ),
     );
   }
+  $data['filehash']['timestamp'] = array(
+    'title' => t('Hash date'),
+    'help' => t('The date the file hash was generated.'),
+    'field' => array(
+      'handler' => 'views_handler_field_date',
+      'click sortable' => TRUE,
+    ),
+    'argument' => array(
+      'handler' => 'views_handler_argument_date',
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_date',
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort_date',
+    ),
+  );
   return $data;
 }

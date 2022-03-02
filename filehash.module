@@ -92,6 +92,7 @@ function filehash_file_load($files) {
         // Handle missing column.
         $files[$record->fid]->filehash[$column] = property_exists($record, $column) ? $record->$column : NULL;
       }
+      $files[$record->fid]->filehash['timestamp'] = property_exists($record, 'timestamp') ? $record->timestamp : NULL;
     }
     // Generate hash if it does not already exist for the file.
     foreach ($files as $fid => $file) {
@@ -290,6 +291,7 @@ function filehash_rss_elements(array $file, $node) {
  */
 function filehash_save($file) {
   $file->filehash = array_fill_keys(filehash_columns(), NULL);
+  $file->filehash['timestamp'] = REQUEST_TIME;
   foreach (filehash_algos() as $column => $algo) {
     $file->filehash[$column] = filehash_hash($algo, $file->uri) ?: NULL;
   }

@@ -18,6 +18,13 @@ function filehash_schema() {
         'unsigned' => TRUE,
         'not null' => TRUE,
       ),
+      'timestamp' => array(
+        'description' => 'UNIX timestamp for when the hash was generated.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => FALSE,
+        'default' => NULL,
+      ),
     ),
     'primary key' => array('fid'),
     'foreign keys' => array(
@@ -25,6 +32,9 @@ function filehash_schema() {
         'table' => 'file_managed',
         'columns' => array('fid' => 'fid'),
       ),
+    ),
+    'indexes' => array(
+      'timestamp' => array('timestamp'),
     ),
   );
   return $schema;
@@ -60,4 +70,17 @@ function filehash_requirements($phase) {
     }
   }
   return $requirements;
+}
+
+/**
+ * Add filehash.timestamp column.
+ */
+function filehash_update_7100() {
+  db_add_field('filehash', 'timestamp', array(
+    'description' => 'UNIX timestamp for when the hash was generated.',
+    'type' => 'int',
+    'unsigned' => TRUE,
+    'not null' => FALSE,
+    'default' => NULL,
+  ), array('indexes' => array('timestamp' => array('timestamp'))));
 }
