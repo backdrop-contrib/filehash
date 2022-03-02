@@ -80,20 +80,20 @@ class FileHashConfigForm extends ConfigFormBase {
   public function buildForm(array $form, FormStateInterface $form_state) {
     $form['algos'] = [
       '#default_value' => $this->config('filehash.settings')->get('algos'),
-      '#description' => $this->t('The checked hash algorithm(s) will be calculated when a file is saved. For optimum performance, only enable the hash algorithm(s) you need.'),
+      '#description' => $this->t('The checked hash algorithm(s) will be calculated when a file is uploaded. For optimum performance, only enable the hash algorithm(s) you need.'),
       '#options' => $this->fileHash->names(),
       '#title' => $this->t('Enabled hash algorithms'),
       '#type' => 'checkboxes',
     ];
     $form['rehash'] = [
       '#default_value' => $this->config('filehash.settings')->get('rehash'),
-      '#description' => $this->t('If checked, always regenerate the hash when saving a file, even if the hash has been generated previously. This should be enabled if you have modules that modify existing files or apply processing to uploaded files (e.g. core Image module with maximum image resolution set), and you want to keep the hash in sync with the file on disk. If disabled, the file hash represents the hash of the originally uploaded file, and will only be generated if it is missing, which is much faster.'),
+      '#description' => $this->t('If enabled, always regenerate the hash when saving a file, even if the hash has been generated previously. This should be enabled if you have modules that modify existing files or apply processing to uploaded files (e.g. core Image module with maximum image resolution set), and you want to keep the hash in sync with the file on disk. If disabled, the file hash represents the hash of the originally uploaded file, and will only be generated if it is missing, which is much faster.'),
       '#title' => $this->t('Always rehash file when saving'),
       '#type' => 'checkbox',
     ];
     $form['original'] = [
       '#default_value' => $this->config('filehash.settings')->get('original'),
-      '#description' => $this->t('If checked, store an additional "original" hash for each uploaded file which will not be updated. This is only useful if the above "always rehash" setting is also enabled (otherwise the file hash itself represents the hash of the originally uploaded file).'),
+      '#description' => $this->t('If enabled, store an additional "original" hash for each uploaded file which will not be updated. This is only useful if the above "always rehash" setting is also enabled (otherwise the file hash itself represents the hash of the originally uploaded file).'),
       '#title' => $this->t('Store an additional original hash for each uploaded file'),
       '#type' => 'checkbox',
     ];
@@ -116,7 +116,7 @@ class FileHashConfigForm extends ConfigFormBase {
     ];
     $form['dedupe_original'] = [
       '#default_value' => $this->config('filehash.settings')->get('dedupe_original'),
-      '#description' => $this->t('If checked, also prevent an uploaded file from being saved if its hash matches the "original" hash of another file. This is useful if you apply processing to uploaded files (e.g. core Image module with maximum image resolution set), and want to check uploads against both the original and derivative file hash. Only active if the above original file hash and dedupe settings are enabled.'),
+      '#description' => $this->t('If enabled, also prevent an uploaded file from being saved if its hash matches the "original" hash of another file. This is useful if you apply processing to uploaded files (e.g. core Image module with maximum image resolution set), and want to check uploads against both the original and derivative file hash. Only active if the above original file hash and dedupe settings are enabled.'),
       '#title' => $this->t('Include original file hashes in duplicate check'),
       '#type' => 'checkbox',
     ];
