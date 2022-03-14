@@ -41,12 +41,8 @@ File hashes for pre-existing files will be generated "lazily," on demand, but
 you can generate them in bulk at admin/config/media/filehash/generate or by
 running `drush fgen`.
 
-Hash values are loaded into the $file object where they are available to the
-theme and other modules.
-
-Handlers are provided for Views module compatibility. In addition, a
-<media:hash> element is added for file attachments in node RSS feeds (media,
-file and image field types are supported).
+Hash values are stored as fields on the File entity, where they are available to
+the theme, Views and other modules.
 
 Tokens are provided for the full hashes: [file:filehash-md5],
 [file:filehash-sha1], [file:filehash-sha256], as well as pairtree tokens useful
