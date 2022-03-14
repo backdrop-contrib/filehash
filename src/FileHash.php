@@ -193,7 +193,7 @@ class FileHash implements FileHashInterface {
    */
   public function entityStorageLoad($files): void {
     // @todo Add a setting to toggle the auto-hash behavior?
-    $types = $this->configFactory->get('filehash.settings')->get('mime_types') ?? [];
+    $types = $this->configFactory->get('filehash.settings')->get('mime_types');
     foreach ($files as $file) {
       if ($types && !in_array($file->getMimeType(), $types)) {
         continue;
@@ -234,7 +234,7 @@ class FileHash implements FileHashInterface {
     $uri = $file->getFileUri();
     // If column is set, only generate that hash.
     $algos = $column ? [$column => $this->algos()[$column]] : $this->algos();
-    $types = $this->configFactory->get('filehash.settings')->get('mime_types') ?? [];
+    $types = $this->configFactory->get('filehash.settings')->get('mime_types');
     foreach ($algos as $column => $algo) {
       // Nothing to do if file URI is empty.
       if (NULL === $uri || '' === $uri || ($types && !in_array($file->getMimeType(), $types))) {
