@@ -193,7 +193,11 @@ class FileHash implements FileHashInterface {
    */
   public function entityStorageLoad($files): void {
     // @todo Add a setting to toggle the auto-hash behavior?
+    $types = $this->configFactory->get('filehash.settings')->get('mime_types');
     foreach ($files as $file) {
+      if ($types && !in_array($file->getMimeType(), $types)) {
+        continue;
+      }
       foreach ($this->columns() as $column) {
         if (!$file->{$column}->value) {
           $file->original = clone($file);
