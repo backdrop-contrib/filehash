@@ -149,7 +149,7 @@ class FileHash implements FileHashInterface {
       $query->condition($column, $file->{$column}->value);
     }
     if (!$strict) {
-      $query->condition('status', FileInterface::STATUS_PERMANENT, '=');
+      $query->condition('status', defined(FileInterface::class . '::STATUS_PERMANENT') ? FileInterface::STATUS_PERMANENT : FILE_STATUS_PERMANENT, '=');
     }
     $results = $query->range(0, 1)
       ->accessCheck(FALSE)

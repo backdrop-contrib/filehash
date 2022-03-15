@@ -61,7 +61,7 @@ class FileHashTest extends FileFieldTestBase implements FileHashTestInterface {
       'filemime' => 'text/plain',
       'created' => 1,
       'changed' => 1,
-      'status' => FileInterface::STATUS_PERMANENT,
+      'status' => defined(FileInterface::class . '::STATUS_PERMANENT') ? FileInterface::STATUS_PERMANENT : FILE_STATUS_PERMANENT,
     ]);
     $hash = function_exists('sodium_crypto_generichash_init') ? static::BLAKE2B_512 : NULL;
     $this->assertSame($hash, $file->blake2b_512->value, 'File hash was set correctly at create.');

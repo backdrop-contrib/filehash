@@ -55,7 +55,7 @@ class FileHashTest extends KernelTestBase implements FileHashTestInterface {
       'filemime' => 'text/plain',
       'created' => 1,
       'changed' => 1,
-      'status' => FileInterface::STATUS_PERMANENT,
+      'status' => defined(FileInterface::class . '::STATUS_PERMANENT') ? FileInterface::STATUS_PERMANENT : FILE_STATUS_PERMANENT,
     ]);
     $this->assertSame(static::SHA1, $file->sha1->value, 'File hash was set correctly at create.');
     $file->save();
