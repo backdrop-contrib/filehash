@@ -5,6 +5,7 @@
  * Generate hashes for each uploaded file.
  */
 
+use Drupal\Core\Config\Entity\ThirdPartySettingsInterface;
 use Drupal\Core\Entity\EntityFormInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -41,7 +42,11 @@ function filehash_entity_storage_load($files, $entity_type): void {
  */
 function filehash_field_widget_single_element_form_alter(&$element, FormStateInterface $form_state, $context): void {
   if (isset($element['#type']) && $element['#type'] === 'managed_file') {
-    $settings = $context['items']->getFieldDefinition()->getThirdPartySettings('filehash');
+    $definition = $context['items']->getFieldDefinition();
+    if (!($definition instanceof ThirdPartySettingsInterface)) {
+      return;
+    }
+    $settings = $definition->getThirdPartySettings('filehash');
     if (!empty($settings['dedupe'])) {
       $strict = FileHashInterface::STRICT_DEDUPE == $settings['dedupe'];
       $dedupe_original = !empty($settings['dedupe_original']);
