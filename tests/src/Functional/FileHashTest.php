@@ -187,4 +187,15 @@ class FileHashTest extends FileFieldTestBase {
     $this->assertSession()->pageTextContains('Processed 2 hash algorithm columns.');
   }
 
+  /**
+   * Tests File Hash with all algorithms disabled.
+   */
+  public function testFileHashNoAlgos() {
+    $fields = ['algos[sha1]' => FALSE];
+    $this->submitForm($fields, $this->t('Save configuration'));
+    $file = $this->getTestFile('text');
+    $file->save();
+    $file->save();
+  }
+
 }

@@ -357,6 +357,9 @@ function filehash_rss_elements($file, $node) {
  * Saves the file hashes.
  */
 function filehash_save(FileInterface $file) {
+  if (!filehash_columns()) {
+    return;
+  }
   try {
     filehash_merge($file);
   }
