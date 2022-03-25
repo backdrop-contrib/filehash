@@ -5,7 +5,6 @@ namespace Drupal\Tests\filehash\Functional;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\file\Entity\File;
-use Drupal\file\FileInterface;
 use Drupal\Tests\file\Functional\FileFieldTestBase;
 
 /**
