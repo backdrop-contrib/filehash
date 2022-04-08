@@ -62,7 +62,7 @@ function filehash_field_widget_single_element_form_alter(&$element, FormStateInt
  * Implements hook_ENTITY_TYPE_create().
  */
 function filehash_file_create(EntityInterface $file): void {
-  Drupal::service('filehash')->hash($file, NULL, Drupal::config('filehash.settings')->get('original'));
+  Drupal::service('filehash')->hash($file, NULL, Drupal::config('filehash.settings')->get('original') ?? FALSE);
 }
 
 /**
