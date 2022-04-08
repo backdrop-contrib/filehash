@@ -78,7 +78,7 @@ function filehash_file_presave(EntityInterface $file): void {
 function filehash_file_validate(FileInterface $file): array {
   $dedupe = Drupal::config('filehash.settings')->get('dedupe');
   $strict = FileHashInterface::STRICT_DEDUPE == $dedupe;
-  $original = Drupal::config('filehash.settings')->get('dedupe_original');
+  $original = Drupal::config('filehash.settings')->get('dedupe_original') ?? FALSE;
   return $dedupe ? filehash_validate_dedupe($file, $strict, $original) : [];
 }
 
