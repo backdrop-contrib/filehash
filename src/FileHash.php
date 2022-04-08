@@ -149,6 +149,7 @@ class FileHash implements FileHashInterface {
       $query->condition($column, $file->{$column}->value);
     }
     if (!$strict) {
+      // @phpstan-ignore-next-line Core 9.2 compatibility.
       $query->condition('status', defined(FileInterface::class . '::STATUS_PERMANENT') ? FileInterface::STATUS_PERMANENT : FILE_STATUS_PERMANENT, '=');
     }
     $results = $query->range(0, 1)

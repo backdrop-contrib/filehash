@@ -55,6 +55,7 @@ class FileHashTest extends KernelTestBase implements FileHashTestInterface {
       'filemime' => 'text/plain',
       'created' => 1,
       'changed' => 1,
+      // @phpstan-ignore-next-line Core 9.2 compatibility.
       'status' => defined(FileInterface::class . '::STATUS_PERMANENT') ? FileInterface::STATUS_PERMANENT : FILE_STATUS_PERMANENT,
     ]);
     $this->assertSame(static::SHA1, $file->sha1->value, 'File hash was set correctly at create.');
@@ -79,8 +80,8 @@ class FileHashTest extends KernelTestBase implements FileHashTestInterface {
     $this->assertGreaterThan(0, $file->id());
     $count = \Drupal::entityQuery('file')
       ->condition('sha1', static::SHA1)
-      ->accessCheck(TRUE)
       ->count()
+      ->accessCheck(TRUE)
       ->execute();
     $this->assertSame('1', $count);
 
@@ -90,14 +91,14 @@ class FileHashTest extends KernelTestBase implements FileHashTestInterface {
 
     $count = \Drupal::entityQuery('file')
       ->condition('sha1', static::SHA1)
-      ->accessCheck(TRUE)
       ->count()
+      ->accessCheck(TRUE)
       ->execute();
     $this->assertSame('1', $count);
     $count = \Drupal::entityQuery('file')
       ->condition('sha1', static::DIFFERENT_SHA1)
-      ->accessCheck(TRUE)
       ->count()
+      ->accessCheck(TRUE)
       ->execute();
     $this->assertSame('0', $count);
 
@@ -110,15 +111,15 @@ class FileHashTest extends KernelTestBase implements FileHashTestInterface {
 
     $count = \Drupal::entityQuery('file')
       ->condition('sha1', static::SHA1)
-      ->accessCheck(TRUE)
       ->count()
+      ->accessCheck(TRUE)
       ->execute();
     $this->assertSame('0', $count);
 
     $count = \Drupal::entityQuery('file')
       ->condition('sha1', static::DIFFERENT_SHA1)
-      ->accessCheck(TRUE)
       ->count()
+      ->accessCheck(TRUE)
       ->execute();
     $this->assertSame('1', $count);
 
@@ -145,8 +146,8 @@ class FileHashTest extends KernelTestBase implements FileHashTestInterface {
     $count = \Drupal::entityQuery('file')
       ->condition('sha1', static::SHA1)
       ->condition('original_sha1', static::SHA1)
-      ->accessCheck(TRUE)
       ->count()
+      ->accessCheck(TRUE)
       ->execute();
     $this->assertSame('1', $count);
 
@@ -156,8 +157,8 @@ class FileHashTest extends KernelTestBase implements FileHashTestInterface {
     $count = \Drupal::entityQuery('file')
       ->condition('sha1', static::DIFFERENT_SHA1)
       ->condition('original_sha1', static::SHA1)
-      ->accessCheck(TRUE)
       ->count()
+      ->accessCheck(TRUE)
       ->execute();
     $this->assertSame('1', $count);
 
