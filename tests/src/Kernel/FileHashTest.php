@@ -196,4 +196,14 @@ class FileHashTest extends KernelTestBase implements FileHashTestInterface {
     $file->delete();
   }
 
+  /**
+   * Tests that a warning is logged if nonexistent file is hashed.
+   */
+  public function testNonexistentFile() {
+    $this->expectWarning();
+    // "Failed" on PHP 8 or "failed" on PHP 7.
+    $this->expectWarningMessage('ailed to open stream');
+    File::create(['uri' => "temporary://{$this->randomMachineName()}.txt"]);
+  }
+
 }
