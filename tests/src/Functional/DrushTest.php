@@ -27,7 +27,7 @@ class DrushTest extends BrowserTestBase {
   /**
    * Tests drush commands.
    */
-  public function testCommands() {
+  public function testCommands(): void {
     $this->drush('filehash:generate');
   }
 

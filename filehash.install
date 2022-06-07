@@ -5,10 +5,15 @@
  * Schema function for file hash module.
  */
 
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+
 /**
  * Implements hook_requirements().
+ *
+ * @phpstan-ignore-next-line Hook implementations should not duplicate @param
+ * documentation.
  */
-function filehash_requirements($phase) {
+function filehash_requirements($phase): array {
   $requirements = [];
   if ('runtime' === $phase && preg_grep('/^blake/', Drupal::service('filehash')->columns())) {
     $requirements['filehash_sodium'] = [
@@ -30,7 +35,7 @@ function filehash_requirements($phase) {
 /**
  * Add file hash columns to the file_managed table.
  */
-function filehash_update_8200() {
+function filehash_update_8200(): TranslatableMarkup {
   Drupal::service('filehash')->addColumns();
   return t('File hashes will now be stored in the file_managed table, and are directly available as base fields on file entities. You may need to update any views, templates, etc. that use file hashes.');
 }
@@ -41,8 +46,11 @@ function filehash_update_8200() {
  * Warning: Any data for disabled file hash algorithms will not be migrated!
  * Please ensure hash algorithms for which you want to save data are enabled
  * before running this update.
+ *
+ * @param mixed[] $sandbox
+ *   Batch sandbox.
  */
-function filehash_update_8201(&$sandbox) {
+function filehash_update_8201(array &$sandbox): TranslatableMarkup {
   $columns = Drupal::service('filehash')->columns();
   if (!$columns) {
     return t('No file hash algorithms are enabled, so no data was migrated from the filehash table.');
@@ -84,7 +92,7 @@ function filehash_update_8201(&$sandbox) {
  * Warning: Any data for disabled file hash algorithms was not migrated and will
  * be permanently deleted!
  */
-function filehash_update_8202() {
+function filehash_update_8202(): TranslatableMarkup {
   Drupal::database()->schema()->dropTable('filehash');
   return t('The filehash table has been dropped.');
 }
@@ -92,7 +100,7 @@ function filehash_update_8202() {
 /**
  * Enable the "Always rehash file when saving" setting.
  */
-function filehash_update_8203() {
+function filehash_update_8203(): TranslatableMarkup {
   $dedupe = Drupal::config('filehash.settings')->get('dedupe');
   Drupal::configFactory()
     ->getEditable('filehash.settings')

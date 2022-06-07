@@ -12,7 +12,7 @@ class GenerateBatch {
   /**
    * Creates the batch definition.
    *
-   * @return array
+   * @return mixed[]
    *   The batch definition.
    */
   public static function createBatch() {
@@ -38,8 +38,11 @@ class GenerateBatch {
 
   /**
    * Batch process callback.
+   *
+   * @param mixed[]|iterable $context
+   *   Batch context.
    */
-  public static function process(&$context) {
+  public static function process(&$context): void {
     if (!isset($context['results']['processed'])) {
       $context['results']['processed'] = 0;
       $context['results']['updated'] = 0;
@@ -58,8 +61,15 @@ class GenerateBatch {
 
   /**
    * Batch finish callback.
+   *
+   * @param bool $success
+   *   Whether or not the batch succeeded.
+   * @param int[] $results
+   *   Number of files processed.
+   * @param mixed[] $operations
+   *   Batch operations.
    */
-  public static function finished($success, $results, $operations) {
+  public static function finished($success, array $results, array $operations): void {
     $variables = ['@processed' => $results['processed']];
     if ($success) {
       \Drupal::messenger()->addMessage(t('Processed @processed files.', $variables));

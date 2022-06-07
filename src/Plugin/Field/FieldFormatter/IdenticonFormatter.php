@@ -27,7 +27,7 @@ class IdenticonFormatter extends StringFormatter {
    * @param \Drupal\Core\Field\FieldItemInterface $item
    *   One field item.
    *
-   * @return array
+   * @return mixed[]
    *   The output generated as a render array.
    */
   protected function viewValue(FieldItemInterface $item) {

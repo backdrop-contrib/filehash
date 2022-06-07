@@ -47,6 +47,9 @@ class FileHashConfigForm extends ConfigFormBase {
 
   /**
    * {@inheritdoc}
+   *
+   * @return string[]
+   *   Editable config names.
    */
   protected function getEditableConfigNames() {
     return ['filehash.settings'];
@@ -65,7 +68,7 @@ class FileHashConfigForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): self {
     return new static(
       $container->get('config.factory'),
       $container->get('entity_field.deleted_fields_repository'),
@@ -76,6 +79,14 @@ class FileHashConfigForm extends ConfigFormBase {
 
   /**
    * {@inheritdoc}
+   *
+   * @param mixed[] $form
+   *   Renderable form.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   Form state.
+   *
+   * @return mixed[]
+   *   Renderable form.
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $form['algos'] = [
@@ -126,8 +137,13 @@ class FileHashConfigForm extends ConfigFormBase {
 
   /**
    * {@inheritdoc}
+   *
+   * @param mixed[] $form
+   *   Renderable form.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   Form state.
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
     parent::validateForm($form, $form_state);
     foreach ($form_state->getValue('algos') as $column => $value) {
       if ($value) {
@@ -147,8 +163,13 @@ class FileHashConfigForm extends ConfigFormBase {
 
   /**
    * {@inheritdoc}
+   *
+   * @param mixed[] $form
+   *   Renderable form.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   Form state.
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $this->config('filehash.settings')
       ->set('algos', $form_state->getValue('algos'))
       ->set('dedupe', $form_state->getValue('dedupe'))

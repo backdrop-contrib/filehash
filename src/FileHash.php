@@ -100,7 +100,7 @@ class FileHash implements FileHashInterface {
   }
 
   /**
-   * Adds missing database columns.
+   * {@inheritdoc}
    */
   public function addColumns(): void {
     $original = $this->configFactory->get('filehash.settings')->get('original');
@@ -119,20 +119,23 @@ class FileHash implements FileHashInterface {
    * Converts the safe algorithm identifiers used by this module to the
    * algorithm identifers actually used by PHP, which may contain slashes,
    * dashes, etc.
+   *
+   * @return string[]
+   *   Enabled hash algorithm identifiers.
    */
   public function algos(): array {
     return str_replace(['sha3_', 'sha512_'], ['sha3-', 'sha512/'], $this->columns());
   }
 
   /**
-   * Returns array of enabled File Hash algorithm identifiers.
+   * {@inheritdoc}
    */
   public function columns(): array {
     return $this->intersect($this->configFactory->get('filehash.settings')->get('algos'));
   }
 
   /**
-   * Returns file ID for any duplicates.
+   * {@inheritdoc}
    */
   public function duplicateLookup(string $column, FileInterface $file, bool $strict = FALSE, bool $original = FALSE): ?string {
     // @fixme This code results in *multiple* SQL joins on the file_managed
@@ -159,7 +162,7 @@ class FileHash implements FileHashInterface {
   }
 
   /**
-   * Implements hook_entity_base_field_info().
+   * {@inheritdoc}
    */
   public function entityBaseFieldInfo(): array {
     $columns = $this->columns();
@@ -188,9 +191,7 @@ class FileHash implements FileHashInterface {
   }
 
   /**
-   * Implements hook_entity_storage_load().
-   *
-   * Generates hash if it does not already exist for the file.
+   * {@inheritdoc}
    */
   public function entityStorageLoad($files): void {
     // @todo Add a setting to toggle the auto-hash behavior?
@@ -211,7 +212,7 @@ class FileHash implements FileHashInterface {
   }
 
   /**
-   * Implements hook_ENTITY_TYPE_presave().
+   * {@inheritdoc}
    */
   public function filePresave(FileInterface $file): void {
     if ($this->configFactory->get('filehash.settings')->get('rehash')) {
@@ -229,9 +230,10 @@ class FileHash implements FileHashInterface {
   }
 
   /**
-   * Calculates the file hashes.
+   * {@inheritdoc}
    */
   public function hash($file, ?string $column = NULL, bool $original = FALSE): void {
+    /** @var string|null $uri */
     $uri = $file->getFileUri();
     // If column is set, only generate that hash.
     $algos = $column ? [$column => $this->algos()[$column]] : $this->algos();
@@ -256,7 +258,7 @@ class FileHash implements FileHashInterface {
   }
 
   /**
-   * Checks that file is not a duplicate.
+   * {@inheritdoc}
    */
   public function validateDedupe(FileInterface $file, bool $strict = FALSE, bool $original = FALSE): array {
     $errors = [];
@@ -321,7 +323,7 @@ class FileHash implements FileHashInterface {
   }
 
   /**
-   * Returns array of field descriptions.
+   * {@inheritdoc}
    */
   public static function descriptions(): array {
     return array_combine(static::KEYS, [
@@ -347,21 +349,21 @@ class FileHash implements FileHashInterface {
   }
 
   /**
-   * Validates File Hash algorithm config.
+   * {@inheritdoc}
    */
   public static function intersect($config): array {
     return array_intersect_assoc($config ?? [], static::keys());
   }
 
   /**
-   * Returns array of valid File Hash algorithm identifiers.
+   * {@inheritdoc}
    */
   public static function keys(): array {
     return array_combine(static::KEYS, static::KEYS);
   }
 
   /**
-   * Returns array of field labels.
+   * {@inheritdoc}
    */
   public static function labels(): array {
     return array_combine(static::KEYS, [
@@ -387,7 +389,7 @@ class FileHash implements FileHashInterface {
   }
 
   /**
-   * Returns array of hash algorithm hexadecimal output lengths.
+   * {@inheritdoc}
    */
   public static function lengths(): array {
     return array_combine(static::KEYS, [
@@ -396,7 +398,7 @@ class FileHash implements FileHashInterface {
   }
 
   /**
-   * Returns array of human-readable hash algorithm names.
+   * {@inheritdoc}
    */
   public static function names(): array {
     return array_combine(static::KEYS, [
@@ -422,7 +424,7 @@ class FileHash implements FileHashInterface {
   }
 
   /**
-   * Returns array of field descriptions.
+   * {@inheritdoc}
    */
   public static function originalDescriptions(): array {
     return array_combine(static::KEYS, [
@@ -448,7 +450,7 @@ class FileHash implements FileHashInterface {
   }
 
   /**
-   * Returns array of field labels.
+   * {@inheritdoc}
    */
   public static function originalLabels(): array {
     return array_combine(static::KEYS, [

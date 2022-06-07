@@ -15,12 +15,20 @@ class FileHashCleanForm extends ConfirmFormBase {
   /**
    * The database columns to be purged.
    *
-   * @var array
+   * @var string[]
    */
   public $columns;
 
   /**
    * {@inheritdoc}
+   *
+   * @param mixed[] $form
+   *   Renderable form.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   Form state.
+   *
+   * @return mixed[]
+   *   Renderable form.
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $this->columns = CleanBatch::columns();
@@ -81,8 +89,13 @@ class FileHashCleanForm extends ConfirmFormBase {
 
   /**
    * {@inheritdoc}
+   *
+   * @param mixed[] $form
+   *   Renderable form.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   Form state.
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     batch_set(CleanBatch::createBatch());
   }
 

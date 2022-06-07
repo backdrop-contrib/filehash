@@ -14,7 +14,7 @@ class CleanBatch {
   /**
    * Creates the batch definition.
    *
-   * @return array
+   * @return mixed[]
    *   The batch definition.
    */
   public static function createBatch() {
@@ -30,6 +30,9 @@ class CleanBatch {
 
   /**
    * Returns database columns that are pending delete.
+   *
+   * @return mixed[]
+   *   Array of column labels.
    */
   public static function columns() {
     $columns = [];
@@ -51,8 +54,11 @@ class CleanBatch {
 
   /**
    * Batch process callback.
+   *
+   * @param mixed[]|iterable $context
+   *   Batch context.
    */
-  public static function process(&$context) {
+  public static function process(&$context): void {
     if (!isset($context['results']['processed'])) {
       $context['results']['processed'] = 0;
       $context['sandbox']['count'] = count(self::columns());
@@ -78,8 +84,15 @@ class CleanBatch {
 
   /**
    * Batch finish callback.
+   *
+   * @param bool $success
+   *   Whether or not the batch succeeded.
+   * @param int[] $results
+   *   Number of files processed.
+   * @param mixed[] $operations
+   *   Batch operations.
    */
-  public static function finished($success, $results, $operations) {
+  public static function finished($success, array $results, array $operations): void {
     $variables = ['@processed' => $results['processed']];
     if ($success) {
       \Drupal::messenger()->addMessage(\Drupal::translation()->formatPlural($results['processed'], 'Processed @processed hash algorithm column.', 'Processed @processed hash algorithm columns.', $variables));

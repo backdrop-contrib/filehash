@@ -19,7 +19,7 @@ class FileHashCommands extends DrushCommands {
    * @usage drush filehash:generate
    *   Generate hashes for existing files.
    */
-  public function generate() {
+  public function generate(): void {
     batch_set(GenerateBatch::createBatch());
     $batch =& batch_get();
     $batch['progressive'] = FALSE;
@@ -33,7 +33,7 @@ class FileHashCommands extends DrushCommands {
    * @command filehash:clean
    * @usage drush filehash:clean
    */
-  public function clean() {
+  public function clean(): void {
     batch_set(CleanBatch::createBatch());
     $batch =& batch_get();
     $batch['progressive'] = FALSE;

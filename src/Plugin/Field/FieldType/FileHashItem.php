@@ -22,6 +22,9 @@ class FileHashItem extends StringItem {
 
   /**
    * {@inheritdoc}
+   *
+   * @return mixed[]
+   *   Field settings.
    */
   public static function defaultStorageSettings() {
     $settings = parent::defaultStorageSettings();
@@ -31,6 +34,9 @@ class FileHashItem extends StringItem {
 
   /**
    * {@inheritdoc}
+   *
+   * @return mixed[]
+   *   Field schema.
    */
   public static function schema(FieldStorageDefinitionInterface $field_definition) {
     $schema = parent::schema($field_definition);

@@ -7,7 +7,6 @@
 
 use Drupal\Core\Config\Entity\ThirdPartySettingsInterface;
 use Drupal\Core\Entity\EntityFormInterface;
-use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
@@ -18,6 +17,9 @@ use Drupal\filehash\FileHashInterface;
 
 /**
  * Implements hook_entity_base_field_info().
+ *
+ * @phpstan-ignore-next-line Hook implementations should not duplicate @return
+ * documentation.
  */
 function filehash_entity_base_field_info(EntityTypeInterface $entity_type): array {
   if ('file' === $entity_type->id()) {
@@ -30,6 +32,9 @@ function filehash_entity_base_field_info(EntityTypeInterface $entity_type): arra
  * Implements hook_entity_storage_load().
  *
  * Generates hash if it does not already exist for the file.
+ *
+ * @phpstan-ignore-next-line Hook implementations should not duplicate @param
+ * documentation.
  */
 function filehash_entity_storage_load($files, $entity_type): void {
   if ('file' === $entity_type) {
@@ -39,6 +44,9 @@ function filehash_entity_storage_load($files, $entity_type): void {
 
 /**
  * Implements hook_field_widget_single_element_form_alter().
+ *
+ * @phpstan-ignore-next-line Hook implementations should not duplicate @param
+ * documentation.
  */
 function filehash_field_widget_single_element_form_alter(&$element, FormStateInterface $form_state, $context): void {
   if (isset($element['#type']) && $element['#type'] === 'managed_file') {
@@ -61,19 +69,22 @@ function filehash_field_widget_single_element_form_alter(&$element, FormStateInt
 /**
  * Implements hook_ENTITY_TYPE_create().
  */
-function filehash_file_create(EntityInterface $file): void {
+function filehash_file_create(FileInterface $file): void {
   Drupal::service('filehash')->hash($file, NULL, Drupal::config('filehash.settings')->get('original') ?? FALSE);
 }
 
 /**
  * Implements hook_ENTITY_TYPE_presave().
  */
-function filehash_file_presave(EntityInterface $file): void {
+function filehash_file_presave(FileInterface $file): void {
   Drupal::service('filehash')->filePresave($file);
 }
 
 /**
  * Implements hook_file_validate().
+ *
+ * @phpstan-ignore-next-line Hook implementations should not duplicate @return
+ * documentation.
  */
 function filehash_file_validate(FileInterface $file): array {
   $dedupe = Drupal::config('filehash.settings')->get('dedupe');
@@ -84,6 +95,9 @@ function filehash_file_validate(FileInterface $file): array {
 
 /**
  * Implements hook_form_FORM_ID_alter().
+ *
+ * @phpstan-ignore-next-line Hook implementations should not duplicate @param
+ * documentation.
  */
 function filehash_form_field_config_edit_form_alter(array &$form, FormStateInterface $form_state): void {
   if (!($form_state->getFormObject() instanceof EntityFormInterface)) {
@@ -119,6 +133,9 @@ function filehash_form_field_config_edit_form_alter(array &$form, FormStateInter
 
 /**
  * Implements hook_help().
+ *
+ * @phpstan-ignore-next-line Hook implementations should not duplicate @param
+ * documentation.
  */
 function filehash_help($route_name, RouteMatchInterface $route_match) {
   switch ($route_name) {
@@ -133,6 +150,16 @@ function filehash_help($route_name, RouteMatchInterface $route_match) {
 
 /**
  * Checks that file is not a duplicate.
+ *
+ * @param \Drupal\file\FileInterface $file
+ *   File entity.
+ * @param bool $strict
+ *   Whether or not strict dedupe is enabled.
+ * @param bool $original
+ *   Whether or not the original file hash should be checked.
+ *
+ * @return \Drupal\Core\StringTranslation\TranslatableMarkup[]
+ *   Array of validation errors.
  */
 function filehash_validate_dedupe(FileInterface $file, $strict = FALSE, $original = FALSE): array {
   // We only run the dedupe check on initial file creation.

@@ -9,6 +9,9 @@ use Drupal\Core\Render\BubbleableMetadata;
 
 /**
  * Implements hook_token_info().
+ *
+ * @phpstan-ignore-next-line Hook implementations should not duplicate @return
+ * documentation.
  */
 function filehash_token_info() {
   $info = [];
@@ -32,6 +35,9 @@ function filehash_token_info() {
 
 /**
  * Implements hook_tokens().
+ *
+ * @phpstan-ignore-next-line Hook implementations should not duplicate @param
+ * documentation.
  */
 function filehash_tokens($type, $tokens, array $data, array $options, BubbleableMetadata $bubbleable_metadata) {
   $replacements = [];

@@ -49,8 +49,13 @@ class FileHashGenerateForm extends ConfirmFormBase {
 
   /**
    * {@inheritdoc}
+   *
+   * @param mixed[] $form
+   *   Renderable form.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   Form state.
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     batch_set(GenerateBatch::createBatch());
   }
 

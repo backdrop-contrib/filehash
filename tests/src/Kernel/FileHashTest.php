@@ -16,14 +16,14 @@ use Drupal\user\Entity\User;
 class FileHashTest extends KernelTestBase implements FileHashTestInterface {
 
   /**
-   * Modules to enable.
+   * {@inheritdoc}
    *
-   * @var array
+   * @var string[]
    */
   protected static $modules = ['file', 'system', 'field', 'user', 'filehash'];
 
   /**
-   * Setup.
+   * {@inheritdoc}
    */
   protected function setUp(): void {
     parent::setUp();
@@ -45,7 +45,7 @@ class FileHashTest extends KernelTestBase implements FileHashTestInterface {
   /**
    * Tests that a file hash is set on the file object.
    */
-  public function testFileHash() {
+  public function testFileHash(): void {
     $uri = 'temporary://' . $this->randomMachineName() . '.txt';
     file_put_contents($uri, static::CONTENTS);
     $file = File::create([
@@ -69,7 +69,7 @@ class FileHashTest extends KernelTestBase implements FileHashTestInterface {
   /**
    * Tests entity query and always rehash setting.
    */
-  public function testEntityQuery() {
+  public function testEntityQuery(): void {
     $uri = 'temporary://' . $this->randomMachineName() . '.txt';
     file_put_contents($uri, static::CONTENTS);
     $file = File::create([
@@ -129,7 +129,7 @@ class FileHashTest extends KernelTestBase implements FileHashTestInterface {
   /**
    * Tests the save original hash setting.
    */
-  public function testOriginalSetting() {
+  public function testOriginalSetting(): void {
     \Drupal::configFactory()
       ->getEditable('filehash.settings')
       ->set('rehash', TRUE)
@@ -168,7 +168,7 @@ class FileHashTest extends KernelTestBase implements FileHashTestInterface {
   /**
    * Tests the MIME types setting.
    */
-  public function testMimeTypesSetting() {
+  public function testMimeTypesSetting(): void {
     \Drupal::configFactory()
       ->getEditable('filehash.settings')
       ->set('mime_types', ['application/octet-stream'])
@@ -199,7 +199,7 @@ class FileHashTest extends KernelTestBase implements FileHashTestInterface {
   /**
    * Tests that a warning is logged if nonexistent file is hashed.
    */
-  public function testNonexistentFile() {
+  public function testNonexistentFile(): void {
     $this->expectWarning();
     // "Failed" on PHP 8 or "failed" on PHP 7.
     $this->expectWarningMessage('ailed to open stream');

@@ -22,9 +22,7 @@ class FileHashTest extends FileFieldTestBase implements FileHashTestInterface {
   protected $defaultTheme = 'stark';
 
   /**
-   * Modules to enable.
-   *
-   * @var string[]
+   * {@inheritdoc}
    */
   protected static $modules = [
     'filehash',
@@ -35,7 +33,7 @@ class FileHashTest extends FileFieldTestBase implements FileHashTestInterface {
   ];
 
   /**
-   * Overrides WebTestBase::setUp().
+   * {@inheritdoc}
    */
   protected function setUp(): void {
     parent::setUp();
@@ -48,7 +46,7 @@ class FileHashTest extends FileFieldTestBase implements FileHashTestInterface {
   /**
    * Tests BLAKE2b hash algorithm.
    */
-  public function testBlake2b() {
+  public function testBlake2b(): void {
     $uri = 'temporary://' . $this->randomMachineName() . '.txt';
     $this->drupalGet('admin/config/media/filehash');
     $fields = ['algos[blake2b_512]' => TRUE];
@@ -76,7 +74,7 @@ class FileHashTest extends FileFieldTestBase implements FileHashTestInterface {
   /**
    * Tests the table with file hashes field formatter.
    */
-  public function testFileHashField() {
+  public function testFileHashField(): void {
     $field_name = strtolower($this->randomMachineName());
     $type_name = 'article';
     $field_storage_settings = [
@@ -95,7 +93,7 @@ class FileHashTest extends FileFieldTestBase implements FileHashTestInterface {
   /**
    * Tests a file field with dedupe enabled.
    */
-  public function testFileHashFieldDuplicate() {
+  public function testFileHashFieldDuplicate(): void {
     $this->drupalGet('admin/config/media/filehash');
     $fields = ['dedupe' => 1];
     $this->submitForm($fields, 'Save configuration');
@@ -175,7 +173,7 @@ class FileHashTest extends FileFieldTestBase implements FileHashTestInterface {
   /**
    * Tests file hash bulk generation.
    */
-  public function testFileHashGenerate() {
+  public function testFileHashGenerate(): void {
     $this->drupalGet('admin/config/media/filehash');
     $fields = ['algos[sha1]' => FALSE];
     $this->submitForm($fields, 'Save configuration');
@@ -197,7 +195,7 @@ class FileHashTest extends FileFieldTestBase implements FileHashTestInterface {
   /**
    * Tests database cleanup.
    */
-  public function testFileHashClean() {
+  public function testFileHashClean(): void {
     $this->drupalGet('admin/config/media/filehash');
     $fields = ['algos[sha512_256]' => TRUE];
     $this->submitForm($fields, 'Save configuration');

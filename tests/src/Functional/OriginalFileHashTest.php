@@ -17,9 +17,7 @@ class OriginalFileHashTest extends FileFieldTestBase implements FileHashTestInte
   protected $defaultTheme = 'stark';
 
   /**
-   * Modules to enable.
-   *
-   * @var string[]
+   * {@inheritdoc}
    */
   protected static $modules = [
     'filehash',
@@ -31,7 +29,7 @@ class OriginalFileHashTest extends FileFieldTestBase implements FileHashTestInte
   ];
 
   /**
-   * Overrides WebTestBase::setUp().
+   * {@inheritdoc}
    */
   protected function setUp(): void {
     parent::setUp();
@@ -52,7 +50,7 @@ class OriginalFileHashTest extends FileFieldTestBase implements FileHashTestInte
    *
    * The filehash_test module will modify uploaded files when validating.
    */
-  public function testFileHashFieldDuplicateOriginal() {
+  public function testFileHashFieldDuplicateOriginal(): void {
     $field_name = strtolower($this->randomMachineName());
     $type_name = 'article';
     $this->createFileField($field_name, 'node', $type_name, [], ['required' => '1']);
