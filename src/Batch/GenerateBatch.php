@@ -54,8 +54,8 @@ class GenerateBatch {
       $file = File::load($file->fid);
       $variables = ['%url' => $file->getFileUri()];
       $context['message'] = t('Generated file hash for %url.', $variables);
+      $context['results']['processed']++;
     }
-    $context['results']['processed']++;
     $context['finished'] = $context['sandbox']['count'] ? $context['results']['processed'] / $context['sandbox']['count'] : 1;
   }
 
