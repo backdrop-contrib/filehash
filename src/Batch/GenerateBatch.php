@@ -48,7 +48,11 @@ class GenerateBatch {
       $context['results']['updated'] = 0;
       $context['sandbox']['count'] = self::count();
     }
-    $files = \Drupal::database()->select('file_managed')->fields('file_managed', ['fid'])->range($context['results']['processed'], 1)->execute();
+    $files = \Drupal::database()->select('file_managed')
+      ->fields('file_managed', ['fid'])
+      ->orderBy('fid')
+      ->range($context['results']['processed'], 1)
+      ->execute();
     foreach ($files as $file) {
       // Fully load file object.
       $file = File::load($file->fid);
