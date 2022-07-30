@@ -138,6 +138,9 @@ class FileHash implements FileHashInterface {
    * {@inheritdoc}
    */
   public function duplicateLookup(string $column, FileInterface $file, bool $strict = FALSE, bool $original = FALSE): ?string {
+    if (is_null($file->{$column}->value)) {
+      return NULL;
+    }
     // @fixme This code results in *multiple* SQL joins on the file_managed
     // table; if slow maybe it should be refactored to use a normal database
     // query? See also https://www.drupal.org/project/drupal/issues/2875033
