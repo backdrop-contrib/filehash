@@ -198,13 +198,9 @@ class FileHash implements FileHashInterface {
    */
   public function entityStorageLoad($files): void {
     // @todo Add a setting to toggle the auto-hash behavior?
-    $types = $this->configFactory->get('filehash.settings')->get('mime_types');
     foreach ($files as $file) {
-      if ($types && !in_array($file->getMimeType(), $types)) {
-        continue;
-      }
       foreach ($this->columns() as $column) {
-        if (!$file->{$column}->value) {
+        if (!$file->{$column}->value && $this->shouldHash($file)) {
           $file->original = clone($file);
           // Entity post-save will clean up the dangling "original" property.
           $file->save();
@@ -236,28 +232,39 @@ class FileHash implements FileHashInterface {
    * {@inheritdoc}
    */
   public function hash($file, ?string $column = NULL, bool $original = FALSE): void {
-    /** @var string|null $uri */
-    $uri = $file->getFileUri();
     // If column is set, only generate that hash.
     $algos = $column ? [$column => $this->algos()[$column]] : $this->algos();
-    $types = $this->configFactory->get('filehash.settings')->get('mime_types');
     foreach ($algos as $column => $algo) {
-      // Nothing to do if file URI is empty.
-      if (NULL === $uri || '' === $uri || ($types && !in_array($file->getMimeType(), $types))) {
+      if (!$this->shouldHash($file)) {
         $hash = NULL;
       }
       // Unreadable files will have NULL hash values.
       elseif (preg_match('/^blake2b_([0-9]{3})$/', $algo, $matches)) {
-        $hash = $this->blake2b($uri, $matches[1] / 8) ?: NULL;
+        $hash = $this->blake2b($file->getFileUri(), $matches[1] / 8) ?: NULL;
       }
       else {
-        $hash = hash_file($algo, $uri) ?: NULL;
+        $hash = hash_file($algo, $file->getFileUri()) ?: NULL;
       }
       $file->set($column, $hash);
       if ($original) {
         $file->set("original_$column", $hash);
       }
     }
+  }
+
+  /**
+   * Returns TRUE if file should be hashed.
+   */
+  public function shouldHash(FileInterface $file): bool {
+    // Nothing to do if file URI is empty.
+    if (!$file->getFileUri()) {
+      return FALSE;
+    }
+    $types = $this->configFactory->get('filehash.settings')->get('mime_types');
+    if ($types && !in_array($file->getMimeType(), $types)) {
+      return FALSE;
+    }
+    return TRUE;
   }
 
   /**
