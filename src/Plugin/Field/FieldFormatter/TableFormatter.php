@@ -80,11 +80,13 @@ class TableFormatter extends DescriptionAwareFileFormatterBase {
    *
    * @return mixed[]
    *   Renderable table.
+   *
+   * @phpstan-ignore-next-line Parameter $items does not specify its types.
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
     $elements = [];
 
-    /** @var \Drupal\Core\Field\EntityReferenceFieldItemListInterface $items */
+    // @phpstan-ignore-next-line Ignore parameter $items type mismatch.
     if ($files = $this->getEntitiesToView($items, $langcode)) {
       $header = [
         $this->t('Attachment'),
