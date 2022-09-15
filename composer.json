@@ -9,7 +9,7 @@
         "source": "https://git.drupalcode.org/project/filehash"
     },
     "require": {
-        "drupal/core": "^8.5 || ^9.0 || ^10.0"
+        "drupal/core": "^8.6 || ^9.0 || ^10.0"
     },
     "authors": [
         {

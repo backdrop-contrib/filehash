@@ -1,0 +1,6 @@
+description: Provides test functionality covering entity CRUD.
+name: File Entity CRUD Hash Test
+type: module
+dependencies:
+  - drupal:file
+package: Testing

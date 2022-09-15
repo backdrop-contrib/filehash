@@ -8,4 +8,7 @@ services:
 
   filehash:
     class: Drupal\filehash\FileHash
-    arguments: ['@config.factory', '@current_user', '@entity.definition_update_manager', '@entity_type.manager']
+    arguments: ['@config.factory', '@current_user', '@entity.definition_update_manager', '@entity_type.manager', '@filehash.memory_cache']
+
+  filehash.memory_cache:
+    class: Drupal\Core\Cache\MemoryCache\MemoryCache

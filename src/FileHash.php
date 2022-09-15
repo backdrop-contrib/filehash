@@ -2,6 +2,7 @@
 
 namespace Drupal\filehash;
 
+use Drupal\Core\Cache\MemoryCache\MemoryCacheInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Database\DatabaseExceptionWrapper;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -81,6 +82,13 @@ class FileHash implements FileHashInterface {
   protected $entityTypeManager;
 
   /**
+   * The memory cache.
+   *
+   * @var \Drupal\Core\Cache\MemoryCache\MemoryCacheInterface
+   */
+  protected $memoryCache;
+
+  /**
    * Constructs the File Hash service.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
@@ -91,12 +99,15 @@ class FileHash implements FileHashInterface {
    *   The entity type manager.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
+   * @param \Drupal\Core\Cache\MemoryCache\MemoryCacheInterface $memory_cache
+   *   The memory cache.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, AccountInterface $current_user, EntityDefinitionUpdateManagerInterface $entity_definition_update_manager, EntityTypeManagerInterface $entity_type_manager) {
+  public function __construct(ConfigFactoryInterface $config_factory, AccountInterface $current_user, EntityDefinitionUpdateManagerInterface $entity_definition_update_manager, EntityTypeManagerInterface $entity_type_manager, MemoryCacheInterface $memory_cache) {
     $this->configFactory = $config_factory;
     $this->currentUser = $current_user;
     $this->entityDefinitionUpdateManager = $entity_definition_update_manager;
     $this->entityTypeManager = $entity_type_manager;
+    $this->memoryCache = $memory_cache;
   }
 
   /**
@@ -200,9 +211,9 @@ class FileHash implements FileHashInterface {
     // @todo Add a setting to toggle the auto-hash behavior?
     foreach ($files as $file) {
       foreach ($this->columns() as $column) {
-        if (!$file->{$column}->value && $this->shouldHash($file)) {
-          $file->original = clone($file);
-          // Entity post-save will clean up the dangling "original" property.
+        if (!$file->{$column}->value && $this->shouldHash($file) && !$this->memoryCache->get($file->id())) {
+          // To avoid endless loops, auto-hash each file once per execution.
+          $this->memoryCache->set($file->id(), TRUE);
           $file->save();
           break;
         }

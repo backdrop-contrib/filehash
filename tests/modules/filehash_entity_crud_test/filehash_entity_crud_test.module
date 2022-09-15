@@ -1,0 +1,29 @@
+<?php
+
+/**
+ * @file
+ * Implements entity hooks to show behavior that can occur with no files.
+ */
+
+use Drupal\Core\Entity\EntityInterface;
+
+/**
+ * Implements hook_ENTITY_TYPE_insert().
+ */
+function filehash_entity_crud_test_file_insert(EntityInterface $file): void {
+  filehash_entity_crud_test_load_the_entity($file);
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_update().
+ */
+function filehash_entity_crud_test_file_update(EntityInterface $file): void {
+  filehash_entity_crud_test_load_the_entity($file);
+}
+
+/**
+ * Loads an entity and does nothing to demonstrate behavior.
+ */
+function filehash_entity_crud_test_load_the_entity(EntityInterface $file): void {
+  Drupal::service('entity_type.manager')->getStorage('file')->load($file->id());
+}
