@@ -207,7 +207,7 @@ class FileHash implements FileHashInterface {
   /**
    * {@inheritdoc}
    */
-  public function entityStorageLoad($files): void {
+  public function entityStorageLoad(array $files): void {
     // @todo Add a setting to toggle the auto-hash behavior?
     foreach ($files as $file) {
       foreach ($this->columns() as $column) {
@@ -242,7 +242,7 @@ class FileHash implements FileHashInterface {
   /**
    * {@inheritdoc}
    */
-  public function hash($file, ?string $column = NULL, bool $original = FALSE): void {
+  public function hash(FileInterface $file, ?string $column = NULL, bool $original = FALSE): void {
     // If column is set, only generate that hash.
     $algos = $column ? [$column => $this->algos()[$column]] : $this->algos();
     foreach ($algos as $column => $algo) {

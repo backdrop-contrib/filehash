@@ -36,7 +36,7 @@ function filehash_entity_base_field_info(EntityTypeInterface $entity_type): arra
  * @phpstan-ignore-next-line Hook implementations should not duplicate @param
  * documentation.
  */
-function filehash_entity_storage_load($files, $entity_type): void {
+function filehash_entity_storage_load(array $files, $entity_type): void {
   if ('file' === $entity_type) {
     Drupal::service('filehash')->entityStorageLoad($files);
   }
