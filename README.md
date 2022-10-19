@@ -58,6 +58,15 @@ duplicate uploaded files will be rejected site-wide. You may also leave this
 setting off, and enable the dedupe validator in the field widget settings for a
 particular file upload form.
 
+IMPLEMENTING CUSTOM LOGIC
+-------------------------
+
+To implement custom logic not currently supported by built-in config options,
+the `filehash` service class can be overridden by a custom class extending
+`Drupal\filehash\FileHash` and implementing `Drupal\filehash\FileHashInterface`.
+For example, your custom class might provide its own shouldHash() method to
+determine whether or not a file should be hashed.
+
 ENTITY QUERY SUPPORT
 --------------------
 
