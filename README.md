@@ -64,9 +64,7 @@ ENTITY QUERY SUPPORT
 Because this module adds fields to the file entity, you can use file hashes in
 an entity query. For example:
 
-```
-<?php
-
+```php
 $fids = \Drupal::entityQuery('file')
   ->condition('sha256', 'my sha256 here')
   ->condition('status', 1)
