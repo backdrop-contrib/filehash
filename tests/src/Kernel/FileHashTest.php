@@ -7,6 +7,7 @@ use Drupal\file\FileInterface;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\Tests\filehash\Functional\FileHashTestInterface;
 use Drupal\user\Entity\User;
+use PHPUnit\Framework\ExpectationFailedException;
 
 /**
  * Using kernel tests rather than functional for speediness.
@@ -83,7 +84,13 @@ class FileHashTest extends KernelTestBase implements FileHashTestInterface {
       ->count()
       ->accessCheck(TRUE)
       ->execute();
-    $this->assertSame('1', $count);
+    // @todo Remove core 9.4 compatibility shim.
+    try {
+      $this->assertSame(1, $count);
+    }
+    catch (ExpectationFailedException $e) {
+      $this->assertSame('1', $count);
+    }
 
     // Modify contents and save, with rehash disabled.
     file_put_contents($uri, static::DIFFERENT_CONTENTS);
@@ -94,13 +101,25 @@ class FileHashTest extends KernelTestBase implements FileHashTestInterface {
       ->count()
       ->accessCheck(TRUE)
       ->execute();
-    $this->assertSame('1', $count);
+    // @todo Remove core 9.4 compatibility shim.
+    try {
+      $this->assertSame(1, $count);
+    }
+    catch (ExpectationFailedException $e) {
+      $this->assertSame('1', $count);
+    }
     $count = \Drupal::entityQuery('file')
       ->condition('sha1', static::DIFFERENT_SHA1)
       ->count()
       ->accessCheck(TRUE)
       ->execute();
-    $this->assertSame('0', $count);
+    // @todo Remove core 9.4 compatibility shim.
+    try {
+      $this->assertSame(0, $count);
+    }
+    catch (ExpectationFailedException $e) {
+      $this->assertSame('0', $count);
+    }
 
     // Enable rehash and save file again.
     \Drupal::configFactory()
@@ -114,14 +133,26 @@ class FileHashTest extends KernelTestBase implements FileHashTestInterface {
       ->count()
       ->accessCheck(TRUE)
       ->execute();
-    $this->assertSame('0', $count);
+    // @todo Remove core 9.4 compatibility shim.
+    try {
+      $this->assertSame(0, $count);
+    }
+    catch (ExpectationFailedException $e) {
+      $this->assertSame('0', $count);
+    }
 
     $count = \Drupal::entityQuery('file')
       ->condition('sha1', static::DIFFERENT_SHA1)
       ->count()
       ->accessCheck(TRUE)
       ->execute();
-    $this->assertSame('1', $count);
+    // @todo Remove core 9.4 compatibility shim.
+    try {
+      $this->assertSame(1, $count);
+    }
+    catch (ExpectationFailedException $e) {
+      $this->assertSame('1', $count);
+    }
 
     unlink($uri);
   }
@@ -149,7 +180,13 @@ class FileHashTest extends KernelTestBase implements FileHashTestInterface {
       ->count()
       ->accessCheck(TRUE)
       ->execute();
-    $this->assertSame('1', $count);
+    // @todo Remove core 9.4 compatibility shim.
+    try {
+      $this->assertSame(1, $count);
+    }
+    catch (ExpectationFailedException $e) {
+      $this->assertSame('1', $count);
+    }
 
     file_put_contents($uri, static::DIFFERENT_CONTENTS);
     $file->save();
@@ -160,7 +197,13 @@ class FileHashTest extends KernelTestBase implements FileHashTestInterface {
       ->count()
       ->accessCheck(TRUE)
       ->execute();
-    $this->assertSame('1', $count);
+    // @todo Remove core 9.4 compatibility shim.
+    try {
+      $this->assertSame(1, $count);
+    }
+    catch (ExpectationFailedException $e) {
+      $this->assertSame('1', $count);
+    }
 
     unlink($uri);
   }
