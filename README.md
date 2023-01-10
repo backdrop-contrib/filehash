@@ -1,8 +1,4 @@
-FILE HASH
-=========
-
-INTRODUCTION
-------------
+# File Hash
 
 Hashes of uploaded files, which can be found on a variety of sites from
 archive.org to wikileaks.org, allow files to be uniquely identified, allow
@@ -18,21 +14,21 @@ supported.
 If you need to verify a copy of a file, command-line utilities such as b2sum can
 be used to generate identical file hashes.
 
-REQUIREMENTS
-------------
+
+## Requirements
 
 Drupal core File module is required.
 
 If you want to use the BLAKE2b hash algorithm, either the Sodium PHP extension
 or paragonie/sodium_compat polyfill are required.
 
-INSTALLATION
-------------
+
+## Installation
 
 Install as you would normally install a contributed Drupal module.
 
-CONFIGURATION
--------------
+
+## Configuration
 
 Hash algorithms can be enabled and disabled by the site administrator at
 admin/config/media/filehash.
@@ -51,15 +47,15 @@ for content addressable storage.
 For example, if the SHA-256 hash for a file is
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855, you could
 store it in the files/e3/b0 directory using these tokens:
-[file:filehash-sha256-pair-1]/[file:filehash-sha256-pair-2].
+`[file:filehash-sha256-pair-1]/[file:filehash-sha256-pair-2]`.
 
 If the "disallow duplicate files" checkbox in File Hash settings is checked, any
 duplicate uploaded files will be rejected site-wide. You may also leave this
 setting off, and enable the dedupe validator in the field widget settings for a
 particular file upload form.
 
-IMPLEMENTING CUSTOM LOGIC
--------------------------
+
+## Implementing custom logic
 
 To implement custom logic not currently supported by built-in config options,
 the `filehash` service class can be overridden by a custom class extending
@@ -67,8 +63,8 @@ the `filehash` service class can be overridden by a custom class extending
 For example, your custom class might provide its own shouldHash() method to
 determine whether or not a file should be hashed.
 
-ENTITY QUERY SUPPORT
---------------------
+
+## Entity query support
 
 Because this module adds fields to the file entity, you can use file hashes in
 an entity query. For example:
@@ -82,8 +78,8 @@ $fids = \Drupal::entityQuery('file')
   ->execute();
 ```
 
-VISUAL OUTPUT
--------------
+
+## Visual output
 
 You can use the included Identicon field formatter to visualize each file hash
 (in a view, for example) if you install this third-party dependency:
