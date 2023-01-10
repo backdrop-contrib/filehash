@@ -7,8 +7,8 @@ original source.
 
 File Hash module generates and stores hashes for each file uploaded to the site.
 The BLAKE2b-128, BLAKE2b-160, BLAKE2b-224, BLAKE2b-256, BLAKE2b-384,
-BLAKE2b-512, MD5, \SHA-1, \SHA-224, \SHA-256, \SHA-384, \SHA-512/224,
-\SHA-512/256, \SHA-512, \SHA3-224, \SHA3-256, \SHA3-384 and \SHA3-512 hash
+BLAKE2b-512, MD5, SHA\-1, SHA\-224, SHA\-256, SHA\-384, SHA\-512/224,
+SHA\-512/256, SHA\-512, SHA3\-224, SHA3\-256, SHA3\-384 and SHA3\-512 hash
 algorithms are supported.
 
 If you need to verify a copy of a file, command-line utilities such as `b2sum`
@@ -44,7 +44,7 @@ Tokens are provided for the full hashes: `[file:filehash-md5]`,
 `[file:filehash-sha1]`, `[file:filehash-sha256]`, as well as pairtree tokens
 useful for content addressable storage.
 
-For example, if the \SHA-256 hash for a file is
+For example, if the SHA\-256 hash for a file is
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855, you could
 store it in the files/e3/b0 directory using these tokens:
 `[file:filehash-sha256-pair-1]/[file:filehash-sha256-pair-2]`.
