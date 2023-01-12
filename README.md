@@ -22,7 +22,7 @@ can be used to generate identical file hashes.
 Drupal core File module is required.
 
 If you want to use the BLAKE2b hash algorithm, either the Sodium PHP extension
-or `paragonie/sodium_compat` polyfill are required.
+or `paragonie/sodium_compat` polyfill is required.
 
 
 ## Installation
