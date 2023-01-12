@@ -87,3 +87,12 @@ You can use the included Identicon field formatter to visualize each file hash
 (in a view, for example) if you install this third-party dependency:
 
         composer require yzalis/identicon:^2.0
+
+
+## Maintainers
+
+File Hash module is maintained by [mfb](https://www.drupal.org/u/mfb).
+
+You can support development by [contributing bug reports, feature suggestions
+and support requests](https://www.drupal.org/project/issues/filehash) or by
+[sponsoring](https://github.com/sponsors/mfb).
