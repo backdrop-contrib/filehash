@@ -251,7 +251,7 @@ class FileHash implements FileHashInterface {
       }
       // Unreadable files will have NULL hash values.
       elseif (preg_match('/^blake2b_([0-9]{3})$/', $algo, $matches)) {
-        $hash = $this->blake2b($file->getFileUri(), $matches[1] / 8) ?: NULL;
+        $hash = $this->blake2b($file->getFileUri(), (int) $matches[1] / 8) ?: NULL;
       }
       else {
         $hash = hash_file($algo, $file->getFileUri()) ?: NULL;
