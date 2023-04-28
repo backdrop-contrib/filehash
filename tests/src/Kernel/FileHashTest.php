@@ -89,6 +89,7 @@ class FileHashTest extends KernelTestBase implements FileHashTestInterface {
       $this->assertSame(1, $count);
     }
     catch (ExpectationFailedException $e) {
+      // @phpstan-ignore-next-line Core 9.4 compatibility shim.
       $this->assertSame('1', $count);
     }
 
@@ -106,6 +107,7 @@ class FileHashTest extends KernelTestBase implements FileHashTestInterface {
       $this->assertSame(1, $count);
     }
     catch (ExpectationFailedException $e) {
+      // @phpstan-ignore-next-line Core 9.4 compatibility shim.
       $this->assertSame('1', $count);
     }
     $count = \Drupal::entityQuery('file')
@@ -118,6 +120,7 @@ class FileHashTest extends KernelTestBase implements FileHashTestInterface {
       $this->assertSame(0, $count);
     }
     catch (ExpectationFailedException $e) {
+      // @phpstan-ignore-next-line Core 9.4 compatibility shim.
       $this->assertSame('0', $count);
     }
 
@@ -138,6 +141,7 @@ class FileHashTest extends KernelTestBase implements FileHashTestInterface {
       $this->assertSame(0, $count);
     }
     catch (ExpectationFailedException $e) {
+      // @phpstan-ignore-next-line Core 9.4 compatibility shim.
       $this->assertSame('0', $count);
     }
 
@@ -151,6 +155,7 @@ class FileHashTest extends KernelTestBase implements FileHashTestInterface {
       $this->assertSame(1, $count);
     }
     catch (ExpectationFailedException $e) {
+      // @phpstan-ignore-next-line Core 9.4 compatibility shim.
       $this->assertSame('1', $count);
     }
 
@@ -185,6 +190,7 @@ class FileHashTest extends KernelTestBase implements FileHashTestInterface {
       $this->assertSame(1, $count);
     }
     catch (ExpectationFailedException $e) {
+      // @phpstan-ignore-next-line Core 9.4 compatibility shim.
       $this->assertSame('1', $count);
     }
 
@@ -202,6 +208,7 @@ class FileHashTest extends KernelTestBase implements FileHashTestInterface {
       $this->assertSame(1, $count);
     }
     catch (ExpectationFailedException $e) {
+      // @phpstan-ignore-next-line Core 9.4 compatibility shim.
       $this->assertSame('1', $count);
     }
 
@@ -243,8 +250,10 @@ class FileHashTest extends KernelTestBase implements FileHashTestInterface {
    * Tests that a warning is logged if nonexistent file is hashed.
    */
   public function testNonexistentFile(): void {
+    // @phpstan-ignore-next-line Ignore PHPUnit deprecation for now.
     $this->expectWarning();
     // "Failed" on PHP 8 or "failed" on PHP 7.
+    // @phpstan-ignore-next-line Ignore PHPUnit deprecation for now.
     $this->expectWarningMessage('ailed to open stream');
     File::create(['uri' => "temporary://{$this->randomMachineName()}.txt"]);
   }
