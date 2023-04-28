@@ -4,6 +4,7 @@ namespace Drupal\filehash\Batch;
 
 use Drupal\Core\Entity\EntityDefinitionUpdateManagerInterface;
 use Drupal\Core\Entity\EntityStorageException;
+use Drupal\Core\Utility\Error;
 use Drupal\filehash\FileHash;
 
 /**
@@ -71,7 +72,7 @@ class CleanBatch {
       }
       catch (EntityStorageException $e) {
         $context['finished'] = 1;
-        watchdog_exception('filehash', $e);
+        \Drupal::logger('filehash')->error('%type: @message in %function (line %line of %file).', Error::decodeException($e));
         \Drupal::messenger()->addWarning(t('Entity storage error: %message Try running cron before proceeding.', ['%message' => $e->getMessage()]));
         return;
       }
