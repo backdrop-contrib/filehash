@@ -2,8 +2,8 @@
 
 namespace Drupal\filehash\Plugin\Field\FieldFormatter;
 
-use Drupal\Core\Field\Plugin\Field\FieldFormatter\StringFormatter;
 use Drupal\Core\Field\FieldItemInterface;
+use Drupal\Core\Field\Plugin\Field\FieldFormatter\StringFormatter;
 
 /**
  * Plugin implementation of the 'string' formatter.
