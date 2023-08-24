@@ -42,9 +42,9 @@ running `drush fgen`.
 Hash values are stored as fields on the File entity, where they are available to
 the theme, Views and other modules.
 
-Tokens are provided for the full hashes: `[file:filehash-md5]`,
-`[file:filehash-sha1]`, `[file:filehash-sha256]`, as well as pairtree tokens
-useful for content addressable storage.
+Tokens are provided for the full hashes: `[file:filehash-sha256]`,
+`[file:filehash-sha512_256]`, `[file:filehash-blake2b_256]`, as well as
+pairtree tokens useful for content addressable storage.
 
 For example, if the SHA<span>-</span>256 hash for a file is
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855, you could
