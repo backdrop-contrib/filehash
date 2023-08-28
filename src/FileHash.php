@@ -413,9 +413,7 @@ class FileHash implements FileHashInterface {
    * {@inheritdoc}
    */
   public static function lengths(): array {
-    return array_combine(static::KEYS, [
-      32, 40, 56, 64, 96, 128, 32, 40, 56, 64, 96, 56, 64, 128, 56, 64, 96, 128,
-    ]);
+    return array_combine(static::KEYS, static::LENGTHS);
   }
 
   /**
