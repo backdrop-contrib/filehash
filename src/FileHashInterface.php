@@ -84,17 +84,6 @@ interface FileHashInterface {
   public static function descriptions(): array;
 
   /**
-   * Validates File Hash algorithm config, removing any invalid elements.
-   *
-   * @param string[]|null $config
-   *   Hash algorithm configuration.
-   *
-   * @return string[]
-   *   Hash algorithm identifiers.
-   */
-  public static function intersect($config): array;
-
-  /**
    * Returns array of valid File Hash algorithm identifiers.
    *
    * @return string[]

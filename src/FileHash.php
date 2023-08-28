@@ -142,7 +142,7 @@ class FileHash implements FileHashInterface {
    * {@inheritdoc}
    */
   public function columns(): array {
-    return $this->intersect($this->configFactory->get('filehash.settings')->get('algos'));
+    return array_intersect_assoc($this->configFactory->get('filehash.settings')->get('algos') ?? [], static::keys());
   }
 
   /**
@@ -367,13 +367,6 @@ class FileHash implements FileHashInterface {
       t('The SHA3-384 hash for this file.'),
       t('The SHA3-512 hash for this file.'),
     ]);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function intersect($config): array {
-    return array_intersect_assoc($config ?? [], static::keys());
   }
 
   /**
