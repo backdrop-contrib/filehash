@@ -120,6 +120,12 @@ class FileHashConfigForm extends ConfigFormBase {
       '#title' => $this->t('List of MIME types to hash'),
       '#type' => 'textarea',
     ];
+    $form['suppress_warnings'] = [
+      '#default_value' => $this->config('filehash.settings')->get('suppress_warnings'),
+      '#description' => $this->t('If enabled, do not log a warning when attempting to hash a nonexistent or unreadable file.'),
+      '#title' => $this->t('Suppress warnings'),
+      '#type' => 'checkbox',
+    ];
     $form['dedupe'] = [
       '#default_value' => $this->config('filehash.settings')->get('dedupe'),
       '#description' => $this->t('If enabled, prevent duplicate uploaded files from being saved when the file already exists as a permanent file. If strict, also include temporary files in the duplicate check, which prevents duplicates from being uploaded at the same time. If off, you can still disallow duplicate files in the widget settings for any particular file upload field. Note, enabling this setting has privacy implications, as it allows users to determine if a particular file has been uploaded to the site.'),
@@ -184,6 +190,7 @@ class FileHashConfigForm extends ConfigFormBase {
       ->set('original', $form_state->getValue('original'))
       ->set('dedupe_original', $form_state->getValue('dedupe_original'))
       ->set('mime_types', preg_split('/[\s,]+/', $form_state->getValue('mime_types'), -1, PREG_SPLIT_NO_EMPTY))
+      ->set('suppress_warnings', $form_state->getValue('suppress_warnings'))
       ->save();
     parent::submitForm($form, $form_state);
     if (CleanBatch::columns()) {

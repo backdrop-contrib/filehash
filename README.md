@@ -56,6 +56,9 @@ duplicate uploaded files will be rejected site-wide. You may also leave this
 setting off, and enable the dedupe validator in the field widget settings for a
 particular file upload form.
 
+If a file being hashed does not exist or is unreadable, a warning will be
+logged, unless the "suppress warnings" checkbox is checked.
+
 
 ## Implementing custom logic
 

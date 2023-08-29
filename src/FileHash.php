@@ -256,7 +256,7 @@ class FileHash implements FileHashInterface {
         $hash = $this->blake2b($file->getFileUri(), (int) $matches[1] / 8) ?: NULL;
       }
       else {
-        $hash = hash_file($algo, $file->getFileUri()) ?: NULL;
+        $hash = ($this->configFactory->get('filehash.settings')->get('suppress_warnings') ? @hash_file($algo, $file->getFileUri()) : hash_file($algo, $file->getFileUri())) ?: NULL;
       }
       $file->set($column, $hash);
       if ($original) {
@@ -321,11 +321,11 @@ class FileHash implements FileHashInterface {
    * @return string|false
    *   Same return type as hash_file().
    */
-  public static function blake2b(string $uri, int $length, int $chunk_size = 8192) {
+  public function blake2b(string $uri, int $length, int $chunk_size = 8192) {
     if (!function_exists('sodium_crypto_generichash_init')) {
       return FALSE;
     }
-    $handle = fopen($uri, 'rb');
+    $handle = $this->configFactory->get('filehash.settings')->get('suppress_warnings') ? @fopen($uri, 'rb') : fopen($uri, 'rb');
     if (FALSE === $handle) {
       return FALSE;
     }

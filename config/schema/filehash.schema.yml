@@ -81,6 +81,9 @@ filehash.settings:
     autohash:
       type: boolean
       label: 'Automatically generate missing hashes when loading files'
+    suppress_warnings:
+      type: boolean
+      label: 'Suppress warnings for nonexistent or unreadable files'
 
 field.formatter.settings.filehash_table:
   type: mapping

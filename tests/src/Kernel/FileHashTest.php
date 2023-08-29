@@ -272,6 +272,15 @@ class FileHashTest extends KernelTestBase implements FileHashTestInterface {
    * Tests that a warning is logged if nonexistent file is hashed.
    */
   public function testNonexistentFile(): void {
+    \Drupal::configFactory()
+      ->getEditable('filehash.settings')
+      ->set('suppress_warnings', TRUE)
+      ->save();
+    File::create(['uri' => "temporary://{$this->randomMachineName()}.txt"]);
+    \Drupal::configFactory()
+      ->getEditable('filehash.settings')
+      ->set('suppress_warnings', FALSE)
+      ->save();
     // @phpstan-ignore-next-line Ignore PHPUnit deprecation for now.
     $this->expectWarning();
     // "Failed" on PHP 8 or "failed" on PHP 7.
