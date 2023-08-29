@@ -22,3 +22,4 @@ rehash: false
 original: false
 dedupe_original: false
 mime_types: {  }
+autohash: false

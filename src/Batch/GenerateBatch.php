@@ -56,6 +56,14 @@ class GenerateBatch {
     foreach ($files as $file) {
       // Fully load file object.
       $file = File::load($file->fid);
+      if (!\Drupal::config('filehash.settings')->get('autohash')) {
+        foreach (\Drupal::service('filehash')->columns() as $column) {
+          if (empty($file->{$column}->value) && \Drupal::service('filehash')->shouldHash($file)) {
+            $file->save();
+            break;
+          }
+        }
+      }
       $variables = ['%url' => $file->getFileUri()];
       $context['message'] = t('Generated file hash for %url.', $variables);
       $context['results']['processed']++;

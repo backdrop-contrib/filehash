@@ -109,3 +109,14 @@ function filehash_update_8203(): TranslatableMarkup {
     ->save();
   return t('The <em>Always rehash file when saving</em> setting has been enabled to match previous File Hash module bahavior. You can disable this setting if you do not have any modules that modify files after creation, or you do not want to keep file hashes in sync with the file on disk. Note: If you were using the dedupe setting, you now have the option to turn it off and configure dedupe in the widget settings for each upload field.');
 }
+
+/**
+ * Enable the automatic hash on load setting.
+ */
+function filehash_update_8204(): TranslatableMarkup {
+  Drupal::configFactory()
+    ->getEditable('filehash.settings')
+    ->set('autohash', TRUE)
+    ->save();
+  return t('The <em>Automatically generate missing hashes when loading files</em> setting has been enabled to match previous File Hash module bahavior.');
+}

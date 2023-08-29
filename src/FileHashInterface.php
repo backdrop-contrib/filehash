@@ -68,6 +68,11 @@ interface FileHashInterface {
   public function hash(FileInterface $file, ?string $column = NULL, bool $original = FALSE): void;
 
   /**
+   * Returns TRUE if file should be hashed.
+   */
+  public function shouldHash(FileInterface $file): bool;
+
+  /**
    * Checks that file is not a duplicate.
    *
    * @return \Drupal\Core\StringTranslation\TranslatableMarkup[]

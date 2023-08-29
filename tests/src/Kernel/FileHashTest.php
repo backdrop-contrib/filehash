@@ -68,6 +68,28 @@ class FileHashTest extends KernelTestBase implements FileHashTestInterface {
   }
 
   /**
+   * Tests automatic hash on load.
+   */
+  public function testAutoHash(): void {
+    \Drupal::configFactory()
+      ->getEditable('filehash.settings')
+      ->set('algos.sha1', '0')
+      ->save();
+    $uri = 'temporary://' . $this->randomMachineName() . '.txt';
+    file_put_contents($uri, static::CONTENTS);
+    $file = File::create(['uri' => $uri]);
+    $file->save();
+    \Drupal::configFactory()
+      ->getEditable('filehash.settings')
+      ->set('algos.sha1', 'sha1')
+      ->set('autohash', TRUE)
+      ->save();
+    $file = File::load($file->id());
+    $this->assertSame(static::SHA1, $file->sha1->value, 'File hash was set correctly at load.');
+    $file->delete();
+  }
+
+  /**
    * Tests entity query and always rehash setting.
    */
   public function testEntityQuery(): void {

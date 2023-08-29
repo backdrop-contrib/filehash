@@ -96,6 +96,12 @@ class FileHashConfigForm extends ConfigFormBase {
       '#title' => $this->t('Enabled hash algorithms'),
       '#type' => 'checkboxes',
     ];
+    $form['autohash'] = [
+      '#default_value' => $this->config('filehash.settings')->get('autohash'),
+      '#description' => $this->t('If enabled, missing hashes will be automatically generated and saved when loading a file. If disabled, missing hashes can only be <a href=":url">generated in bulk</a>.', [':url' => Url::fromRoute('filehash.generate')->toString()]),
+      '#title' => $this->t('Automatically generate missing hashes when loading files'),
+      '#type' => 'checkbox',
+    ];
     $form['rehash'] = [
       '#default_value' => $this->config('filehash.settings')->get('rehash'),
       '#description' => $this->t('If enabled, always regenerate the hash when saving a file, even if the hash has been generated previously. This should be enabled if you have modules that modify existing files or apply processing to uploaded files (e.g. core Image module with maximum image resolution set), and you want to keep the hash in sync with the file on disk. If disabled, the file hash represents the hash of the originally uploaded file, and will only be generated if it is missing, which is much faster.'),
@@ -172,6 +178,7 @@ class FileHashConfigForm extends ConfigFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state): void {
     $this->config('filehash.settings')
       ->set('algos', $form_state->getValue('algos'))
+      ->set('autohash', $form_state->getValue('autohash'))
       ->set('dedupe', $form_state->getValue('dedupe'))
       ->set('rehash', $form_state->getValue('rehash'))
       ->set('original', $form_state->getValue('original'))

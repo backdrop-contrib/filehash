@@ -208,7 +208,9 @@ class FileHash implements FileHashInterface {
    * {@inheritdoc}
    */
   public function entityStorageLoad(array $files): void {
-    // @todo Add a setting to toggle the auto-hash behavior?
+    if (!$this->configFactory->get('filehash.settings')->get('autohash')) {
+      return;
+    }
     foreach ($files as $file) {
       foreach ($this->columns() as $column) {
         if (!$file->{$column}->value && $this->shouldHash($file) && !$this->memoryCache->get($file->id())) {
@@ -264,7 +266,7 @@ class FileHash implements FileHashInterface {
   }
 
   /**
-   * Returns TRUE if file should be hashed.
+   * {@inheritdoc}
    */
   public function shouldHash(FileInterface $file): bool {
     // Nothing to do if file URI is empty.

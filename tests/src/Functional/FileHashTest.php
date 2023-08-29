@@ -51,6 +51,8 @@ class FileHashTest extends FileFieldTestBase implements FileHashTestInterface {
     $this->drupalGet('admin/config/media/filehash');
     $fields = ['algos[blake2b_512]' => TRUE];
     $this->submitForm($fields, 'Save configuration');
+    // Simulate the next page load after adding new field.
+    $this->rebuildContainer();
     file_put_contents($uri, 'abc');
     $file = File::create([
       'uid' => 1,

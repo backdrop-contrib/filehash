@@ -78,6 +78,9 @@ filehash.settings:
       sequence:
         type: string
         label: 'MIME type'
+    autohash:
+      type: boolean
+      label: 'Automatically generate missing hashes when loading files'
 
 field.formatter.settings.filehash_table:
   type: mapping
