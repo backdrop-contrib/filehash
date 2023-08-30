@@ -4,15 +4,9 @@ namespace Drupal\filehash;
 
 use Drupal\Core\Cache\MemoryCache\MemoryCacheInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Database\DatabaseExceptionWrapper;
 use Drupal\Core\Entity\EntityDefinitionUpdateManagerInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
-use Drupal\Core\Link;
-use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Drupal\Core\Url;
-use Drupal\file\Entity\File;
 use Drupal\file\FileInterface;
 
 /**
@@ -58,9 +52,7 @@ class FileHash implements FileHashInterface {
    */
   public function __construct(
     protected ConfigFactoryInterface $configFactory,
-    protected AccountInterface $currentUser,
     protected EntityDefinitionUpdateManagerInterface $entityDefinitionUpdateManager,
-    protected EntityTypeManagerInterface $entityTypeManager,
     protected MemoryCacheInterface $memoryCache,
   ) {
   }
@@ -98,36 +90,6 @@ class FileHash implements FileHashInterface {
    */
   public function columns(): array {
     return array_intersect_assoc($this->configFactory->get('filehash.settings')->get('algos') ?? [], static::keys());
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function duplicateLookup(string $column, FileInterface $file, bool $strict = FALSE, bool $original = FALSE): ?string {
-    if (is_null($file->{$column}->value)) {
-      return NULL;
-    }
-    // @fixme This code results in *multiple* SQL joins on the file_managed
-    // table; if slow maybe it should be refactored to use a normal database
-    // query? See also https://www.drupal.org/project/drupal/issues/2875033
-    $query = $this->entityTypeManager->getStorage('file')->getQuery('AND');
-    if ($original && $this->configFactory->get('filehash.settings')->get('original')) {
-      $group = $query->orConditionGroup()
-        ->condition("original_$column", $file->{$column}->value, '=')
-        ->condition($column, $file->{$column}->value, '=');
-      $query->condition($group);
-    }
-    else {
-      $query->condition($column, $file->{$column}->value);
-    }
-    if (!$strict) {
-      // @phpstan-ignore-next-line Core 9.2 compatibility.
-      $query->condition('status', defined(FileInterface::class . '::STATUS_PERMANENT') ? FileInterface::STATUS_PERMANENT : FILE_STATUS_PERMANENT, '=');
-    }
-    $results = $query->range(0, 1)
-      ->accessCheck(FALSE)
-      ->execute();
-    return reset($results) ?: NULL;
   }
 
   /**
@@ -228,39 +190,6 @@ class FileHash implements FileHashInterface {
       return FALSE;
     }
     return TRUE;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function validateDedupe(FileInterface $file, bool $strict = FALSE, bool $original = FALSE): array {
-    $errors = [];
-    foreach ($this->columns() as $column) {
-      try {
-        $fid = $this->duplicateLookup($column, $file, $strict, $original);
-      }
-      catch (DatabaseExceptionWrapper $e) {
-        $this->addColumns();
-        $fid = $this->duplicateLookup($column, $file, $strict, $original);
-      }
-      if ($fid) {
-        $error = $this->t('Sorry, duplicate files are not permitted.');
-        if ($this->currentUser->hasPermission('access files overview')) {
-          try {
-            $url = Url::fromRoute('view.files.page_2', ['arg_0' => $fid], ['attributes' => ['target' => '_blank']]);
-            $error = $this->t('This file has already been uploaded as %filename.', [
-              '%filename' => Link::fromTextAndUrl(File::load($fid)->label(), $url)->toString(),
-            ]);
-          }
-          catch (\Exception $e) {
-            // Maybe the view was disabled?
-          }
-        }
-        $errors[] = $error;
-        break;
-      }
-    }
-    return $errors;
   }
 
   /**

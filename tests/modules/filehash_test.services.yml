@@ -1,0 +1,5 @@
+services:
+
+  Drupal\filehash_test\EventSubscriber:
+    tags:
+      - { name: event_subscriber }

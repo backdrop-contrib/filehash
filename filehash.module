@@ -49,20 +49,25 @@ function filehash_entity_storage_load(array $files, $entity_type): void {
  * documentation.
  */
 function filehash_field_widget_single_element_form_alter(&$element, FormStateInterface $form_state, $context): void {
+  if ((!isset($element['#type']) || $element['#type'] !== 'managed_file') && !isset($element['entity_browser']['#widget_context']['upload_validators'])) {
+    return;
+  }
+  $definition = $context['items']->getFieldDefinition();
+  if (!$definition instanceof ThirdPartySettingsInterface) {
+    return;
+  }
+  $settings = $definition->getThirdPartySettings('filehash');
+  if (empty($settings['dedupe'])) {
+    return;
+  }
+  $options['strict'] = FileHashInterface::STRICT_DEDUPE == $settings['dedupe'];
+  $options['original'] = !empty($settings['dedupe_original']);
   if (isset($element['#type']) && $element['#type'] === 'managed_file') {
-    $definition = $context['items']->getFieldDefinition();
-    if (!($definition instanceof ThirdPartySettingsInterface)) {
-      return;
-    }
-    $settings = $definition->getThirdPartySettings('filehash');
-    if (!empty($settings['dedupe'])) {
-      $strict = FileHashInterface::STRICT_DEDUPE == $settings['dedupe'];
-      $dedupe_original = !empty($settings['dedupe_original']);
-      $element['#upload_validators']['filehash_validate_dedupe'] = [
-        $strict,
-        $dedupe_original,
-      ];
-    }
+    $element['#upload_validators']['FileHashDedupe'] = $options;
+  }
+  // @fixme Figure out the right way to add upload validators to entity browser.
+  elseif (isset($element['entity_browser']['#widget_context']['upload_validators'])) {
+    $element['entity_browser']['#widget_context']['upload_validators']['FileHashDedupe'] = $options;
   }
 }
 
@@ -78,19 +83,6 @@ function filehash_file_create(FileInterface $file): void {
  */
 function filehash_file_presave(FileInterface $file): void {
   Drupal::service('filehash')->filePresave($file);
-}
-
-/**
- * Implements hook_file_validate().
- *
- * @phpstan-ignore-next-line Hook implementations should not duplicate @return
- * documentation.
- */
-function filehash_file_validate(FileInterface $file): array {
-  $dedupe = Drupal::config('filehash.settings')->get('dedupe');
-  $strict = FileHashInterface::STRICT_DEDUPE == $dedupe;
-  $original = Drupal::config('filehash.settings')->get('dedupe_original') ?? FALSE;
-  return $dedupe ? filehash_validate_dedupe($file, $strict, $original) : [];
 }
 
 /**
@@ -146,25 +138,4 @@ function filehash_help($route_name, RouteMatchInterface $route_match) {
       $output[1]['#value'] = function_exists('sodium_crypto_generichash_init') ? t('Note, the BLAKE2b hash algorithm requires the Sodium PHP extension, which is currently enabled.') : t('Note, the BLAKE2b hash algorithm requires the Sodium PHP extension, which is not currently enabled.');
       return $output;
   }
-}
-
-/**
- * Checks that file is not a duplicate.
- *
- * @param \Drupal\file\FileInterface $file
- *   File entity.
- * @param bool $strict
- *   Whether or not strict dedupe is enabled.
- * @param bool $original
- *   Whether or not the original file hash should be checked.
- *
- * @return \Drupal\Core\StringTranslation\TranslatableMarkup[]
- *   Array of validation errors.
- */
-function filehash_validate_dedupe(FileInterface $file, $strict = FALSE, $original = FALSE): array {
-  // We only run the dedupe check on initial file creation.
-  if (!$file->id()) {
-    return Drupal::service('filehash')->validateDedupe($file, $strict, $original);
-  }
-  return [];
 }

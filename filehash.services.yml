@@ -6,9 +6,15 @@ services:
     tags:
       - { name: event_subscriber }
 
+  filehash.file_validation_subscriber:
+    class: Drupal\filehash\EventSubscriber\FileValidationSubscriber
+    arguments: ['@config.factory', '@validation.constraint', '@file.recursive_validator']
+    tags:
+      - { name: event_subscriber }
+
   filehash:
     class: Drupal\filehash\FileHash
-    arguments: ['@config.factory', '@current_user', '@entity.definition_update_manager', '@entity_type.manager', '@filehash.memory_cache']
+    arguments: ['@config.factory', '@entity.definition_update_manager', '@filehash.memory_cache']
 
   filehash.memory_cache:
     class: Drupal\Core\Cache\MemoryCache\MemoryCache

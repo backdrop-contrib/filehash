@@ -28,11 +28,6 @@ interface FileHashInterface {
   public function columns(): array;
 
   /**
-   * Returns file ID for any duplicates.
-   */
-  public function duplicateLookup(string $column, FileInterface $file, bool $strict = FALSE, bool $original = FALSE): ?string;
-
-  /**
    * Implements hook_entity_base_field_info().
    *
    * @return \Drupal\Core\Field\BaseFieldDefinition[]
@@ -71,14 +66,6 @@ interface FileHashInterface {
    * Returns TRUE if file should be hashed.
    */
   public function shouldHash(FileInterface $file): bool;
-
-  /**
-   * Checks that file is not a duplicate.
-   *
-   * @return \Drupal\Core\StringTranslation\TranslatableMarkup[]
-   *   Array of validation errors.
-   */
-  public function validateDedupe(FileInterface $file, bool $strict = FALSE, bool $original = FALSE): array;
 
   /**
    * Returns array of valid File Hash algorithm identifiers.
