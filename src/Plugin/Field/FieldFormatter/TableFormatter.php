@@ -91,7 +91,7 @@ class TableFormatter extends DescriptionAwareFileFormatterBase {
       $header = [
         $this->t('Attachment'),
         $this->t('Size'),
-        $this->fileHash->labels()[$this->getSetting('algo')],
+        $this->t('@algo hash', ['@algo' => $this->fileHash->names()[$this->getSetting('algo')]]),
       ];
       $rows = [];
       foreach ($files as $file) {

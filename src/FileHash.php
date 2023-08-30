@@ -180,25 +180,20 @@ class FileHash implements FileHashInterface {
    */
   public function entityBaseFieldInfo(): array {
     $columns = $this->columns();
-    $labels = $this->labels();
-    $lengths = $this->lengths();
-    $descriptions = $this->descriptions();
+    $names = static::names();
+    $lengths = static::lengths();
     $original = $this->configFactory->get('filehash.settings')->get('original');
-    if ($original) {
-      $original_labels = $this->originalLabels();
-      $original_descriptions = $this->originalDescriptions();
-    }
     $fields = [];
     foreach ($columns as $column) {
       $fields[$column] = BaseFieldDefinition::create('filehash')
-        ->setLabel($labels[$column])
+        ->setLabel($this->t('@algo hash', ['@algo' => $names[$column]]))
         ->setSetting('max_length', $lengths[$column])
-        ->setDescription($descriptions[$column]);
+        ->setDescription($this->t('The @algo hash for this file.', ['@algo' => $names[$column]]));
       if ($original) {
         $fields["original_$column"] = BaseFieldDefinition::create('filehash')
-          ->setLabel($original_labels[$column])
+          ->setLabel($this->t('Original @algo hash', ['@algo' => $names[$column]]))
           ->setSetting('max_length', $lengths[$column])
-          ->setDescription($original_descriptions[$column]);
+          ->setDescription($this->t('The original @algo hash for this file.', ['@algo' => $names[$column]]));
       }
     }
     return $fields;
@@ -348,60 +343,8 @@ class FileHash implements FileHashInterface {
   /**
    * {@inheritdoc}
    */
-  public static function descriptions(): array {
-    return array_combine(static::KEYS, [
-      t('The BLAKE2b-128 hash for this file.'),
-      t('The BLAKE2b-160 hash for this file.'),
-      t('The BLAKE2b-224 hash for this file.'),
-      t('The BLAKE2b-256 hash for this file.'),
-      t('The BLAKE2b-384 hash for this file.'),
-      t('The BLAKE2b-512 hash for this file.'),
-      t('The MD5 hash for this file.'),
-      t('The SHA-1 hash for this file.'),
-      t('The SHA-224 hash for this file.'),
-      t('The SHA-256 hash for this file.'),
-      t('The SHA-384 hash for this file.'),
-      t('The SHA-512/224 hash for this file.'),
-      t('The SHA-512/256 hash for this file.'),
-      t('The SHA-512 hash for this file.'),
-      t('The SHA3-224 hash for this file.'),
-      t('The SHA3-256 hash for this file.'),
-      t('The SHA3-384 hash for this file.'),
-      t('The SHA3-512 hash for this file.'),
-    ]);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public static function keys(): array {
     return array_combine(static::KEYS, static::KEYS);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function labels(): array {
-    return array_combine(static::KEYS, [
-      t('BLAKE2b-128 hash'),
-      t('BLAKE2b-160 hash'),
-      t('BLAKE2b-224 hash'),
-      t('BLAKE2b-256 hash'),
-      t('BLAKE2b-384 hash'),
-      t('BLAKE2b-512 hash'),
-      t('MD5 hash'),
-      t('SHA-1 hash'),
-      t('SHA-224 hash'),
-      t('SHA-256 hash'),
-      t('SHA-384 hash'),
-      t('SHA-512/224 hash'),
-      t('SHA-512/256 hash'),
-      t('SHA-512 hash'),
-      t('SHA3-224 hash'),
-      t('SHA3-256 hash'),
-      t('SHA3-384 hash'),
-      t('SHA3-512 hash'),
-    ]);
   }
 
   /**
@@ -434,58 +377,6 @@ class FileHash implements FileHashInterface {
       t('SHA3-256'),
       t('SHA3-384'),
       t('SHA3-512'),
-    ]);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function originalDescriptions(): array {
-    return array_combine(static::KEYS, [
-      t('The original BLAKE2b-128 hash for this file.'),
-      t('The original BLAKE2b-160 hash for this file.'),
-      t('The original BLAKE2b-224 hash for this file.'),
-      t('The original BLAKE2b-256 hash for this file.'),
-      t('The original BLAKE2b-384 hash for this file.'),
-      t('The original BLAKE2b-512 hash for this file.'),
-      t('The original MD5 hash for this file.'),
-      t('The original SHA-1 hash for this file.'),
-      t('The original SHA-224 hash for this file.'),
-      t('The original SHA-256 hash for this file.'),
-      t('The original SHA-384 hash for this file.'),
-      t('The original SHA-512/224 hash for this file.'),
-      t('The original SHA-512/256 hash for this file.'),
-      t('The original SHA-512 hash for this file.'),
-      t('The original SHA3-224 hash for this file.'),
-      t('The original SHA3-256 hash for this file.'),
-      t('The original SHA3-384 hash for this file.'),
-      t('The original SHA3-512 hash for this file.'),
-    ]);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function originalLabels(): array {
-    return array_combine(static::KEYS, [
-      t('Original BLAKE2b-128 hash'),
-      t('Original BLAKE2b-160 hash'),
-      t('Original BLAKE2b-224 hash'),
-      t('Original BLAKE2b-256 hash'),
-      t('Original BLAKE2b-384 hash'),
-      t('Original BLAKE2b-512 hash'),
-      t('Original MD5 hash'),
-      t('Original SHA-1 hash'),
-      t('Original SHA-224 hash'),
-      t('Original SHA-256 hash'),
-      t('Original SHA-384 hash'),
-      t('Original SHA-512/224 hash'),
-      t('Original SHA-512/256 hash'),
-      t('Original SHA-512 hash'),
-      t('Original SHA3-224 hash'),
-      t('Original SHA3-256 hash'),
-      t('Original SHA3-384 hash'),
-      t('Original SHA3-512 hash'),
     ]);
   }
 

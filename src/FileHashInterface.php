@@ -81,28 +81,12 @@ interface FileHashInterface {
   public function validateDedupe(FileInterface $file, bool $strict = FALSE, bool $original = FALSE): array;
 
   /**
-   * Returns array of field descriptions.
-   *
-   * @return \Drupal\Core\StringTranslation\TranslatableMarkup[]
-   *   Field descriptions.
-   */
-  public static function descriptions(): array;
-
-  /**
    * Returns array of valid File Hash algorithm identifiers.
    *
    * @return string[]
    *   Hash algorithm identifiers.
    */
   public static function keys(): array;
-
-  /**
-   * Returns array of field labels.
-   *
-   * @return \Drupal\Core\StringTranslation\TranslatableMarkup[]
-   *   Field labels.
-   */
-  public static function labels(): array;
 
   /**
    * Returns array of hash algorithm hexadecimal output lengths.
@@ -119,21 +103,5 @@ interface FileHashInterface {
    *   Hash algorithm names.
    */
   public static function names(): array;
-
-  /**
-   * Returns array of field descriptions.
-   *
-   * @return \Drupal\Core\StringTranslation\TranslatableMarkup[]
-   *   Field descriptions.
-   */
-  public static function originalDescriptions(): array;
-
-  /**
-   * Returns array of field labels.
-   *
-   * @return \Drupal\Core\StringTranslation\TranslatableMarkup[]
-   *   Field labels.
-   */
-  public static function originalLabels(): array;
 
 }

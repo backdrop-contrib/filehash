@@ -161,12 +161,12 @@ class FileHashConfigForm extends ConfigFormBase {
       if ($value) {
         if ($this->deletedFieldsRepository->getFieldDefinitions("file-$column")) {
           $form_state->setErrorByName("algos][$column", $this->t('Please run cron first to finish deleting the %label column before enabling it.', [
-            '%label' => $this->fileHash->labels()[$column],
+            '%label' => $this->t('@algo hash', ['@algo' => $this->fileHash->names()[$column]]),
           ]));
         }
         if ($form_state->getValue('original') && $this->deletedFieldsRepository->getFieldDefinitions("file-original_$column")) {
           $form_state->setErrorByName('original', $this->t('Please run cron first to finish deleting the %label column before enabling it.', [
-            '%label' => $this->fileHash->originalLabels()[$column],
+            '%label' => $this->t('Original @algo hash', ['@algo' => $this->fileHash->names()[$column]]),
           ]));
         }
       }
