@@ -18,27 +18,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class FileHashConfigForm extends ConfigFormBase {
 
   /**
-   * Deleted fields repository.
-   *
-   * @var \Drupal\Core\Field\DeletedFieldsRepositoryInterface
-   */
-  protected $deletedFieldsRepository;
-
-  /**
-   * File Hash service.
-   *
-   * @var \Drupal\filehash\FileHashInterface
-   */
-  protected $fileHash;
-
-  /**
-   * Stores a module manager.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
-
-  /**
    * {@inheritdoc}
    */
   public function getFormId() {
@@ -58,11 +37,13 @@ class FileHashConfigForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function __construct(ConfigFactoryInterface $config_factory, DeletedFieldsRepositoryInterface $deleted_fields_repository, FileHashInterface $filehash, ModuleHandlerInterface $module_handler) {
-    parent::__construct($config_factory);
-    $this->deletedFieldsRepository = $deleted_fields_repository;
-    $this->fileHash = $filehash;
-    $this->moduleHandler = $module_handler;
+  public function __construct(
+    ConfigFactoryInterface $configFactory,
+    protected DeletedFieldsRepositoryInterface $deletedFieldsRepository,
+    protected FileHashInterface $fileHash,
+    protected ModuleHandlerInterface $moduleHandler,
+  ) {
+    parent::__construct($configFactory);
   }
 
   /**

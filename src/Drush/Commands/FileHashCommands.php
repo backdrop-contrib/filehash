@@ -15,7 +15,9 @@ class FileHashCommands extends DrushCommands {
   /**
    * Generate hashes for existing files.
    */
-  #[CLI\Command(name: 'filehash:generate', aliases: ['fgen', 'filehash-generate'])]
+  #[CLI\Command(name: 'filehash:generate', aliases: [
+    'fgen', 'filehash-generate',
+  ])]
   #[CLI\Usage(name: 'drush filehash:generate', description: 'Generate hashes for existing files.')]
   public function generate(): void {
     batch_set(GenerateBatch::createBatch());

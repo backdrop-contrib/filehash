@@ -15,40 +15,13 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 class FileHashConfigSubscriber implements EventSubscriberInterface {
 
   /**
-   * The cache tags invalidator.
-   *
-   * @var \Drupal\Core\Cache\CacheTagsInvalidatorInterface
-   */
-  protected $cacheTagsInvalidator;
-
-  /**
-   * The File Hash service.
-   *
-   * @var \Drupal\filehash\FileHashInterface
-   */
-  protected $fileHash;
-
-  /**
-   * The module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
-
-  /**
    * Constructs the filehashConfigSubscriber.
-   *
-   * @param \Drupal\Core\Cache\CacheTagsInvalidatorInterface $cache_tags_invalidator
-   *   The cache tags invalidator.
-   * @param \Drupal\filehash\FileHashInterface $filehash
-   *   The File Hash service.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
-   *   The module handler.
    */
-  public function __construct(CacheTagsInvalidatorInterface $cache_tags_invalidator, FileHashInterface $filehash, ModuleHandlerInterface $module_handler) {
-    $this->cacheTagsInvalidator = $cache_tags_invalidator;
-    $this->fileHash = $filehash;
-    $this->moduleHandler = $module_handler;
+  public function __construct(
+    protected CacheTagsInvalidatorInterface $cacheTagsInvalidator,
+    protected FileHashInterface $fileHash,
+    protected ModuleHandlerInterface $moduleHandler,
+  ) {
   }
 
   /**

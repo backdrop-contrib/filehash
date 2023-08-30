@@ -54,60 +54,15 @@ class FileHash implements FileHashInterface {
   ];
 
   /**
-   * Config factory.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected $configFactory;
-
-  /**
-   * The current user making the request.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected $currentUser;
-
-  /**
-   * The entity definition update manager.
-   *
-   * @var \Drupal\Core\Entity\EntityDefinitionUpdateManagerInterface
-   */
-  protected $entityDefinitionUpdateManager;
-
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The memory cache.
-   *
-   * @var \Drupal\Core\Cache\MemoryCache\MemoryCacheInterface
-   */
-  protected $memoryCache;
-
-  /**
    * Constructs the File Hash service.
-   *
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
-   *   The configuration factory object.
-   * @param \Drupal\Core\Session\AccountInterface $current_user
-   *   The current user.
-   * @param \Drupal\Core\Entity\EntityDefinitionUpdateManagerInterface $entity_definition_update_manager
-   *   The entity type manager.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity type manager.
-   * @param \Drupal\Core\Cache\MemoryCache\MemoryCacheInterface $memory_cache
-   *   The memory cache.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, AccountInterface $current_user, EntityDefinitionUpdateManagerInterface $entity_definition_update_manager, EntityTypeManagerInterface $entity_type_manager, MemoryCacheInterface $memory_cache) {
-    $this->configFactory = $config_factory;
-    $this->currentUser = $current_user;
-    $this->entityDefinitionUpdateManager = $entity_definition_update_manager;
-    $this->entityTypeManager = $entity_type_manager;
-    $this->memoryCache = $memory_cache;
+  public function __construct(
+    protected ConfigFactoryInterface $configFactory,
+    protected AccountInterface $currentUser,
+    protected EntityDefinitionUpdateManagerInterface $entityDefinitionUpdateManager,
+    protected EntityTypeManagerInterface $entityTypeManager,
+    protected MemoryCacheInterface $memoryCache,
+  ) {
   }
 
   /**

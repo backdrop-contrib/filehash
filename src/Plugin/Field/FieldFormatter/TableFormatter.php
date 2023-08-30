@@ -24,13 +24,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class TableFormatter extends DescriptionAwareFileFormatterBase {
 
   /**
-   * The File Hash service.
-   *
-   * @var \Drupal\filehash\FileHashInterface
-   */
-  public $fileHash;
-
-  /**
    * {@inheritdoc}
    *
    * @param string $plugin_id
@@ -47,12 +40,20 @@ class TableFormatter extends DescriptionAwareFileFormatterBase {
    *   The view mode.
    * @param mixed[] $third_party_settings
    *   Any third party settings.
-   * @param \Drupal\filehash\FileHashInterface $filehash
+   * @param \Drupal\filehash\FileHashInterface $fileHash
    *   File hash service.
    */
-  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, $label, $view_mode, array $third_party_settings, FileHashInterface $filehash) {
+  public function __construct(
+    $plugin_id,
+    $plugin_definition,
+    FieldDefinitionInterface $field_definition,
+    array $settings,
+    $label,
+    $view_mode,
+    array $third_party_settings,
+    public FileHashInterface $fileHash,
+  ) {
     parent::__construct($plugin_id, $plugin_definition, $field_definition, $settings, $label, $view_mode, $third_party_settings);
-    $this->fileHash = $filehash;
   }
 
   /**
