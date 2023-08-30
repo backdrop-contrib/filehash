@@ -1,5 +1,0 @@
-services:
-  filehash.commands:
-    class: \Drupal\filehash\Commands\FileHashCommands
-    tags:
-      - { name: drush.command }

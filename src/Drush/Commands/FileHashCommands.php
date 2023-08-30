@@ -1,24 +1,22 @@
 <?php
 
-namespace Drupal\filehash\Commands;
+namespace Drupal\filehash\Drush\Commands;
 
 use Drupal\filehash\Batch\CleanBatch;
 use Drupal\filehash\Batch\GenerateBatch;
+use Drush\Attributes as CLI;
 use Drush\Commands\DrushCommands;
 
 /**
- * Drush 9 integration for File Hash module.
+ * Drush 12 integration for File Hash module.
  */
 class FileHashCommands extends DrushCommands {
 
   /**
    * Generate hashes for existing files.
-   *
-   * @aliases fgen,filehash-generate
-   * @command filehash:generate
-   * @usage drush filehash:generate
-   *   Generate hashes for existing files.
    */
+  #[CLI\Command(name: 'filehash:generate', aliases: ['fgen', 'filehash-generate'])]
+  #[CLI\Usage(name: 'drush filehash:generate', description: 'Generate hashes for existing files.')]
   public function generate(): void {
     batch_set(GenerateBatch::createBatch());
     $batch =& batch_get();
@@ -28,11 +26,9 @@ class FileHashCommands extends DrushCommands {
 
   /**
    * Remove database columns for disabled hash algorithms.
-   *
-   * @aliases filehash-clean
-   * @command filehash:clean
-   * @usage drush filehash:clean
    */
+  #[CLI\Command(name: 'filehash:clean', aliases: ['filehash-clean'])]
+  #[CLI\Usage(name: 'drush filehash:clean')]
   public function clean(): void {
     batch_set(CleanBatch::createBatch());
     $batch =& batch_get();
