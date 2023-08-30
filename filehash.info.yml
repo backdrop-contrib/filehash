@@ -1,8 +1,7 @@
 configure: filehash.admin
-core: 8.x
 description: Generate hashes for each uploaded file.
 name: File Hash
 type: module
 dependencies:
-  - drupal:file (>=8.6.0)
+  - drupal:file
 core_version_requirement: ^10.2
