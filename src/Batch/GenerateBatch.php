@@ -28,11 +28,8 @@ class GenerateBatch {
 
   /**
    * Returns count of files in file_managed table.
-   *
-   * @return int
-   *   The count of managed files.
    */
-  public static function count() {
+  public static function count(): int {
     return \Drupal::database()->query('SELECT COUNT(*) FROM {file_managed}')->fetchField();
   }
 

@@ -196,11 +196,8 @@ class FileHash implements FileHashInterface {
    * Implements hash_file() for the BLAKE2b hash algorithm.
    *
    * Requires the Sodium PHP extension.
-   *
-   * @return string|false
-   *   Same return type as hash_file().
    */
-  public function blake2b(string $uri, int $length, int $chunk_size = 8192) {
+  public function blake2b(string $uri, int $length, int $chunk_size = 8192): string|false {
     if (!function_exists('sodium_crypto_generichash_init')) {
       return FALSE;
     }

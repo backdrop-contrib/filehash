@@ -7,7 +7,6 @@ use Drupal\file\FileInterface;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\Tests\filehash\Functional\FileHashTestInterface;
 use Drupal\user\Entity\User;
-use PHPUnit\Framework\ExpectationFailedException;
 
 /**
  * Using kernel tests rather than functional for speediness.
