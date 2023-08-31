@@ -47,8 +47,7 @@ class NonFileExistenceTest extends FileFieldTestBase {
     $file = @File::create([
       'uid' => 1,
       'uri' => "temporary://{$this->randomMachineName()}",
-      // @phpstan-ignore-next-line Core 9.2 compatibility.
-      'status' => defined(FileInterface::class . '::STATUS_PERMANENT') ? FileInterface::STATUS_PERMANENT : FILE_STATUS_PERMANENT,
+      'status' => FileInterface::STATUS_PERMANENT,
     ]);
     @$file->save();
     $this->assertSame('1', $file->id());
