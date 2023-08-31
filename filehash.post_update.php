@@ -10,3 +10,9 @@
  */
 function filehash_post_update_add_memory_cache(): void {
 }
+
+/**
+ * Update File Hash services.
+ */
+function filehash_post_update_file_validation_subscriber(): void {
+}
