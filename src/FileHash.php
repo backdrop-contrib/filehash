@@ -16,6 +16,8 @@ class FileHash implements FileHashInterface {
 
   use StringTranslationTrait;
 
+  const CHUNK_SIZE = 8192;
+
   /**
    * Array of valid File Hash algorithm identifiers.
    */
@@ -159,22 +161,69 @@ class FileHash implements FileHashInterface {
   public function hash(FileInterface $file, ?string $column = NULL, bool $original = FALSE): void {
     // If column is set, only generate that hash.
     $algos = $column ? [$column => $this->algos()[$column]] : $this->algos();
-    foreach ($algos as $column => $algo) {
-      if (!$this->shouldHash($file)) {
-        $hash = NULL;
+    if (!$algos) {
+      return;
+    }
+    $setFileHashes = function (array $states = []) use ($file, $algos, $original) : void {
+      foreach ($algos as $column => $algo) {
+        // Unreadable files will have NULL hash values.
+        $hash = $states[$column] ?? NULL;
+        $file->set($column, $hash);
+        if ($original) {
+          $file->set("original_$column", $hash);
+        }
       }
-      // Unreadable files will have NULL hash values.
-      elseif (preg_match('/^blake2b_([0-9]{3})$/', $algo, $matches)) {
-        $hash = $this->blake2b($file->getFileUri(), (int) $matches[1] / 8) ?: NULL;
+    };
+    if (!$this->shouldHash($file)) {
+      $setFileHashes();
+      return;
+    }
+    $suppressWarnings = $this->configFactory->get('filehash.settings')->get('suppress_warnings');
+    // Use hash_file() if possible as it provides an optimized code path.
+    if (count($algos) === 1 && !str_starts_with($algo = reset($algos), 'blake2b_')) {
+      $column = key($algos);
+      $states[$column] = ($suppressWarnings ? @hash_file($algo, $file->getFileUri()) : hash_file($algo, $file->getFileUri())) ?: NULL;
+      $setFileHashes($states);
+      return;
+    }
+    $handle = $suppressWarnings ? @fopen($file->getFileUri(), 'rb') : fopen($file->getFileUri(), 'rb');
+    if (FALSE === $handle) {
+      $setFileHashes();
+      return;
+    }
+    foreach ($algos as $column => $algo) {
+      if (preg_match('/^blake2b_([0-9]{3})$/', $algo, $matches)) {
+        if (function_exists('sodium_crypto_generichash_init')) {
+          $lengths[$column] = (int) $matches[1] / 8;
+          $states[$column] = sodium_crypto_generichash_init('', $lengths[$column]);
+        }
       }
       else {
-        $hash = ($this->configFactory->get('filehash.settings')->get('suppress_warnings') ? @hash_file($algo, $file->getFileUri()) : hash_file($algo, $file->getFileUri())) ?: NULL;
-      }
-      $file->set($column, $hash);
-      if ($original) {
-        $file->set("original_$column", $hash);
+        $states[$column] = hash_init($algo);
       }
     }
+    if (empty($states)) {
+      $setFileHashes();
+      return;
+    }
+    while ('' !== ($data = fread($handle, static::CHUNK_SIZE))) {
+      if (FALSE === $data) {
+        $setFileHashes();
+        return;
+      }
+      foreach ($states as $column => &$state) {
+        isset($lengths[$column]) ? sodium_crypto_generichash_update($state, $data) : hash_update($state, $data);
+      }
+    }
+    if (!feof($handle)) {
+      $setFileHashes();
+      return;
+    }
+    fclose($handle);
+    foreach ($states as $column => &$state) {
+      $state = isset($lengths[$column]) ? bin2hex(sodium_crypto_generichash_final($state, $lengths[$column])) : hash_final($state);
+    }
+    $setFileHashes($states);
   }
 
   /**
@@ -190,35 +239,6 @@ class FileHash implements FileHashInterface {
       return FALSE;
     }
     return TRUE;
-  }
-
-  /**
-   * Implements hash_file() for the BLAKE2b hash algorithm.
-   *
-   * Requires the Sodium PHP extension.
-   */
-  public function blake2b(string $uri, int $length, int $chunk_size = 8192): string|false {
-    if (!function_exists('sodium_crypto_generichash_init')) {
-      return FALSE;
-    }
-    $handle = $this->configFactory->get('filehash.settings')->get('suppress_warnings') ? @fopen($uri, 'rb') : fopen($uri, 'rb');
-    if (FALSE === $handle) {
-      return FALSE;
-    }
-    $state = sodium_crypto_generichash_init('', $length);
-    while ('' !== ($message = fread($handle, $chunk_size))) {
-      if (FALSE === $message) {
-        return FALSE;
-      }
-      if (!sodium_crypto_generichash_update($state, $message)) {
-        return FALSE;
-      }
-    }
-    if (!feof($handle)) {
-      return FALSE;
-    }
-    fclose($handle);
-    return bin2hex(sodium_crypto_generichash_final($state, $length));
   }
 
   /**
