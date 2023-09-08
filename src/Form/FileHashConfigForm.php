@@ -3,6 +3,7 @@
 namespace Drupal\filehash\Form;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Config\TypedConfigManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Field\DeletedFieldsRepositoryInterface;
 use Drupal\Core\Form\ConfigFormBase;
@@ -39,11 +40,12 @@ class FileHashConfigForm extends ConfigFormBase {
    */
   public function __construct(
     ConfigFactoryInterface $configFactory,
+    TypedConfigManagerInterface $typedConfigManager,
     protected DeletedFieldsRepositoryInterface $deletedFieldsRepository,
     protected FileHashInterface $fileHash,
     protected ModuleHandlerInterface $moduleHandler,
   ) {
-    parent::__construct($configFactory);
+    parent::__construct($configFactory, $typedConfigManager);
   }
 
   /**
@@ -52,6 +54,7 @@ class FileHashConfigForm extends ConfigFormBase {
   public static function create(ContainerInterface $container): self {
     return new static(
       $container->get('config.factory'),
+      $container->get('config.typed'),
       $container->get('entity_field.deleted_fields_repository'),
       $container->get('filehash'),
       $container->get('module_handler')
