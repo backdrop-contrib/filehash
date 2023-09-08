@@ -149,8 +149,11 @@ class FileHash implements FileHashInterface {
       // Only generate missing hashes.
       foreach ($this->columns() as $column) {
         if (empty($file->{$column}->value)) {
-          $this->hash($file, $column);
+          $columns[] = $column;
         }
+      }
+      if (isset($columns)) {
+        $this->hash($file, $columns);
       }
     }
   }
@@ -158,9 +161,9 @@ class FileHash implements FileHashInterface {
   /**
    * {@inheritdoc}
    */
-  public function hash(FileInterface $file, ?string $column = NULL, bool $original = FALSE): void {
-    // If column is set, only generate that hash.
-    $algos = $column ? [$column => $this->algos()[$column]] : $this->algos();
+  public function hash(FileInterface $file, ?array $columns = NULL, bool $original = FALSE): void {
+    // If columns are set, only generate those hashes.
+    $algos = isset($columns) ? array_intersect_key($this->algos(), array_flip($columns)) : $this->algos();
     if (!$algos) {
       return;
     }

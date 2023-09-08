@@ -55,12 +55,12 @@ interface FileHashInterface {
    *
    * @param \Drupal\file\FileInterface $file
    *   A file object.
-   * @param string|null $column
-   *   File hash algorithm identifier.
+   * @param string[]|null $columns
+   *   Array of File Hash algorithm identifiers.
    * @param bool $original
    *   Whether or not to set the original file hash.
    */
-  public function hash(FileInterface $file, ?string $column = NULL, bool $original = FALSE): void;
+  public function hash(FileInterface $file, ?array $columns = NULL, bool $original = FALSE): void;
 
   /**
    * Returns TRUE if file should be hashed.
