@@ -8,9 +8,6 @@
         "issues": "https://www.drupal.org/project/issues/filehash",
         "source": "https://git.drupalcode.org/project/filehash"
     },
-    "require": {
-        "drupal/core": "^10.2"
-    },
     "authors": [
         {
             "name": "Mark Burdett (mfb)",
