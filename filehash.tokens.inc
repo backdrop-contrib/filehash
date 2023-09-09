@@ -15,8 +15,7 @@ use Drupal\Core\Render\BubbleableMetadata;
  */
 function filehash_token_info() {
   $info = [];
-  foreach (Drupal::service('filehash')->getEnabledAlgorithms() as $algorithm) {
-    $name = Drupal::service('filehash')->getAlgorithmName($algorithm);
+  foreach (Drupal::service('filehash')->getEnabledAlgorithmNames() as $algorithm => $name) {
     $info['tokens']['file']["filehash-$algorithm"] = [
       'name' => Drupal::service('filehash')->getAlgorithmLabel($algorithm),
       'description' => t('The @algo hash of the file.', ['@algo' => $name]),
