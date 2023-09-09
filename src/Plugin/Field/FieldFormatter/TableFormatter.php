@@ -92,7 +92,7 @@ class TableFormatter extends DescriptionAwareFileFormatterBase {
       $header = [
         $this->t('Attachment'),
         $this->t('Size'),
-        $this->t('@algo hash', ['@algo' => $this->fileHash->names()[$this->getSetting('algo')]]),
+        $this->fileHash::getAlgorithmLabel($this->getSetting('algo')),
       ];
       $rows = [];
       foreach ($files as $file) {
@@ -139,7 +139,7 @@ class TableFormatter extends DescriptionAwareFileFormatterBase {
    */
   public static function defaultSettings() {
     $settings = parent::defaultSettings();
-    $columns = \Drupal::service('filehash')->columns();
+    $columns = \Drupal::service('filehash')->getEnabledAlgorithms();
     $settings['algo'] = array_pop($columns);
     return $settings;
   }
@@ -157,16 +157,11 @@ class TableFormatter extends DescriptionAwareFileFormatterBase {
    */
   public function settingsForm(array $form, FormStateInterface $form_state) {
     $form = parent::settingsForm($form, $form_state);
-    $names = $this->fileHash->names();
-    $options = [];
-    foreach ($this->fileHash->columns() as $column) {
-      $options[$column] = $names[$column];
-    }
     $form['algo'] = [
       '#title' => $this->t('Hash algorithm'),
       '#type' => 'select',
       '#default_value' => $this->getSetting('algo'),
-      '#options' => $options,
+      '#options' => $this->fileHash->getEnabledAlgorithmNames(),
     ];
     return $form;
   }
@@ -176,9 +171,8 @@ class TableFormatter extends DescriptionAwareFileFormatterBase {
    */
   public function settingsSummary() {
     $summary = parent::settingsSummary();
-    $names = $this->fileHash->names();
-    if (isset($names[$this->getSetting('algo')])) {
-      $summary[] = $this->t('@algo hash', ['@algo' => $names[$this->getSetting('algo')]]);
+    if (isset($this->fileHash->getEnabledAlgorithms()[$this->getSetting('algo')])) {
+      $summary[] = $this->fileHash::getAlgorithmLabel($this->getSetting('algo'));
     }
     return $summary;
   }

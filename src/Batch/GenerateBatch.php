@@ -54,8 +54,8 @@ class GenerateBatch {
       // Fully load file object.
       $file = File::load($file->fid);
       if (!\Drupal::config('filehash.settings')->get('autohash') && \Drupal::service('filehash')->shouldHash($file)) {
-        foreach (\Drupal::service('filehash')->columns() as $column) {
-          if (empty($file->{$column}->value)) {
+        foreach (\Drupal::service('filehash')->getEnabledAlgorithms() as $algorithm) {
+          if (empty($file->{$algorithm}->value)) {
             $file->save();
             break;
           }

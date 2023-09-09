@@ -54,7 +54,7 @@ class FileHashDedupeValidator extends BaseFileConstraintValidator implements Con
     if (!$constraint instanceof FileHashDedupe) {
       throw new UnexpectedTypeException($constraint, FileHashDedupe::class);
     }
-    foreach ($this->fileHash->columns() as $column) {
+    foreach ($this->fileHash->getEnabledAlgorithms() as $column) {
       try {
         $fid = $this->duplicateLookup($column, $file, $constraint->strict, $constraint->original);
       }

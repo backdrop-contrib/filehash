@@ -15,7 +15,7 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  */
 function filehash_requirements($phase): array {
   $requirements = [];
-  if ('runtime' === $phase && preg_grep('/^blake/', Drupal::service('filehash')->columns())) {
+  if ('runtime' === $phase && preg_grep('/^blake/', Drupal::service('filehash')->getEnabledAlgorithms())) {
     $requirements['filehash_sodium'] = [
       'title' => t('Sodium PHP extension'),
       'description' => t('File Hash is configured to use the BLAKE2b hash algorithm, which requires the Sodium PHP extension.'),
@@ -51,7 +51,7 @@ function filehash_update_8200(): TranslatableMarkup {
  *   Batch sandbox.
  */
 function filehash_update_8201(array &$sandbox): TranslatableMarkup {
-  $columns = Drupal::service('filehash')->columns();
+  $columns = Drupal::service('filehash')->getEnabledAlgorithms();
   if (!$columns) {
     return t('No file hash algorithms are enabled, so no data was migrated from the filehash table.');
   }

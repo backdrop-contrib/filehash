@@ -2,6 +2,7 @@
 
 namespace Drupal\filehash;
 
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\file\FileInterface;
 
 /**
@@ -20,12 +21,28 @@ interface FileHashInterface {
   public function addColumns(): void;
 
   /**
+   * Returns array of valid File Hash algorithm identifiers.
+   *
+   * @return string[]
+   *   Hash algorithm identifiers.
+   */
+  public static function getAlgorithms(): array;
+
+  /**
+   * Returns array of enabled File Hash algorithm names.
+   *
+   * @return \Drupal\Core\StringTranslation\TranslatableMarkup[]
+   *   Enabled File Hash algorithm names.
+   */
+  public function getEnabledAlgorithmNames(): array;
+
+  /**
    * Returns array of enabled File Hash algorithm identifiers.
    *
    * @return string[]
    *   Enabled File Hash algorithms.
    */
-  public function columns(): array;
+  public function getEnabledAlgorithms(): array;
 
   /**
    * Implements hook_entity_base_field_info().
@@ -68,27 +85,26 @@ interface FileHashInterface {
   public function shouldHash(FileInterface $file): bool;
 
   /**
-   * Returns array of valid File Hash algorithm identifiers.
-   *
-   * @return string[]
-   *   Hash algorithm identifiers.
+   * Returns the hash algorithm label.
    */
-  public static function keys(): array;
+  public static function getAlgorithmLabel(string $algorithm, bool $original = FALSE): TranslatableMarkup;
 
   /**
-   * Returns array of hash algorithm hexadecimal output lengths.
-   *
-   * @return int[]
-   *   Hash algorithm output lengths.
+   * Returns the hash algorithm hexadecimal output length.
    */
-  public static function lengths(): array;
+  public static function getAlgorithmLength(string $algorithm): int;
 
   /**
-   * Returns array of human-readable hash algorithm names.
+   * Returns human-readable hash algorithm name.
+   */
+  public static function getAlgorithmName(string $algorithm): TranslatableMarkup;
+
+  /**
+   * Returns array of available File Hash algorithm names.
    *
    * @return \Drupal\Core\StringTranslation\TranslatableMarkup[]
-   *   Hash algorithm names.
+   *   File Hash algorithm human-readable names.
    */
-  public static function names(): array;
+  public static function getAlgorithmNames(): array;
 
 }

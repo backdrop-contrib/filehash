@@ -76,7 +76,7 @@ class FileHashConfigForm extends ConfigFormBase {
     $form['algos'] = [
       '#default_value' => $this->config('filehash.settings')->get('algos'),
       '#description' => $this->t('The checked hash algorithm(s) will be calculated when a file is uploaded. For optimum performance, only enable the hash algorithm(s) you need.'),
-      '#options' => $this->fileHash->names(),
+      '#options' => $this->fileHash->getAlgorithmNames(),
       '#title' => $this->t('Enabled hash algorithms'),
       '#type' => 'checkboxes',
     ];
@@ -141,16 +141,16 @@ class FileHashConfigForm extends ConfigFormBase {
    */
   public function validateForm(array &$form, FormStateInterface $form_state): void {
     parent::validateForm($form, $form_state);
-    foreach ($form_state->getValue('algos') as $column => $value) {
+    foreach ($form_state->getValue('algos') as $algorithm => $value) {
       if ($value) {
-        if ($this->deletedFieldsRepository->getFieldDefinitions("file-$column")) {
-          $form_state->setErrorByName("algos][$column", $this->t('Please run cron first to finish deleting the %label column before enabling it.', [
-            '%label' => $this->t('@algo hash', ['@algo' => $this->fileHash->names()[$column]]),
+        if ($this->deletedFieldsRepository->getFieldDefinitions("file-$algorithm")) {
+          $form_state->setErrorByName("algos][$algorithm", $this->t('Please run cron first to finish deleting the %label column before enabling it.', [
+            '%label' => $this->fileHash::getAlgorithmLabel($algorithm),
           ]));
         }
-        if ($form_state->getValue('original') && $this->deletedFieldsRepository->getFieldDefinitions("file-original_$column")) {
+        if ($form_state->getValue('original') && $this->deletedFieldsRepository->getFieldDefinitions("file-original_$algorithm")) {
           $form_state->setErrorByName('original', $this->t('Please run cron first to finish deleting the %label column before enabling it.', [
-            '%label' => $this->t('Original @algo hash', ['@algo' => $this->fileHash->names()[$column]]),
+            '%label' => $this->fileHash::getAlgorithmLabel($algorithm, TRUE),
           ]));
         }
       }

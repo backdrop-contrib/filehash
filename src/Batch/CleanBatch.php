@@ -42,7 +42,7 @@ class CleanBatch {
           if ($change === EntityDefinitionUpdateManagerInterface::DEFINITION_DELETED) {
             // Only add File Hash columns to the list.
             $base_column = preg_replace('/^original_/', '', $field_name);
-            if (isset(\Drupal::service('filehash')::keys()[$base_column])) {
+            if (isset(\Drupal::service('filehash')::getAlgorithms()[$base_column])) {
               $columns[$field_name] = \Drupal::entityDefinitionUpdateManager()->getFieldStorageDefinition($field_name, 'file')->getLabel();
             }
           }

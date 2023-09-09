@@ -15,19 +15,19 @@ use Drupal\Core\Render\BubbleableMetadata;
  */
 function filehash_token_info() {
   $info = [];
-  $names = Drupal::service('filehash')->names();
-  foreach (Drupal::service('filehash')->columns() as $column) {
-    $info['tokens']['file']["filehash-$column"] = [
-      'name' => t('@algo hash', ['@algo' => $names[$column]]),
-      'description' => t('The @algo hash of the file.', ['@algo' => $names[$column]]),
+  foreach (Drupal::service('filehash')->getEnabledAlgorithms() as $algorithm) {
+    $name = Drupal::service('filehash')->getAlgorithmName($algorithm);
+    $info['tokens']['file']["filehash-$algorithm"] = [
+      'name' => Drupal::service('filehash')->getAlgorithmLabel($algorithm),
+      'description' => t('The @algo hash of the file.', ['@algo' => $name]),
     ];
-    $info['tokens']['file']["filehash-$column-pair-1"] = [
-      'name' => t('@algo hash: Initial pair', ['@algo' => $names[$column]]),
-      'description' => t('The @algo hash of the file: first and second characters.', ['@algo' => $names[$column]]),
+    $info['tokens']['file']["filehash-$algorithm-pair-1"] = [
+      'name' => t('@algo hash: Initial pair', ['@algo' => $name]),
+      'description' => t('The @algo hash of the file: first and second characters.', ['@algo' => $name]),
     ];
-    $info['tokens']['file']["filehash-$column-pair-2"] = [
-      'name' => t('@algo hash: Second pair', ['@algo' => $names[$column]]),
-      'description' => t('The @algo hash of the file: third and fourth characters.', ['@algo' => $names[$column]]),
+    $info['tokens']['file']["filehash-$algorithm-pair-2"] = [
+      'name' => t('@algo hash: Second pair', ['@algo' => $name]),
+      'description' => t('The @algo hash of the file: third and fourth characters.', ['@algo' => $name]),
     ];
   }
   return $info;
@@ -42,15 +42,15 @@ function filehash_token_info() {
 function filehash_tokens($type, $tokens, array $data, array $options, BubbleableMetadata $bubbleable_metadata) {
   $replacements = [];
   if ($type == 'file' && !empty($data['file'])) {
-    foreach (Drupal::service('filehash')->columns() as $column) {
-      if (isset($tokens["filehash-$column"])) {
-        $replacements[$tokens["filehash-$column"]] = $data['file']->{$column}->value ?? '';
+    foreach (Drupal::service('filehash')->getEnabledAlgorithms() as $algorithm) {
+      if (isset($tokens["filehash-$algorithm"])) {
+        $replacements[$tokens["filehash-$algorithm"]] = $data['file']->{$algorithm}->value ?? '';
       }
-      if (isset($tokens["filehash-$column-pair-1"])) {
-        $replacements[$tokens["filehash-$column-pair-1"]] = substr($data['file']->{$column}->value ?? '', 0, 2);
+      if (isset($tokens["filehash-$algorithm-pair-1"])) {
+        $replacements[$tokens["filehash-$algorithm-pair-1"]] = substr($data['file']->{$algorithm}->value ?? '', 0, 2);
       }
-      if (isset($tokens["filehash-$column-pair-2"])) {
-        $replacements[$tokens["filehash-$column-pair-2"]] = substr($data['file']->{$column}->value ?? '', 2, 2);
+      if (isset($tokens["filehash-$algorithm-pair-2"])) {
+        $replacements[$tokens["filehash-$algorithm-pair-2"]] = substr($data['file']->{$algorithm}->value ?? '', 2, 2);
       }
     }
   }
