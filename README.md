@@ -99,3 +99,5 @@ File Hash module is maintained by [mfb](https://www.drupal.org/u/mfb).
 You can support development by [contributing bug reports, feature suggestions
 and support requests](https://www.drupal.org/project/issues/filehash) or by
 [sponsoring](https://github.com/sponsors/mfb).
+
+- [Build status](https://git.drupalcode.org/project/filehash/-/pipelines?ref=3.x)
