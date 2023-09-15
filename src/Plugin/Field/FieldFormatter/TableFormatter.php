@@ -5,6 +5,7 @@ namespace Drupal\filehash\Plugin\Field\FieldFormatter;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\ByteSizeMarkup;
 use Drupal\file\Plugin\Field\FieldFormatter\DescriptionAwareFileFormatterBase;
 use Drupal\filehash\FileHashInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -108,7 +109,7 @@ class TableFormatter extends DescriptionAwareFileFormatterBase {
               '#cache' => ['tags' => $file->getCacheTags()],
             ],
           ],
-          ['data' => format_size(method_exists($file, 'getSize') ? $file->getSize() : 0)],
+          ['data' => (method_exists($file, 'getSize') && $file->getSize() !== NULL) ? ByteSizeMarkup::create($file->getSize()) : $this->t('Unknown')],
           [
             'data' => [
               '#type' => 'html_tag',
