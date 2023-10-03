@@ -131,7 +131,7 @@ class FileHash implements FileHashInterface {
     if (!$algorithms) {
       return;
     }
-    $setFileHashes = function (array $states = []) use ($file, $algorithms, $original) : void {
+    $setFileHashes = function (array $states = []) use ($file, $algorithms, $original): void {
       foreach ($algorithms as $algorithm) {
         // Unreadable files will have NULL hash values.
         $hash = $states[$algorithm] ?? NULL;
