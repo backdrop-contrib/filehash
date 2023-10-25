@@ -50,7 +50,7 @@ include:
 #   SKIP_ESLINT: '1'
 
 variables:
-  _TARGET_CORE: "$CORE_MINOR"
+  _TARGET_CORE: "$CORE_NEXT_MINOR"
 
 ###################################################################################
 #
