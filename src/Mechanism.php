@@ -1,12 +1,10 @@
 <?php
 
-/**
- * @file
- * Provides the set of available hash mechanisms.
- */
-
 namespace Drupal\filehash;
 
+/**
+ * Provides the set of available hash mechanisms.
+ */
 enum Mechanism {
 
   case Hash;

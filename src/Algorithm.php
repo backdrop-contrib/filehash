@@ -1,14 +1,12 @@
 <?php
 
-/**
- * @file
- * Provides the set of available hash algorithms.
- */
-
 namespace Drupal\filehash;
 
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 
+/**
+ * Provides the set of available hash algorithms.
+ */
 enum Algorithm: string implements AlgorithmInterface {
 
   case Blake2b128 = 'blake2b_128';
