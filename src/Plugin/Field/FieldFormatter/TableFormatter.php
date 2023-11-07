@@ -44,7 +44,7 @@ class TableFormatter extends DescriptionAwareFileFormatterBase {
    * @param \Drupal\filehash\FileHashInterface $fileHash
    *   File hash service.
    */
-  public function __construct(
+  final public function __construct(
     $plugin_id,
     $plugin_definition,
     FieldDefinitionInterface $field_definition,
@@ -69,7 +69,7 @@ class TableFormatter extends DescriptionAwareFileFormatterBase {
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
       $plugin_id, $plugin_definition, $configuration['field_definition'], $configuration['settings'],
       $configuration['label'], $configuration['view_mode'], $configuration['third_party_settings'],

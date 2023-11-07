@@ -38,7 +38,7 @@ class FileHashConfigForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function __construct(
+  final public function __construct(
     ConfigFactoryInterface $configFactory,
     TypedConfigManagerInterface $typedConfigManager,
     protected DeletedFieldsRepositoryInterface $deletedFieldsRepository,
@@ -51,7 +51,7 @@ class FileHashConfigForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container): self {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('config.factory'),
       $container->get('config.typed'),

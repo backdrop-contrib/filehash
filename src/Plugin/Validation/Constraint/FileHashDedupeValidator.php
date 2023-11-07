@@ -27,7 +27,7 @@ class FileHashDedupeValidator extends BaseFileConstraintValidator implements Con
   /**
    * Creates a new FileSizeConstraintValidator.
    */
-  public function __construct(
+  final public function __construct(
     protected ConfigFactoryInterface $configFactory,
     protected AccountInterface $currentUser,
     protected EntityTypeManagerInterface $entityTypeManager,
