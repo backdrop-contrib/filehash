@@ -96,7 +96,7 @@ class FileHashTest extends FileFieldTestBase implements FileHashTestInterface {
    */
   public function testFileHashFieldDuplicate(): void {
     $this->drupalGet('admin/config/media/filehash');
-    $fields = ['dedupe' => 1];
+    $fields = ['dedupe' => '1'];
     $this->submitForm($fields, 'Save configuration');
 
     $field_name = strtolower($this->randomMachineName());
@@ -113,7 +113,7 @@ class FileHashTest extends FileFieldTestBase implements FileHashTestInterface {
     $this->assertSession()->pageTextContains('Sorry, duplicate files are not permitted.');
 
     $this->drupalGet('admin/config/media/filehash');
-    $fields = ['dedupe' => 0];
+    $fields = ['dedupe' => '0'];
     $this->submitForm($fields, 'Save configuration');
 
     $nid = $this->uploadNodeFile($test_file, $field_name, $type_name);
@@ -121,7 +121,7 @@ class FileHashTest extends FileFieldTestBase implements FileHashTestInterface {
 
     // Enable strict dedupe.
     $this->drupalGet('admin/config/media/filehash');
-    $fields = ['dedupe' => 2];
+    $fields = ['dedupe' => '2'];
     $this->submitForm($fields, 'Save configuration');
 
     // Test that a node with duplicate file already attached can be saved.
@@ -140,7 +140,7 @@ class FileHashTest extends FileFieldTestBase implements FileHashTestInterface {
 
     // Enable normal dedupe.
     $this->drupalGet('admin/config/media/filehash');
-    $fields = ['dedupe' => 1];
+    $fields = ['dedupe' => '1'];
     $this->submitForm($fields, 'Save configuration');
 
     // Test that duplicate files can be uploaded at the same time.
@@ -149,7 +149,7 @@ class FileHashTest extends FileFieldTestBase implements FileHashTestInterface {
 
     // Disable global dedupe setting.
     $this->drupalGet('admin/config/media/filehash');
-    $fields = ['dedupe' => 0];
+    $fields = ['dedupe' => '0'];
     $this->submitForm($fields, 'Save configuration');
 
     // Test field-level dedupe enabled.
