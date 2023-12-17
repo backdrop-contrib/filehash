@@ -77,7 +77,7 @@ class OriginalFileHashTest extends FileFieldTestBase implements FileHashTestInte
     // Test field-level dedupe enabled.
     $this->drupalGet("admin/structure/types/manage/article/fields/node.article.$field_name");
     $fields = [
-      'third_party_settings[filehash][dedupe]' => TRUE,
+      'third_party_settings[filehash][dedupe]' => '1',
       'third_party_settings[filehash][dedupe_original]' => TRUE,
     ];
     $this->submitForm($fields, 'Save settings');
