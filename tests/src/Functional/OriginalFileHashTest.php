@@ -37,7 +37,7 @@ class OriginalFileHashTest extends FileFieldTestBase implements FileHashTestInte
     $this->drupalGet('admin/config/media/filehash');
     $fields = [
       'algos[sha1]' => TRUE,
-      'dedupe' => 1,
+      'dedupe' => '1',
       'rehash' => TRUE,
       'original' => TRUE,
       'dedupe_original' => TRUE,
