@@ -154,7 +154,7 @@ class FileHashTest extends FileFieldTestBase implements FileHashTestInterface {
 
     // Test field-level dedupe enabled.
     $this->drupalGet("admin/structure/types/manage/article/fields/node.article.$field_name");
-    $fields = ['third_party_settings[filehash][dedupe]' => 2];
+    $fields = ['third_party_settings[filehash][dedupe]' => '2'];
     $this->submitForm($fields, 'Save settings');
 
     $nid = $this->uploadNodeFile($test_file, $field_name, $type_name);
@@ -164,7 +164,7 @@ class FileHashTest extends FileFieldTestBase implements FileHashTestInterface {
 
     // Test field-level dedupe disabled.
     $this->drupalGet("admin/structure/types/manage/article/fields/node.article.$field_name");
-    $fields = ['third_party_settings[filehash][dedupe]' => 0];
+    $fields = ['third_party_settings[filehash][dedupe]' => '0'];
     $this->submitForm($fields, 'Save settings');
 
     $nid = $this->uploadNodeFile($test_file, $field_name, $type_name);
