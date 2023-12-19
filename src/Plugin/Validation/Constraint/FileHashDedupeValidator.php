@@ -18,14 +18,14 @@ use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 
 /**
- * Validates the FileSizeLimitConstraint.
+ * Validates the FileHashDedupe constraint.
  */
 class FileHashDedupeValidator extends BaseFileConstraintValidator implements ContainerInjectionInterface {
 
   use StringTranslationTrait;
 
   /**
-   * Creates a new FileSizeConstraintValidator.
+   * Creates a new FileHashDedupeValidator.
    */
   final public function __construct(
     protected ConfigFactoryInterface $configFactory,
