@@ -16,3 +16,9 @@ function filehash_post_update_add_memory_cache(): void {
  */
 function filehash_post_update_file_validation_subscriber(): void {
 }
+
+/**
+ * Update service arguments.
+ */
+function filehash_post_update_entity_type_manager(): void {
+}

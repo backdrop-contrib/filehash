@@ -5,6 +5,7 @@ namespace Drupal\filehash;
 use Drupal\Core\Cache\MemoryCache\MemoryCacheInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityDefinitionUpdateManagerInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
@@ -26,6 +27,7 @@ class FileHash implements FileHashInterface {
     protected ConfigFactoryInterface $configFactory,
     protected EntityDefinitionUpdateManagerInterface $entityDefinitionUpdateManager,
     protected MemoryCacheInterface $memoryCache,
+    protected ?EntityTypeManagerInterface $entityTypeManager = NULL,
   ) {
   }
 
@@ -248,6 +250,35 @@ class FileHash implements FileHashInterface {
   public static function getAlgorithms(): array {
     $algorithms = array_column(Algorithm::cases(), 'value');
     return array_combine($algorithms, $algorithms);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function duplicateLookup(string $column, FileInterface $file, bool $strict = FALSE, bool $original = FALSE): ?string {
+    if (is_null($file->{$column}->value)) {
+      return NULL;
+    }
+    // @fixme This code results in *multiple* SQL joins on the file_managed
+    // table; if slow maybe it should be refactored to use a normal database
+    // query? See also https://www.drupal.org/project/drupal/issues/2875033
+    $query = $this->entityTypeManager->getStorage('file')->getQuery('AND');
+    if ($original && $this->configFactory->get('filehash.settings')->get('original')) {
+      $group = $query->orConditionGroup()
+        ->condition("original_$column", $file->{$column}->value, '=')
+        ->condition($column, $file->{$column}->value, '=');
+      $query->condition($group);
+    }
+    else {
+      $query->condition($column, $file->{$column}->value);
+    }
+    if (!$strict) {
+      $query->condition('status', FileInterface::STATUS_PERMANENT, '=');
+    }
+    $results = $query->range(0, 1)
+      ->accessCheck(FALSE)
+      ->execute();
+    return reset($results) ?: NULL;
   }
 
 }

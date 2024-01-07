@@ -107,4 +107,9 @@ interface FileHashInterface {
    */
   public static function getAlgorithmNames(): array;
 
+  /**
+   * Returns file ID for any duplicates.
+   */
+  public function duplicateLookup(string $column, FileInterface $file, bool $strict = FALSE, bool $original = FALSE): ?string;
+
 }
