@@ -1,0 +1,6 @@
+{
+    "_config_name": "filehash.settings",
+    "filehash_algos": [],
+    "filehash_local_only": false,
+    "filehash_dedupe": "0"
+}
