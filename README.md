@@ -31,7 +31,7 @@ to configure the file upload directory, File Entity Paths module
 
 A checkbox in File Hash settings allows duplicate uploaded files to be rejected.
 This feature should be considered a proof-of-concept - you likely want better UX
-for such a feature. Note, in Drupal 7, empty files are not considered duplicate
+for such a feature. Note, in Backdrop, empty files are not considered duplicate
 files, as such "files" may represent remote media assets, etc.
 
 If you want to use the BLAKE2b hash algorithm, either the Sodium PHP extension
