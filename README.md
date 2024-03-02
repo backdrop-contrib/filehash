@@ -1,5 +1,5 @@
-The Name of My Project
-======================
+File Hash
+=========
 
 Hashes of uploaded files, which can be found on a variety of sites from
 archive.org to wikileaks.org, allow files to be uniquely identified, allow
@@ -54,14 +54,14 @@ Bugs and feature requests should be reported in [the Issue Queue](https://github
 Current Maintainers <!-- This section is required. -->
 -------------------
 
-- [Alex Hoebart](https://github.com/AlexHoebart-ICPDR).
+- [Alex Hoebart](https://github.com/AlexHoebart-ICPDR)
 - Seeking additional maintainers.
 
 Credits <!-- This section is required. -->
 -------
 
-- Ported to Backdrop CMS by [Alex Hoebart](https://github.com/AlexHoebart-ICPDR).
-- Originally written for Drupal by [Mark Burdett](https://github.com/mfb).
+- Ported to Backdrop CMS by [Alex Hoebart](https://github.com/AlexHoebart-ICPDR)
+- Originally written for Drupal by [Mark Burdett](https://github.com/mfb)
 
 License <!-- This section is required. -->
 -------
