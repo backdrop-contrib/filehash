@@ -8,7 +8,7 @@
 /**
  * Tests File Hash module.
  */
-class FileHashTestCase extends DrupalWebTestCase {
+class FileHashTestCase extends BackdropWebTestCase {
 
   /**
    * {@inheritdoc}
@@ -31,7 +31,6 @@ class FileHashTestCase extends DrupalWebTestCase {
   /**
    * Tests File Hash module functionality.
    */
-  public function testFileHash() {
-  }
+  public function testFileHash() { }
 
 }

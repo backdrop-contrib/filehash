@@ -6,7 +6,7 @@
  */
 
 /**
- * Implements hook_token_info().
+ * Implements hook_token_info().().
  */
 function filehash_token_info() {
   $info = array();
@@ -29,17 +29,18 @@ function filehash_token_info() {
 }
 
 /**
- * Implements hook_tokens().
+ * Implements hook_tokens().().
  */
 function filehash_tokens($type, $tokens, array $data = array(), array $options = array()) {
   $replacements = array();
   if ($type == 'file' && !empty($data['file'])) {
     foreach (filehash_algos() as $column => $algo) {
       // Generate the file hash if it is needed but does not yet exist.
+
       if (empty($data['file']->filehash[$column])) {
         foreach ($tokens as $name => $original) {
           if (strpos($name, "filehash-$column") === 0) {
-            $data['file']->filehash[$column] = filehash_hash($algo, $data['file']->uri) ?: NULL;
+            $data['file']->filehash[$column] = filehash_hash($algo, $data['file']->uri) ? : NULL;
             break;
           }
         }

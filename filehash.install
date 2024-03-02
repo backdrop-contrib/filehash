@@ -6,7 +6,7 @@
  */
 
 /**
- * Implements hook_schema().
+ * Implements hook_schema().().
  */
 function filehash_schema() {
   $schema['filehash'] = array(
@@ -41,16 +41,16 @@ function filehash_schema() {
 }
 
 /**
- * Implements hook_uninstall().
+ * Implements hook_uninstall().().
  */
 function filehash_uninstall() {
-  variable_del('filehash_algos');
-  variable_del('filehash_dedupe');
-  variable_del('filehash_local_only');
+  config_clear('filehash.settings', 'filehash_algos');
+  config_clear('filehash.settings', 'filehash_dedupe');
+  config_clear('filehash.settings', 'filehash_local_only');
 }
 
 /**
- * Implements hook_requirements().
+ * Implements hook_requirements().().
  */
 function filehash_requirements($phase) {
   $requirements = array();
@@ -72,15 +72,35 @@ function filehash_requirements($phase) {
   return $requirements;
 }
 
+// TODO The old hook_update_N functions cannot be applied to Backdrop.
+
+function filehash_update_7100() { }
+
 /**
- * Add filehash.timestamp column.
+ * Implements hook_update_last_removed().
  */
-function filehash_update_7100() {
-  db_add_field('filehash', 'timestamp', array(
-    'description' => 'UNIX timestamp for when the hash was generated.',
-    'type' => 'int',
-    'unsigned' => TRUE,
-    'not null' => FALSE,
-    'default' => NULL,
-  ), array('indexes' => array('timestamp' => array('timestamp'))));
+function filehash_update_last_removed() {
+  return 7100;
+}
+
+/**
+ * Migrate filehash variables to config.
+ */
+function filehash_update_1000() {
+  $config = config('filehash.settings');
+  $config->set('filehash_algos', update_variable_get('filehash_algos', array()));
+  $config->set('filehash_local_only', update_variable_get('filehash_local_only', array()));
+  $config->set('filehash_dedupe', update_variable_get('filehash_dedupe', '0'));
+  $config->save();
+
+  update_variable_del('filehash_algos');
+  update_variable_del('filehash_local_only');
+  update_variable_del('filehash_dedupe');
+}
+
+/**
+ * Implements hook_install().
+ */
+function filehash_install() {
+  // Dynamically generated variable data was detected.
 }

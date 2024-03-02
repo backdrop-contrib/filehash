@@ -9,28 +9,30 @@
  * Builds the File Hash settings form.
  */
 function filehash_settings() {
+  $config = config('filehash.settings');
+  $form['#config'] = 'filehash.settings';
   $form['filehash_algos'] = array(
-    '#default_value' => variable_get('filehash_algos', array()),
+    '#default_value' => $config->get('filehash_algos'),
     '#description' => t('The checked hash algorithm(s) will be calculated when a file is saved. For optimum performance, only enable the hash algorithm(s) you need.'),
     '#options' => filehash_names(),
     '#title' => t('Enabled hash algorithms'),
     '#type' => 'checkboxes',
   );
   $form['filehash_local_only'] = array(
-    '#default_value' => variable_get('filehash_local_only', FALSE),
+    '#default_value' => $config->get('filehash_local_only'),
     '#description' => t('If checked, file hashes will be generated only for files using local stream wrappers (public, temporary, etc.).'),
     '#title' => t('Hash local files only'),
     '#type' => 'checkbox',
   );
   $form['filehash_dedupe'] = array(
-    '#default_value' => variable_get('filehash_dedupe', 0),
+    '#default_value' => $config->get('filehash_dedupe'),
     '#description' => t('If checked, prevent duplicate uploaded files from being saved. Note, enabling this setting has privacy implications, as it allows users to determine if a particular file has been uploaded to the site.'),
     '#title' => t('Disallow duplicate files'),
     '#type' => 'checkbox',
   );
   $form = system_settings_form($form);
   $form['#submit'][] = 'filehash_settings_submit';
-  $form['#attached']['css'][] = drupal_get_path('module', 'filehash') . '/filehash.css';
+  $form['#attached']['css'][] = backdrop_get_path('module', 'filehash') . '/filehash.css';
   return $form;
 }
 
@@ -59,9 +61,9 @@ function filehash_bulk() {
 /**
  * Submit callback for File Hash bulk generate.
  */
-function filehash_bulk_submit($form, &$form_state) {
+function filehash_bulk_submit($form, $form_state) {
   if (!filehash_algos()) {
-    drupal_set_message(t('You have no enabled hash algorithms. Nothing to do.'));
+    backdrop_set_message(t('You have no enabled hash algorithms. Nothing to do.'));
     return;
   }
   batch_set(array(
@@ -71,14 +73,14 @@ function filehash_bulk_submit($form, &$form_state) {
     'init_message' => t('File hash generation is starting.'),
     'progress_message' => t('Please wait...'),
     'error_message' => t('File hash generation has encountered an error.'),
-    'file' => drupal_get_path('module', 'filehash') . '/filehash.admin.inc',
+    'file' => backdrop_get_path('module', 'filehash') . '/filehash.admin.inc',
   ));
 }
 
 /**
  * Batch generate file hashes.
  */
-function filehash_bulk_process(&$context) {
+function filehash_bulk_process($context) {
   if (!isset($context['results']['processed'])) {
     $context['results']['processed'] = 0;
     $query = new EntityFieldQuery();
@@ -103,10 +105,10 @@ function filehash_bulk_process(&$context) {
 function filehash_bulk_finished($success, $results, $operations) {
   $variables = array('@processed' => $results['processed']);
   if ($success) {
-    drupal_set_message(t('Processed all @processed files and generated any missing file hashes.', $variables));
+    backdrop_set_message(t('Processed all @processed files and generated any missing file hashes.', $variables));
   }
   else {
-    drupal_set_message(t('An error occurred after processing @processed files.', $variables), 'warning');
+    backdrop_set_message(t('An error occurred after processing @processed files.', $variables), 'warning');
   }
 }
 
@@ -116,7 +118,7 @@ function filehash_bulk_finished($success, $results, $operations) {
 function filehash_clean() {
   $columns = filehash_get_disabled_columns_with_data();
   if (!$columns) {
-    drupal_set_message(t('All clean! No disabled hash algorithms are installed.'));
+    backdrop_set_message(t('All clean! No disabled hash algorithms are installed.'));
     return;
   }
   $form['explanation'] = array(
@@ -136,7 +138,7 @@ function filehash_clean() {
 /**
  * Submit callback for File Hash clean up.
  */
-function filehash_clean_submit($form, &$form_state) {
+function filehash_clean_submit($form, $form_state) {
   batch_set(array(
     'operations' => array(array('filehash_clean_process', array())),
     'finished' => 'filehash_clean_finished',
@@ -144,7 +146,7 @@ function filehash_clean_submit($form, &$form_state) {
     'init_message' => t('File hash clean up is starting.'),
     'progress_message' => t('Please wait...'),
     'error_message' => t('File hash clean up has encountered an error.'),
-    'file' => drupal_get_path('module', 'filehash') . '/filehash.admin.inc',
+    'file' => backdrop_get_path('module', 'filehash') . '/filehash.admin.inc',
   ));
 }
 
@@ -165,7 +167,7 @@ function filehash_get_disabled_columns_with_data() {
 /**
  * Drops database columns for disabled hash algorithms.
  */
-function filehash_clean_process(&$context) {
+function filehash_clean_process($context) {
   $columns = filehash_get_disabled_columns_with_data();
   if (!isset($context['results']['processed'])) {
     $context['results']['processed'] = 0;
@@ -186,9 +188,9 @@ function filehash_clean_process(&$context) {
 function filehash_clean_finished($success, $results, $operations) {
   $variables = array('@processed' => $results['processed']);
   if ($success) {
-    drupal_set_message(format_plural($results['processed'], 'Processed @processed hash algorithm column.', 'Processed @processed hash algorithm columns.', $variables));
+    backdrop_set_message(format_plural($results['processed'], 'Processed @processed hash algorithm column.', 'Processed @processed hash algorithm columns.', $variables));
   }
   else {
-    drupal_set_message(format_plural($results['processed'], 'An error occurred after processing @processed hash algorithm column.', 'An error occurred after processing @processed hash algorithm columns.', $variables), 'warning');
+    backdrop_set_message(format_plural($results['processed'], 'An error occurred after processing @processed hash algorithm column.', 'An error occurred after processing @processed hash algorithm columns.', $variables), 'warning');
   }
 }

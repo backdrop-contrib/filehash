@@ -1,5 +1,5 @@
 name = File Hash
 description = Generate hashes for each uploaded file.
-core = 7.x
+backdrop = 1.x
+type = module
 configure = admin/config/media/filehash
-files[] = filehash.test
