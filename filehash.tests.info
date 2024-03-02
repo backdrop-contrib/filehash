@@ -1,0 +1,6 @@
+[FileHashTestCase]
+name = File Hash
+description = Tests for File Hash module.
+group = File Hash
+file = filehash.test
+
