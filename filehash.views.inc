@@ -6,8 +6,7 @@
  */
 
 /**
- * Implements hook_views_data().().
- */
+ * Implements hook_views_data(). */
 function filehash_views_data() {
   $data['filehash']['table']['group'] = t('File');
   $data['filehash']['table']['join'] = array(
@@ -17,7 +16,6 @@ function filehash_views_data() {
     ),
   );
   // Use a nice human-readable name for each hash algorithm.
-
   $names = filehash_names();
   foreach (filehash_columns() as $column) {
     $data['filehash'][$column] = array(

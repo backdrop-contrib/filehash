@@ -61,7 +61,7 @@ function filehash_bulk() {
 /**
  * Submit callback for File Hash bulk generate.
  */
-function filehash_bulk_submit($form, $form_state) {
+function filehash_bulk_submit($form, &$form_state) {
   if (!filehash_algos()) {
     backdrop_set_message(t('You have no enabled hash algorithms. Nothing to do.'));
     return;
@@ -80,7 +80,7 @@ function filehash_bulk_submit($form, $form_state) {
 /**
  * Batch generate file hashes.
  */
-function filehash_bulk_process($context) {
+function filehash_bulk_process(&$context) {
   if (!isset($context['results']['processed'])) {
     $context['results']['processed'] = 0;
     $query = new EntityFieldQuery();
@@ -138,7 +138,7 @@ function filehash_clean() {
 /**
  * Submit callback for File Hash clean up.
  */
-function filehash_clean_submit($form, $form_state) {
+function filehash_clean_submit($form, &$form_state) {
   batch_set(array(
     'operations' => array(array('filehash_clean_process', array())),
     'finished' => 'filehash_clean_finished',
@@ -167,7 +167,7 @@ function filehash_get_disabled_columns_with_data() {
 /**
  * Drops database columns for disabled hash algorithms.
  */
-function filehash_clean_process($context) {
+function filehash_clean_process(&$context) {
   $columns = filehash_get_disabled_columns_with_data();
   if (!isset($context['results']['processed'])) {
     $context['results']['processed'] = 0;

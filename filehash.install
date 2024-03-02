@@ -6,8 +6,7 @@
  */
 
 /**
- * Implements hook_schema().().
- */
+ * Implements hook_schema(). */
 function filehash_schema() {
   $schema['filehash'] = array(
     'description' => 'Store hashes for each uploaded file.',
@@ -41,8 +40,7 @@ function filehash_schema() {
 }
 
 /**
- * Implements hook_uninstall().().
- */
+ * Implements hook_uninstall(). */
 function filehash_uninstall() {
   config_clear('filehash.settings', 'filehash_algos');
   config_clear('filehash.settings', 'filehash_dedupe');
@@ -50,8 +48,7 @@ function filehash_uninstall() {
 }
 
 /**
- * Implements hook_requirements().().
- */
+ * Implements hook_requirements(). */
 function filehash_requirements($phase) {
   $requirements = array();
   if ('runtime' === $phase && preg_grep('/^blake/', filehash_columns())) {
