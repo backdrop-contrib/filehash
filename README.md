@@ -25,9 +25,8 @@ content addressable storage. For example, if the MD5 hash for a file is
 3998b02c5cd2723153c39701683a503b, you could store it in the files/39/98
 directory using these tokens:
 [file:filehash-md5-pair-1]/[file:filehash-md5-pair-2]. Note, to use these tokens
-to configure the file upload directory, File Entity Paths module
-(https://www.drupal.org/project/fe_paths) or File (Field) Paths module
-(https://www.drupal.org/project/filefield_paths) is required.
+to configure the file upload directory, File (Field) Paths module
+(https://backdropcms.org/project/filefield_paths) is required.
 
 A checkbox in File Hash settings allows duplicate uploaded files to be rejected.
 This feature should be considered a proof-of-concept - you likely want better UX
