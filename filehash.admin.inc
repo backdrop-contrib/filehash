@@ -89,7 +89,7 @@ function filehash_bulk_process(&$context) {
   $query = new EntityFieldQuery();
   $files = $query->entityCondition('entity_type', 'file')->addMetaData('account', user_load(1))->range($context['results']['processed'], 1)->execute();
   foreach ($files['file'] as $file) {
-    $file = file_load($file->fid);
+    $file = file_load($file->entity_id);
     $context['message'] = t('Processed file ID !fid (%filename).', array(
       '!fid' => $file->fid,
       '%filename' => $file->filename,
